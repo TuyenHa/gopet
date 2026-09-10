@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <!--
+      Unity 6 dùng C# 9. Khoá ở đây để bắt sớm mọi cú pháp mới hơn mà
+      Unity sẽ từ chối — thay vì phát hiện lúc mở Editor.
+    -->
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Gopet.Net.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Compile thẳng source của Unity, không copy. Test chạy đúng trên
+      những file mà Unity build — bản sao là bản sẽ lệch.
+    -->
+    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\UiLogic\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestVectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+{
+    "name": "Gopet.UiLogic",
+    "rootNamespace": "Gopet.UiLogic",
+    "references": [
+        "Gopet.Net"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

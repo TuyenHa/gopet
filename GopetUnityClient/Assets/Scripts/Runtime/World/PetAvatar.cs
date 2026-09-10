@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using Gopet.Net.Images;
+using Gopet.Net.Pet;
+using Gopet.Runtime.Assets;
+using Gopet.UiLogic;
+using UnityEngine;
+
+namespace Gopet.Runtime.World
+{
+    /// <summary>
+    /// Sprite pet đi cùng player. Bám vào owner theo offset ngang phải,
+    /// cycle qua frame ~200ms.
+    ///
+    /// <para>Frame layout khớp <see cref="WorldActorView.Frames"/>: sprite là 1 strip
+    /// ngang gồm N frame kề nhau (server bơm <c>frameNum</c>). Xẻ width/frameNum,
+    /// pivot (0.5, 0) đặt chân sprite tại y=0 rồi lift theo <c>VerticalOffset</c>
+    /// của server (âm = lên trên).</para>
+    /// </summary>
+    public sealed class PetAvatar : MonoBehaviour
+    {
+        private const float FollowOffsetX = -28f; // pet đi kèm bên trái owner, cách 28 unit
+        private const float FrameInterval = 0.2f;
+
+        private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
+
+        private Transform _owner;
+        private SpriteRenderer _renderer;
+        private JarNameLabel _label;
+        private Sprite[] _frames = Array.Empty<Sprite>();
+        private float _nextFrameTime;
+        private int _frame;
+        private short _verticalOffset;
+
+        public int OwnerUserId { get; private set; }
+
+        public static PetAvatar Create(Transform parent, Transform owner, PetZoneEntry entry, RemoteAssetCache assets)
+        {
+            var go = new GameObject($"Pet #{entry.OwnerUserId} T{entry.PetIdTemplate}", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            var view = go.AddComponent<PetAvatar>();
+            view._owner = owner;
+            view.OwnerUserId = entry.OwnerUserId;
+            view._verticalOffset = entry.VerticalOffset;
+
+            var spriteGo = new GameObject("Sprite", typeof(SpriteRenderer));
+            spriteGo.transform.SetParent(go.transform, false);
+            view._renderer = spriteGo.GetComponent<SpriteRenderer>();
+
+            view._label = JarNameLabel.Create(go.transform, new Vector3(0f, 0f, 0f), 0.7f,
+                JarIconTokens.Strip(entry.DisplayName ?? string.Empty));
+
+            var frames = Mathf.Max((int)entry.FrameNum, 1);
+            assets.Get(entry.FrameImagePath, ImagePackets.TypeNpc, texture =>
+            {
+                if (view == null || texture == null) return;
+                view._frames = SliceFrames(entry.FrameImagePath, texture, frames);
+                view._frame = 0;
+                view._renderer.sprite = view._frames[0];
+                view.PositionLabelAboveSprite();
+            });
+
+            return view;
+        }
+
+        private void PositionLabelAboveSprite()
+        {
+            if (_label == null || _renderer == null || _renderer.sprite == null) return;
+            var h = _renderer.sprite.rect.height;
+            _label.transform.localPosition = new Vector3(0f, h + 4f, 0f);
+        }
+
+        private void LateUpdate()
+        {
+            if (_owner == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            var ownerPos = _owner.position;
+            transform.position = new Vector3(ownerPos.x + FollowOffsetX, ownerPos.y + _verticalOffset, ownerPos.z);
+            // Sort: pet cùng dòng với chân owner (dùng y ownerPos để match).
+            _renderer.sortingOrder = MapPlacement.ActorSortingOrder((int)(-ownerPos.y)) - 1;
+
+            if (_frames.Length > 1 && Time.time >= _nextFrameTime)
+            {
+                _nextFrameTime = Time.time + FrameInterval;
+                _frame = (_frame + 1) % _frames.Length;
+                _renderer.sprite = _frames[_frame];
+            }
+        }
+
+        private static Sprite[] SliceFrames(string path, Texture2D texture, int count)
+        {
+            var key = $"{path}|{texture.GetHashCode()}|{count}";
+            if (FrameCache.TryGetValue(key, out var cached) && cached != null) return cached;
+
+            if (texture.width < count) count = 1;
+            var width = texture.width / count;
+            var result = new Sprite[count];
+            for (var i = 0; i < count; i++)
+            {
+                result[i] = Sprite.Create(texture,
+                    new Rect(i * width, 0f, width, texture.height),
+                    new Vector2(0.5f, 0f), 1f);
+            }
+            return FrameCache[key] = result;
+        }
+    }
+}

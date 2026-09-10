@@ -1,0 +1,67 @@
+# Môi trường database cục bộ cho GServer.
+#
+# === TẠI SAO 10.4 CHỨ KHÔNG PHẢI BẢN MỚI HƠN ===
+#
+# Dump gốc sinh từ MariaDB 10.4.32, và code game PHỤ THUỘC vào hành vi của 10.4.
+# Đã kiểm chứng bằng thực nghiệm: TopPet.cs:30 dùng
+#
+#     JSON_VALUE(player.pets, '$[*].exp')
+#
+# 10.4  -> chấp nhận, trả về phần tử khớp đầu tiên
+# 10.11 -> ERROR 4044 "Wildcards or range in JSON path not allowed"
+#
+# Thử 10.11 trước và gặp đúng lỗi này lúc chạy thật. Đổi query để hợp 10.11
+# sẽ làm đổi hành vi game (bảng xếp hạng pet), nằm ngoài phạm vi đã thống nhất
+# là "chỉ vá bảo mật, giữ nguyên hành vi". Và gần như chắc chắn còn chỗ khác
+# tương tự chưa lộ ra — khớp version là cách duy nhất tránh phát hiện lẻ tẻ.
+#
+# ĐÁNH ĐỔI: 10.4 đã hết vòng đời hỗ trợ (6/2024), không còn bản vá bảo mật.
+# Chấp nhận được ở đây vì container chỉ bind vào loopback và chứa dữ liệu test.
+# KHÔNG dùng cấu hình này cho production mà không xem lại.
+#
+#   docker compose up -d
+#   docker compose logs -f mariadb      # theo dõi lúc nạp dump lần đầu
+#   docker compose down -v              # xoá sạch để nạp lại từ đầu
+
+services:
+  mariadb:
+    image: mariadb:10.4
+    container_name: gopet-mariadb
+    restart: unless-stopped
+
+    environment:
+      # 10.4 dùng tiền tố MYSQL_; các bản mới hơn dùng MARIADB_. Đặt cả hai
+      # để đổi image không phải sửa lại chỗ này.
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Thiếu MARIADB_ROOT_PASSWORD - sao chép .env.example thành .env}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --max-allowed-packet=64M
+      --innodb-buffer-pool-size=512M
+
+    ports:
+      # CHỈ bind vào loopback. Không để 0.0.0.0 — database này chứa dữ liệu
+      # người dùng thật lấy từ dump và không nên nghe trên mạng.
+      - "127.0.0.1:3306:3306"
+
+    volumes:
+      # Dump gốc, chỉ đọc. Không sao chép vào repo để tránh trùng lặp 1.6 MB.
+      - ../SRCGOPETGOC/MariaDB_SQL:/dumps:ro
+      # Script nạp, chạy đúng một lần khi volume dữ liệu còn rỗng.
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - gopet-db-data:/var/lib/mysql
+
+    healthcheck:
+      # 10.4 chưa có healthcheck.sh của các image mới.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      # Nạp dump lần đầu khá lâu; đừng báo unhealthy trong lúc đó.
+      start_period: 180s
+
+volumes:
+  gopet-db-data:
+    name: gopet-db-data

@@ -1,0 +1,17 @@
+Unhandled exception. System.InvalidOperationException: [DB] Không kết nối được 'GameConnectString' (server=127.0.0.1:3306, database=gopettae_tae2, user=root). Đặt GOPET_DB_HOST/GOPET_DB_PORT/GOPET_DB_USER/GOPET_DB_PASSWORD nếu cần. Nguyên nhân: Access denied for user 'root'@'172.20.0.1' (using password: NO)
+ ---> MySqlConnector.MySqlException (0x80004005): Access denied for user 'root'@'172.20.0.1' (using password: NO)
+   at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 1081
+   at MySqlConnector.Core.ServerSession.ConnectAsync(ConnectionSettings cs, MySqlConnection connection, Int64 startingTimestamp, ILoadBalancer loadBalancer, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 534
+   at MySqlConnector.Core.ServerSession.ConnectAndRedirectAsync(ILogger connectionLogger, ILogger poolLogger, IConnectionPoolMetadata pool, ConnectionSettings cs, ILoadBalancer loadBalancer, MySqlConnection connection, Action`4 logMessage, Int64 startingTimestamp, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 697
+   at MySqlConnector.Core.ServerSession.ConnectAndRedirectAsync(ILogger connectionLogger, ILogger poolLogger, IConnectionPoolMetadata pool, ConnectionSettings cs, ILoadBalancer loadBalancer, MySqlConnection connection, Action`4 logMessage, Int64 startingTimestamp, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 702
+   at MySqlConnector.Core.ConnectionPool.GetSessionAsync(MySqlConnection connection, Int64 startingTimestamp, Int32 timeoutMilliseconds, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ConnectionPool.cs:line 116
+   at MySqlConnector.Core.ConnectionPool.GetSessionAsync(MySqlConnection connection, Int64 startingTimestamp, Int32 timeoutMilliseconds, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ConnectionPool.cs:line 150
+   at MySqlConnector.MySqlConnection.CreateSessionAsync(ConnectionPool pool, Int64 startingTimestamp, Activity activity, Nullable`1 ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlConnection.cs:line 1092
+   at MySqlConnector.MySqlConnection.OpenAsync(Nullable`1 ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlConnection.cs:line 567
+   at MySqlConnector.MySqlConnection.Open() in /_/src/MySqlConnector/MySqlConnection.cs:line 522
+   at MYSQLManager.create() in D:\game\SRCGOPETGOC\GServer\Manager\MYSQLManager.cs:line 59
+   at MYSQLManager.VerifyConnections() in D:\game\SRCGOPETGOC\GServer\Manager\MYSQLManager.cs:line 140
+   --- End of inner exception stack trace ---
+   at MYSQLManager.VerifyConnections() in D:\game\SRCGOPETGOC\GServer\Manager\MYSQLManager.cs:line 146
+   at Gopet.App.Main.StartServer(String[] args) in D:\game\SRCGOPETGOC\GServer\App\Main.cs:line 41
+   at Gopet.Program.Main(String[] args) in D:\game\SRCGOPETGOC\GServer\Program.cs:line 14

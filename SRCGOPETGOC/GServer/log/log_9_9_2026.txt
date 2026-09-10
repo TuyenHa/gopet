@@ -1,0 +1,736 @@
+﻿[Máy chủ 9/9/2026 8:26:25 PM] Trình dọn rác: True
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu vật phẩm từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu quái từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu cường hóa cánh từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu cửa hàng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu boss từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu map từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu trao đổi thưởng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu shop đấu trường từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu exps từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu các dòng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu danh hiệu từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu trùng sinh thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Tải dữ liệu hiệu ứng thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/9/2026 8:26:25 PM] Thời gian bảo trì định kỳ: 9/10/2026 5:00:00 AM
+
+[Máy chủ 9/9/2026 8:26:26 PM] HTTP API chạy KHÔNG xác thực (apiKey rỗng). Chỉ chấp nhận được vì đang bind loopback. Đặt apiKey trong config/server.json trước khi mở ra ngoài.
+
+[Máy chủ 9/9/2026 8:26:27 PM] Cổng game nghe ở 127.0.0.1:19180 (chỉ cục bộ)
+
+[Máy chủ 9/9/2026 8:26:27 PM] Không có đầu vào bàn phím (stdin đã đóng). Ngừng đọc lệnh; máy chủ vẫn chạy bình thường.
+
+[Máy chủ 9/9/2026 8:29:23 PM] Ghi log gói tin: D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\log\packet-dump-server.log
+
+[Máy chủ 9/9/2026 8:29:47 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:29:47 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:32:02 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:32:02 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:32:31 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:32:31 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:32:50 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:32:50 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:33:19 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:33:19 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:33:44 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:33:44 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:34:00 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:34:00 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:34:16 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:34:16 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:35:16 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:35:16 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:52:04 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:52:04 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 8:52:22 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 8:52:22 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:29:48 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:29:48 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:30:07 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:30:07 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:30:36 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:30:36 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:31:06 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:31:06 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:31:24 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:31:24 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:31:41 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:31:41 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:32:06 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:32:06 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:32:30 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:32:30 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:32:50 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:32:50 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:33:10 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:33:10 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:33:26 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:33:26 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:33:43 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:33:43 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:34:00 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:34:00 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:34:17 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:34:17 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:34:34 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:34:34 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:34:50 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:34:50 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:35:17 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:35:17 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:35:44 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:35:44 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:36:06 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:36:06 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:36:27 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:36:27 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:36:42 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:36:42 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:37:01 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:37:01 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:37:27 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:37:27 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:37:47 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:37:47 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:38:15 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:38:15 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:38:38 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:38:38 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:39:03 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:39:03 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:40:02 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:40:02 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 9:40:18 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 9:40:18 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:26:50 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:26:50 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:27:16 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:27:16 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:27:40 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:27:40 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:35:31 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:35:31 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:48:32 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:48:32 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:49:48 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:49:48 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:50:15 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:50:15 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:58:07 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:58:07 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:58:25 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:58:25 PM] onClientSpeedRespose
+
+[Máy chủ 9/9/2026 11:58:49 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/9/2026 11:58:49 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:05:32 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:05:32 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:06:24 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:06:24 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:11:30 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:11:39 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:11:41 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:11:43 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:11:45 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:11:45 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:12:03 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:12:03 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:12:11 AM]  MESSAGE SERVICE: 28
+
+[Máy chủ 9/10/2026 12:12:13 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:13 AM] CLIENT REQUEST IMAGE: items/61030.png
+
+[Máy chủ 9/10/2026 12:12:13 AM] Load ASSETS: items/61030.png
+
+[Máy chủ 9/10/2026 12:12:14 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:15 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:15 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:15 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:16 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:16 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:16 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:16 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:17 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:17 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:17 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:18 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:18 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:12:30 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:12:30 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:12:39 AM] Hộp thư: 13
+
+[Máy chủ 9/10/2026 12:12:42 AM] Hộp thư: 1
+
+[Máy chủ 9/10/2026 12:12:45 AM] Hộp thư: 1
+
+[Máy chủ 9/10/2026 12:12:48 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:12:48 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:13:11 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:13:11 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:13:24 AM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/10/2026 12:13:24 AM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/10/2026 12:13:37 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:13:37 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:14:03 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:14:03 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:14:29 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:14:29 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:14:29 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:14:31 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:14:34 AM]  MESSAGE SERVICE: 45
+
+[Máy chủ 9/10/2026 12:15:23 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:15:23 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:17:43 AM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 12:17:43 AM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/10/2026 12:17:43 AM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/10/2026 12:17:54 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:17:54 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:17:55 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/10/2026 12:17:55 AM] CLIENT REQUEST IMAGE: 1 petFrame3/2.png
+
+[Máy chủ 9/10/2026 12:17:55 AM] Load ASSETS: petFrame3/2.png
+
+[Máy chủ 9/10/2026 12:17:55 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/10/2026 12:17:55 AM] CLIENT REQUEST IMAGE: 1 petFrame3/3.png
+
+[Máy chủ 9/10/2026 12:17:55 AM] Load ASSETS: petFrame3/3.png
+
+[Máy chủ 9/10/2026 12:18:03 AM]  MESSAGE SERVICE: 92
+
+[Máy chủ 9/10/2026 12:18:03 AM] Message cánh: 2
+
+[Máy chủ 9/10/2026 12:18:08 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 12:18:08 AM] Bang hội MSG: 20
+
+[Máy chủ 9/10/2026 12:18:16 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:18:16 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:18:19 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 12:18:19 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 12:18:19 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/10/2026 12:18:19 AM] CLIENT REQUEST IMAGE: 1 petFrame3/7.png
+
+[Máy chủ 9/10/2026 12:18:19 AM] Load ASSETS: petFrame3/7.png
+
+[Máy chủ 9/10/2026 12:18:19 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/10/2026 12:18:19 AM] CLIENT REQUEST IMAGE: 1 petFrame3/1.png
+
+[Máy chủ 9/10/2026 12:18:19 AM] Load ASSETS: petFrame3/1.png
+
+[Máy chủ 9/10/2026 12:18:28 AM]  MESSAGE SERVICE: 28
+
+[Máy chủ 9/10/2026 12:18:38 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:18:38 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:19:06 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:19:06 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:19:07 AM] CLIENT REQUEST IMAGE: gameMisc/icons4.png
+
+[Máy chủ 9/10/2026 12:19:07 AM] Load ASSETS: gameMisc/icons4.png
+
+[Máy chủ 9/10/2026 12:19:19 AM]  MESSAGE SERVICE: 90
+
+[Máy chủ 9/10/2026 12:19:19 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/10/2026 12:19:19 AM] CLIENT REQUEST IMAGE: 1 tatoos/-1.png
+
+[Máy chủ 9/10/2026 12:19:19 AM] Load ASSETS: tatoos/-1.png
+
+[Máy chủ 9/10/2026 12:19:27 AM]  MESSAGE SERVICE: 11
+
+[Máy chủ 9/10/2026 12:19:35 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:19:35 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:19:40 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 12:19:40 AM] Bang hội MSG: 27
+
+[Máy chủ 9/10/2026 12:19:51 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:19:51 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:20:09 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:20:09 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:20:56 AM]  MESSAGE SERVICE: 45
+
+[Máy chủ 9/10/2026 12:21:02 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:21:06 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:21:06 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:21:07 AM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 12:21:35 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:21:35 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:21:38 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:21:41 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:21:50 AM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/10/2026 12:21:50 AM] CLIENT REQUEST IMAGE: anim_characters/50_icon.png
+
+[Máy chủ 9/10/2026 12:21:50 AM] Load ASSETS: anim_characters/50_icon.png
+
+[Máy chủ 9/10/2026 12:22:05 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:22:05 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:22:39 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:22:39 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:31:40 AM] CLIENT REQUEST IMAGE: petFrame3/1.png
+
+[Máy chủ 9/10/2026 12:31:40 AM] Load ASSETS: petFrame3/1.png
+
+[Máy chủ 9/10/2026 12:32:03 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:32:03 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:32:32 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:32:32 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:33:48 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:33:48 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:34:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:34:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:34:15 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:34:18 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:34:21 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:34:26 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:34:29 AM]  MESSAGE SERVICE: 28
+
+[Máy chủ 9/10/2026 12:34:29 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:34:29 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:34:30 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:30 AM] CLIENT REQUEST IMAGE: items/61033.png
+
+[Máy chủ 9/10/2026 12:34:30 AM] Load ASSETS: items/61033.png
+
+[Máy chủ 9/10/2026 12:34:31 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:32 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:32 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:33 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:33 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:34 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:34 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:34 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:34:34 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/10/2026 12:37:41 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:37:41 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:37:53 AM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 12:38:00 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:38:00 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:38:01 AM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/10/2026 12:41:12 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:41:12 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:41:38 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:41:38 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:41:57 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:41:57 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:42:25 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:42:25 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:45:37 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:45:37 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:45:58 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:45:58 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:46:23 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:46:23 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:46:38 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:46:38 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:52:38 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:52:38 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:53:23 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:53:23 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:55:34 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:55:34 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:58:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:58:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 12:59:25 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 12:59:25 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:00:28 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:00:28 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:00:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:00:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:04:15 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:04:15 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:04:31 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:04:31 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:04:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:04:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:05:06 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:05:06 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:05:27 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:05:27 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:05:55 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:05:55 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:06:11 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:06:11 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:06:35 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:06:35 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:06:57 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:06:57 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:07:22 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:07:22 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:07:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:07:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:08:17 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:08:17 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:14:52 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:14:52 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:15:07 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:15:07 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:15:32 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:15:32 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:15:58 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:15:58 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:16:16 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:16:16 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:16:40 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:16:40 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:16:59 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:16:59 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:17:29 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:17:29 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:17:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:17:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:18:06 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:18:06 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:18:28 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:18:28 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:18:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:18:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:19:15 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:19:15 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:19:34 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:19:34 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:19:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:19:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:30:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:30:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:30:40 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:30:40 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:31:27 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:31:27 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:32:53 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:32:53 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:33:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:33:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:54:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:54:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:57:08 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:57:08 AM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 1:57:26 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 1:57:26 AM] onClientSpeedRespose
+

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.7
+Created-By: 1.8.0_442-442-b06 (OpenLogic-OpenJDK)
+MIDlet-1: MGOMidlet,/icon.png,Undefine.MGOMidlet
+ProviderId: 4
+MIDlet-Vendor: Moder Entertaiment
+MIDlet-Version: 1.4.3
+MIDlet-Info-URL: http://www.gopettae.com
+RefCode: ref-mcb22qre14br-144706345912071136064
+Nokia-MIDlet-App-Orientation: landscape
+MIDlet-Icon: /icon.png
+MIDlet-Name: goPet
+Hotline: 0785100000
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.1
+

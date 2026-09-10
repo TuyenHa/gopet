@@ -1,0 +1,260 @@
+{
+  "_comment": "Sinh bởi tools/gen-test-vectors. KHÔNG sửa tay. Nguồn thuật toán: SRCGOPETGOC/GServer/Server/IO/TEA.cs",
+  "tea": [
+    {
+      "key": "1740000000000",
+      "payloadName": "single-opcode",
+      "plainHex": "01",
+      "encryptedHex": "0000000114a09825a2fb7cc7"
+    },
+    {
+      "key": "1740000000000",
+      "payloadName": "exactly-8",
+      "plainHex": "0102030405060708",
+      "encryptedHex": "000000089e0280569d90008f"
+    },
+    {
+      "key": "1740000000000",
+      "payloadName": "nine-bytes",
+      "plainHex": "010203040506070809",
+      "encryptedHex": "000000099e0280569d90008fbad50c13054b6b7d"
+    },
+    {
+      "key": "1740000000000",
+      "payloadName": "client-info-opcode",
+      "plainHex": "dc0000000004",
+      "encryptedHex": "000000062bc14fd3167f4268"
+    },
+    {
+      "key": "1740000000000",
+      "payloadName": "ascending-64",
+      "plainHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "encryptedHex": "00000040c53c29c257802e14fda0c4b7a739e5e2ec5961629121711718400ac75372d1f7d4da8923b5b3a91d9e3d52546101e50a10aad2a98c7f2bef6e1bf7b000629d60"
+    },
+    {
+      "key": "1740000000000",
+      "payloadName": "all-0xff",
+      "plainHex": "ffffffffffffffffffffffffffffffff",
+      "encryptedHex": "00000010f6540d13d3528f04f6540d13d3528f04"
+    },
+    {
+      "key": "1",
+      "payloadName": "single-opcode",
+      "plainHex": "01",
+      "encryptedHex": "000000017a6f7985df1e3fee"
+    },
+    {
+      "key": "1",
+      "payloadName": "exactly-8",
+      "plainHex": "0102030405060708",
+      "encryptedHex": "0000000837d57c45560c7ed5"
+    },
+    {
+      "key": "1",
+      "payloadName": "nine-bytes",
+      "plainHex": "010203040506070809",
+      "encryptedHex": "0000000937d57c45560c7ed5e6ffdfd421ceddb8"
+    },
+    {
+      "key": "1",
+      "payloadName": "client-info-opcode",
+      "plainHex": "dc0000000004",
+      "encryptedHex": "00000006ca86f2a20c898bd6"
+    },
+    {
+      "key": "1",
+      "payloadName": "ascending-64",
+      "plainHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "encryptedHex": "00000040f9130dc877992bc7a19917f6d62e4759c6a792cf4cfd1b6f61fd88ad0655394a536e49554b35aae93707b92685a84832de2ee2fbf959da3995c6b707ca75ba41"
+    },
+    {
+      "key": "1",
+      "payloadName": "all-0xff",
+      "plainHex": "ffffffffffffffffffffffffffffffff",
+      "encryptedHex": "00000010c786d72e8d264562c786d72e8d264562"
+    },
+    {
+      "key": "0",
+      "payloadName": "single-opcode",
+      "plainHex": "01",
+      "encryptedHex": "000000011f07ee5f5e6199ee"
+    },
+    {
+      "key": "0",
+      "payloadName": "exactly-8",
+      "plainHex": "0102030405060708",
+      "encryptedHex": "00000008550a0eb8f730ccc6"
+    },
+    {
+      "key": "0",
+      "payloadName": "nine-bytes",
+      "plainHex": "010203040506070809",
+      "encryptedHex": "00000009550a0eb8f730ccc69ab4f8e6fb571f34"
+    },
+    {
+      "key": "0",
+      "payloadName": "client-info-opcode",
+      "plainHex": "dc0000000004",
+      "encryptedHex": "000000067d5b60b1192e2493"
+    },
+    {
+      "key": "0",
+      "payloadName": "ascending-64",
+      "plainHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "encryptedHex": "00000040e30473a38f7fa9aa1d95beda1bd766369a810bbf74163b56dcc0cad8fa5a0de3609130cfd99086e83d03cad28109db876a665ebce23f28bbb992688a0e8aec56"
+    },
+    {
+      "key": "0",
+      "payloadName": "all-0xff",
+      "plainHex": "ffffffffffffffffffffffffffffffff",
+      "encryptedHex": "00000010e69ad6976595089de69ad6976595089d"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "single-opcode",
+      "plainHex": "01",
+      "encryptedHex": "000000019694c935d03ff4e6"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "exactly-8",
+      "plainHex": "0102030405060708",
+      "encryptedHex": "000000089cb8c8657ddc3870"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "nine-bytes",
+      "plainHex": "010203040506070809",
+      "encryptedHex": "000000099cb8c8657ddc387018981236bd753932"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "client-info-opcode",
+      "plainHex": "dc0000000004",
+      "encryptedHex": "000000067f712cb6856e678b"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "ascending-64",
+      "plainHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "encryptedHex": "00000040b68ed7d745672803498fe02bb839a72a343310158fcf19cc8cc9eb75dbf990db922bf04c1400c167db212d9bee9cb8e7cff6d15300c6f30c80c553f81f5a6094"
+    },
+    {
+      "key": "18446744073709551615",
+      "payloadName": "all-0xff",
+      "plainHex": "ffffffffffffffffffffffffffffffff",
+      "encryptedHex": "000000103e25fb0515d4ff833e25fb0515d4ff83"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "single-opcode",
+      "plainHex": "01",
+      "encryptedHex": "000000018dc3dbcbbd8bd9f8"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "exactly-8",
+      "plainHex": "0102030405060708",
+      "encryptedHex": "00000008475d916f89ea3f06"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "nine-bytes",
+      "plainHex": "010203040506070809",
+      "encryptedHex": "00000009475d916f89ea3f06ffd4eccf29c0d6c4"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "client-info-opcode",
+      "plainHex": "dc0000000004",
+      "encryptedHex": "000000063eac3ade3e4c1982"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "ascending-64",
+      "plainHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "encryptedHex": "000000403833631dac1c0679d6d7276fa6785d457bd719c17c5647f29bfee3ca264da5e2f111cc3043fdb431eab0a508481ef2b33d7efb2dddcb45306f0c2edab99bba6f"
+    },
+    {
+      "key": "9007199254740991",
+      "payloadName": "all-0xff",
+      "plainHex": "ffffffffffffffffffffffffffffffff",
+      "encryptedHex": "00000010e87b8b8a506da762e87b8b8a506da762"
+    }
+  ],
+  "handshake": [
+    {
+      "key": "1740000000000",
+      "bytesHex": "09000001952014f800"
+    },
+    {
+      "key": "1",
+      "bytesHex": "090000000000000001"
+    },
+    {
+      "key": "0",
+      "bytesHex": "090000000000000000"
+    },
+    {
+      "key": "18446744073709551615",
+      "bytesHex": "09ffffffffffffffff"
+    },
+    {
+      "key": "9007199254740991",
+      "bytesHex": "09001fffffffffffff"
+    }
+  ],
+  "utf": [
+    {
+      "value": "",
+      "encodedHex": "0000"
+    },
+    {
+      "value": "admin",
+      "encodedHex": "000561646d696e"
+    },
+    {
+      "value": "Bảo trì cập nhật chỉ số boss",
+      "encodedHex": "002742e1baa36f207472c3ac2063e1baad70206e68e1baad74206368e1bb892073e1bb9120626f7373"
+    },
+    {
+      "value": "Thú cưng",
+      "encodedHex": "000a5468c3ba2063c6b06e67"
+    },
+    {
+      "value": "goPet — 1.4.3",
+      "encodedHex": "000f676f50657420e2809420312e342e33"
+    },
+    {
+      "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "encodedHex": "012c616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161"
+    }
+  ],
+  "keyDerivation": [
+    {
+      "originalKey": "1740000000000",
+      "handshakeHex": "09000001952014f800",
+      "derivedKey": "1740000000000"
+    },
+    {
+      "originalKey": "1",
+      "handshakeHex": "090000000000000001",
+      "derivedKey": "1"
+    },
+    {
+      "originalKey": "0",
+      "handshakeHex": "090000000000000000",
+      "derivedKey": "0"
+    },
+    {
+      "originalKey": "18446744073709551615",
+      "handshakeHex": "09ffffffffffffffff",
+      "derivedKey": "18446744073709551615"
+    },
+    {
+      "originalKey": "9007199254740991",
+      "handshakeHex": "09001fffffffffffff",
+      "derivedKey": "9007199254740991"
+    }
+  ]
+}

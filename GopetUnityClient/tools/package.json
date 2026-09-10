@@ -1,0 +1,17 @@
+{
+  "name": "gopet-unity-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Công cụ hỗ trợ client Unity: sinh opcode, sinh test vector, so packet dump",
+  "scripts": {
+    "gen:cmd": "node gen-gopet-cmd/index.js",
+    "check:cmd": "node gen-gopet-cmd/index.js --check",
+    "gen:vectors": "node gen-test-vectors/index.js",
+    "gen:jar-assets": "node unpack-jar-dat/index.js",
+    "check:jar-assets": "node unpack-jar-dat/index.js --check",
+    "gen:jar-strings": "node extract-jar-strings/index.js",
+    "check:jar-strings": "node extract-jar-strings/index.js --check",
+    "gen:all": "npm run gen:cmd && npm run gen:vectors && npm run gen:jar-assets && npm run gen:jar-strings",
+    "diff": "node packet-diff/index.js"
+  }
+}

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Kiem chung SONG: chay tang Net that voi GServer that.
+
+    Khac voi Gopet.Net.Tests (chay offline, khong can server), du an nay
+    doi hoi mot GServer dang chay. Vi vay no KHONG nam trong verify.ps1 —
+    verify phai chay duoc tren may khong dung server.
+
+    Thu no chung minh ma unit test khong the: server co that su chap nhan
+    handshake do GopetSocket sinh ra khong.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Gopet.Net.LiveSmoke</RootNamespace>
+    <AssemblyName>Gopet.Net.LiveSmoke</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Compile thang source cua Unity, khong copy — giong Gopet.Net.Tests. -->
+    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
+  </ItemGroup>
+
+</Project>

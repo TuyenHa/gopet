@@ -1,0 +1,247 @@
+using System;
+using System.Collections.Generic;
+using Gopet.Net.Guider;
+using Gopet.Runtime.Assets;
+using Gopet.UiLogic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Gopet.Runtime.UI
+{
+    /// <summary>
+    /// Nối gói tin của server vào màn hình, qua một chồng <see cref="DialogStack"/>.
+    ///
+    /// <para>Đây là chỗ nguyên tắc cốt lõi của phase thành hiện thực: server gửi
+    /// màn hình nào thì dựng đúng loại view cho nó, <b>không nhìn <c>listId</c></b>.
+    /// Nhờ vậy 162 màn hình của server chạy mà không có một dòng code riêng nào.</para>
+    /// </summary>
+    public sealed partial class UiRoot : MonoBehaviour
+    {
+        public const int SortingOrder = 100;
+        private readonly DialogStack _stack = new DialogStack();
+        private readonly Dictionary<object, GameObject> _views = new Dictionary<object, GameObject>();
+        private GuiderHandler _guider;
+        private RemoteAssetCache _assets;
+        private Font _font;
+        private ShopPopupView _shopPopup;
+        public DialogStack Stack => _stack;
+        /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
+        public object Current => _stack.Top;
+
+        /// <summary>Popup cửa hàng nếu đang mở, ngược lại <c>null</c>.</summary>
+        public ShopPopupView ShopPopup => _shopPopup;
+
+        public static UiRoot Create(Transform parent, Font font)
+        {
+            var go = new GameObject("UiRoot", typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+            go.transform.SetParent(parent, false);
+            var canvas = go.GetComponent<Canvas>();
+            canvas.overrideSorting = true; // menu vật phẩm phải nằm trên Canvas battle
+            canvas.sortingOrder = SortingOrder;
+            var root = go.AddComponent<UiRoot>();
+            root._font = font;
+            return root;
+        }
+
+        public void Initialize(GuiderHandler guider, RemoteAssetCache assets)
+        {
+            if (_guider != null)
+            {
+                throw new InvalidOperationException(
+                    "UiRoot đã được khởi tạo. Gọi lần hai là đăng ký trùng, mỗi gói tin sẽ mở hai màn hình.");
+            }
+
+            _guider = guider ?? throw new ArgumentNullException(nameof(guider));
+            _assets = assets;
+
+            _guider.MenuShown += ShowMenu;
+            _guider.ListOptionShown += ShowListOption;
+            _guider.YesNoAsked += ShowYesNo;
+            _guider.InputDialogShown += ShowInputDialog;
+            _guider.NpcOptionsShown += ShowNpcOptions;
+            _guider.PopupShown += ShowPopup;
+            _guider.ImageDialogShown += ShowImageDialog;
+
+            _stack.TopChanged += OnTopChanged;
+        }
+
+        /// <summary>Nút back hoặc Esc: đóng màn hình trên cùng. <c>false</c> khi không còn gì để đóng.</summary>
+        public bool Back()
+        {
+            var top = _stack.Top;
+            if (top == null) return false;
+
+            // Đi qua Close() để CÓ MỘT đường tháo duy nhất — không thì Back bỏ qua
+            // hooks đặc thù (như bỏ tham chiếu _shopPopup) và mỗi lần thêm state mới
+            // trong Close, ai đó lại quên đồng bộ Back.
+            Close(top);
+            return true;
+        }
+
+        private void ShowMenu(MenuScreen screen)
+        {
+            // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
+            // tự bind. Không thì cả hai view chồng nhau và người chơi tưởng bug.
+            if (_shopPopup != null && _shopPopup.TryConsumeMenu(screen)) return;
+
+            var view = GenericMenuView.Create(transform, _font);
+            view.Bind(screen, _assets, _guider);
+            view.EnableInteractiveScroll();
+            if (screen.ListId == WingInventoryMenuId && _wingHandler != null)
+                view.SelectionOverride = index => TryShowWingActions(view, screen, index);
+
+            // Dòng cần xác nhận: đẩy hộp thoại lên TRÊN menu, không thay thế nó —
+            // huỷ thì phải quay lại đúng menu đang xem.
+            view.ConfirmRequested += (prompt, onYes) => ShowConfirm(prompt, onYes);
+            view.CloseRequested += _ => Close(view);
+
+            Push(view, view.gameObject);
+        }
+
+        /// <summary>
+        /// Mở popup cửa hàng có 4 tab. Đóng bằng nút X hoặc Esc — cùng đường ra:
+        /// <see cref="ShopPopupView.Closed"/> → <see cref="Close"/>.
+        ///
+        /// <para>Đè lên menu đang có bằng cách push chính popup vào <see cref="DialogStack"/>
+        /// — logic <see cref="OnTopChanged"/> tự ẩn view dưới đáy.</para>
+        /// </summary>
+        public void OpenShopPopup()
+        {
+            if (_shopPopup != null) return;
+
+            _shopPopup = ShopPopupView.Create(transform, _font, _guider, _assets);
+            _shopPopup.Closed += () => Close(_shopPopup);
+
+            Push(_shopPopup, _shopPopup.gameObject);
+        }
+
+        /// <summary>Toast nhanh, không chặn tương tác — dùng cho "sắp có" v.v.</summary>
+        public void ShowToast(string text)
+        {
+            ToastView.Create(transform, _font, text);
+        }
+
+        private void ShowListOption(ListOptionScreen screen)
+        {
+            var labels = new string[screen.Options.Length];
+            for (var i = 0; i < labels.Length; i++) labels[i] = screen.Options[i].Text;
+
+            var view = ChoiceDialogView.Create(transform, _font);
+            view.Bind(screen.Title, labels);
+            view.Chosen += index =>
+            {
+                _guider.Select(screen, index);
+                Close(view);
+            };
+
+            Push(view, view.gameObject);
+        }
+
+        private void ShowYesNo(YesNoRequest request)
+        {
+            var view = ChoiceDialogView.Create(transform, _font);
+
+            // Server chỉ gửi nội dung, không gửi nhãn nút cho hộp này.
+            view.Bind(request.Text, new[] { "Đồng ý", "Thôi" });
+            view.Chosen += index =>
+            {
+                _guider.AnswerYesNo(request.DialogId, index == 0);
+                Close(view);
+            };
+
+            Push(view, view.gameObject);
+        }
+
+        private void ShowInputDialog(InputDialogSpec spec)
+        {
+            var view = InputDialogView.Create(transform, _font);
+            view.Bind(spec);
+            view.Submitted += (dialogId, texts) =>
+            {
+                _guider.SubmitInput(dialogId, texts);
+                Close(view);
+            };
+
+            Push(view, view.gameObject);
+        }
+
+        private void ShowNpcOptions(NpcOptions options)
+        {
+            var labels = new string[options.Options.Length];
+            for (var i = 0; i < labels.Length; i++) labels[i] = options.Options[i].Text;
+
+            var view = ChoiceDialogView.Create(transform, _font);
+            view.Bind(string.Empty, labels);
+            view.Chosen += index =>
+            {
+                _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
+                Close(view);
+            };
+
+            Push(view, view.gameObject);
+        }
+
+        private void ShowConfirm(MenuSelection.ConfirmPrompt prompt, Action onYes)
+        {
+            var view = ChoiceDialogView.Create(transform, _font);
+            view.Bind(prompt.Text, new[] { prompt.ConfirmLabel, prompt.CancelLabel });
+            view.Chosen += index =>
+            {
+                Close(view);
+                if (index == 0) onYes();
+            };
+
+            Push(view, view.gameObject);
+        }
+
+        private void Push(object screen, GameObject view)
+        {
+            _views[screen] = view;
+            _stack.Push(screen);
+        }
+
+        /// <summary>Đóng một màn hình cụ thể, kể cả khi nó không nằm trên cùng.</summary>
+        private void Close(object screen)
+        {
+            if (!_stack.Remove(screen)) return;
+            DestroyView(screen);
+
+            // Bỏ tham chiếu popup shop khi nó bị đóng — không thì lần sau MenuShown
+            // vẫn cố gọi TryConsumeMenu trên view đã Destroy.
+            if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
+        }
+
+        private void DestroyView(object screen)
+        {
+            if (!_views.TryGetValue(screen, out var view)) return;
+
+            _views.Remove(screen);
+            if (view != null) Destroy(view);
+        }
+
+        /// <summary>Chỉ màn hình trên cùng được hiện; những cái dưới vẫn sống nhưng ẩn.</summary>
+        private void OnTopChanged(object top)
+        {
+            foreach (var pair in _views)
+            {
+                if (pair.Value != null) pair.Value.SetActive(ReferenceEquals(pair.Key, top));
+            }
+        }
+
+        private void OnDestroy()
+        {
+            UnbindPetUpgrade();
+            UnbindGems();
+            UnbindAnimationMenus();
+            if (_guider == null) return;
+
+            _guider.MenuShown -= ShowMenu;
+            _guider.ListOptionShown -= ShowListOption;
+            _guider.YesNoAsked -= ShowYesNo;
+            _guider.InputDialogShown -= ShowInputDialog;
+            _guider.NpcOptionsShown -= ShowNpcOptions;
+            _guider.PopupShown -= ShowPopup;
+            _guider.ImageDialogShown -= ShowImageDialog;
+        }
+    }
+}

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Dự án này không chạy gì cả — nó chỉ COMPILE.
+
+    Mục đích: chặn việc lỡ dùng API chỉ có trong .NET 8 mà Unity không có.
+    Test project chạy trên net8.0 nên sẽ không bắt được lỗi đó; Unity build
+    theo netstandard2.1, và sai sót kiểu này chỉ lộ ra khi mở Editor —
+    tức là muộn, và thường lúc đang bận việc khác.
+
+    Chạy `dotnet build` ở đây pass = Unity sẽ compile được.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Warning thành error: dự án này tồn tại để bắt lỗi, không để cảnh báo. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>Gopet.Net.UnityCompat</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Chỉ tầng Net. Runtime/ phụ thuộc UnityEngine nên không compile ngoài Unity được. -->
+    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\UiLogic\**\*.cs" />
+  </ItemGroup>
+
+</Project>

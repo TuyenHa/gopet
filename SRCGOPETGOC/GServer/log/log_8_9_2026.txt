@@ -1,0 +1,437 @@
+﻿[Máy chủ 9/8/2026 10:44:41 PM] Trình dọn rác: True
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu vật phẩm từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu quái từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu cường hóa cánh từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu cửa hàng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu boss từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu map từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu trao đổi thưởng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu shop đấu trường từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu exps từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu các dòng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu danh hiệu từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu trùng sinh thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Tải dữ liệu hiệu ứng thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/8/2026 10:44:41 PM] Thời gian bảo trì định kỳ: 9/9/2026 5:00:00 AM
+
+[Máy chủ 9/8/2026 10:44:41 PM] MySqlConnector.MySqlException (0x80004005): Column 'petTemplateId' cannot be null
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 1081
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 37
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.MySqlDataReader.ActivateResultSet(CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 131
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.MySqlDataReader.InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary`2 cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 487
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.Core.CommandExecutor.ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/CommandExecutor.cs:line 56
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.MySqlCommand.ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 309
+[Máy chủ 9/8/2026 10:44:41 PM]    at MySqlConnector.MySqlCommand.ExecuteNonQuery() in /_/src/MySqlConnector/MySqlCommand.cs:line 108
+[Máy chủ 9/8/2026 10:44:41 PM]    at Dapper.SqlMapper.ExecuteCommand(IDbConnection cnn, CommandDefinition& command, Action`2 paramReader) in /_/Dapper/SqlMapper.cs:line 2965
+[Máy chủ 9/8/2026 10:44:41 PM]    at Dapper.SqlMapper.ExecuteImpl(IDbConnection cnn, CommandDefinition& command) in /_/Dapper/SqlMapper.cs:line 656
+[Máy chủ 9/8/2026 10:44:41 PM]    at Dapper.SqlMapper.Execute(IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in /_/Dapper/SqlMapper.cs:line 527
+[Máy chủ 9/8/2026 10:44:41 PM]    at TopPet.Update() in D:\game\SRCGOPETGOC\GServer\Data\top\TopPet.cs:line 31
+
+[Máy chủ 9/8/2026 10:44:41 PM] HTTP API chạy KHÔNG xác thực (apiKey rỗng). Chỉ chấp nhận được vì đang bind loopback. Đặt apiKey trong config/server.json trước khi mở ra ngoài.
+
+[Máy chủ 9/8/2026 10:42:38 PM] Cổng game nghe ở 127.0.0.1:19180 (chỉ cục bộ)
+
+[Máy chủ 9/8/2026 10:42:38 PM] Không có đầu vào bàn phím (stdin đã đóng). Ngừng đọc lệnh; máy chủ vẫn chạy bình thường.
+
+[Máy chủ 9/8/2026 10:46:50 PM] Ghi log gói tin: D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\log\packet-dump-server.log
+
+[Máy chủ 9/8/2026 10:46:50 PM] System.Data.DataException: Error parsing column 12 (petSelected=0 - String)
+[Máy chủ 9/8/2026 10:46:50 PM]  ---> Newtonsoft.Json.JsonSerializationException: Error converting value 0 to type 'Pet'. Path '', line 1, position 1.
+[Máy chủ 9/8/2026 10:46:50 PM]  ---> System.ArgumentException: Could not cast or convert from System.Int64 to Pet.
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Utilities.ConvertUtils.EnsureTypeAssignable(Object value, Type initialType, Type targetType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Utilities.ConvertUtils.ConvertOrCast(Object initialValue, CultureInfo culture, Type targetType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.EnsureType(JsonReader reader, Object value, CultureInfo culture, JsonContract contract, Type targetType)
+[Máy chủ 9/8/2026 10:46:50 PM]    --- End of inner exception stack trace ---
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.EnsureType(JsonReader reader, Object value, CultureInfo culture, JsonContract contract, Type targetType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.CreateValueInternal(JsonReader reader, Type objectType, JsonContract contract, JsonProperty member, JsonContainerContract containerContract, JsonProperty containerMember, Object existingValue)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.Deserialize(JsonReader reader, Type objectType, Boolean checkAdditionalContent)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.JsonSerializer.DeserializeInternal(JsonReader reader, Type objectType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.JsonSerializer.Deserialize(JsonReader reader, Type objectType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.JsonConvert.DeserializeObject(String value, Type type, JsonSerializerSettings settings)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Newtonsoft.Json.JsonConvert.DeserializeObject[T](String value, JsonSerializerSettings settings)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Gopet.Adapter.JsonAdapter`1.Parse(Object value) in D:\game\SRCGOPETGOC\GServer\Adapter\JsonAdapter.cs:line 25
+[Máy chủ 9/8/2026 10:46:50 PM]    at Dapper.SqlMapper.TypeHandler`1.Dapper.SqlMapper.ITypeHandler.Parse(Type destinationType, Object value) in /_/Dapper/SqlMapper.TypeHandler.cs:line 42
+[Máy chủ 9/8/2026 10:46:50 PM]    at Dapper.SqlMapper.TypeHandlerCache`1.Parse(Object value) in /_/Dapper/SqlMapper.TypeHandlerCache.cs:line 23
+[Máy chủ 9/8/2026 10:46:50 PM]    at Deserializededf6489-81f0-4abd-a2ea-76eaffae2fe0(DbDataReader)
+[Máy chủ 9/8/2026 10:46:50 PM]    --- End of inner exception stack trace ---
+[Máy chủ 9/8/2026 10:46:50 PM]    at Dapper.SqlMapper.ThrowDataException(Exception ex, Int32 index, IDataReader reader, Object value) in /_/Dapper/SqlMapper.cs:line 3928
+[Máy chủ 9/8/2026 10:46:50 PM]    at Deserializededf6489-81f0-4abd-a2ea-76eaffae2fe0(DbDataReader)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Dapper.SqlMapper.QueryRowImpl[T](IDbConnection cnn, Row row, CommandDefinition& command, Type effectiveType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Dapper.SqlMapper.QueryFirstOrDefault[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Player.ProcessingUser(MySqlConnection conn)
+[Máy chủ 9/8/2026 10:46:50 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp)
+
+[Máy chủ 9/8/2026 10:49:18 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/8/2026 10:49:23 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/8/2026 10:49:29 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/8/2026 10:49:33 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:49:33 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:49:39 PM]  MESSAGE SERVICE: 92
+
+[Máy chủ 9/8/2026 10:49:39 PM] Message cánh: 2
+
+[Máy chủ 9/8/2026 10:49:44 PM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/8/2026 10:49:44 PM] CLIENT REQUEST IMAGE: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:49:44 PM] Load ASSETS: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:49:49 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:49:49 PM] CLIENT REQUEST IMAGE: 2 anim_characters/50.png
+
+[Máy chủ 9/8/2026 10:49:49 PM] Load ASSETS: anim_characters/50.png
+
+[Máy chủ 9/8/2026 10:49:55 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:49:55 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:49:55 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:50:02 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:50:02 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:50:15 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:50:15 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:50:15 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:50:19 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:50:19 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:50:36 PM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/8/2026 10:50:36 PM] CLIENT REQUEST IMAGE: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:50:36 PM] Load ASSETS: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:50:45 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:50:45 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:50:48 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:50:48 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:50:48 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:51:09 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:51:09 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:51:25 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:51:26 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:51:26 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:51:32 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:51:33 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:51:33 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:51:33 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:51:33 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:51:50 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:51:50 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:52:16 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:52:16 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:52:32 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:52:32 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:52:55 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:52:55 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:53:21 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:53:21 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:53:39 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:53:39 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:54:07 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:54:07 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:54:32 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:54:32 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:58:47 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:58:47 PM] CLIENT REQUEST IMAGE: 2 anim_characters/50.png
+
+[Máy chủ 9/8/2026 10:58:47 PM] Load ASSETS: anim_characters/50.png
+
+[Máy chủ 9/8/2026 10:58:55 PM]  MESSAGE SERVICE: 92
+
+[Máy chủ 9/8/2026 10:58:55 PM] Message cánh: 2
+
+[Máy chủ 9/8/2026 10:58:58 PM]  MESSAGE SERVICE: 92
+
+[Máy chủ 9/8/2026 10:58:58 PM] Message cánh: 5
+
+[Máy chủ 9/8/2026 10:59:05 PM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/8/2026 10:59:05 PM] CLIENT REQUEST IMAGE: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:59:05 PM] Load ASSETS: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 10:59:16 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 10:59:16 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:59:16 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 10:59:16 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:59:16 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:59:32 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/8/2026 10:59:34 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:59:34 PM] CLIENT REQUEST IMAGE: 1 petFrame3/7.png
+
+[Máy chủ 9/8/2026 10:59:34 PM] Load ASSETS: petFrame3/7.png
+
+[Máy chủ 9/8/2026 10:59:34 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:59:34 PM] CLIENT REQUEST IMAGE: 1 petFrame3/6.png
+
+[Máy chủ 9/8/2026 10:59:34 PM] Load ASSETS: petFrame3/6.png
+
+[Máy chủ 9/8/2026 10:59:39 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 10:59:39 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 10:59:44 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/8/2026 10:59:49 PM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/8/2026 10:59:53 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:59:53 PM] CLIENT REQUEST IMAGE: 1 petFrame3/2012.png
+
+[Máy chủ 9/8/2026 10:59:53 PM] Load ASSETS: petFrame3/2012.png
+
+[Máy chủ 9/8/2026 10:59:55 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/8/2026 10:59:55 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 10:59:55 PM] CLIENT REQUEST IMAGE: 1 petFrame3/1.png
+
+[Máy chủ 9/8/2026 10:59:55 PM] Load ASSETS: petFrame3/1.png
+
+[Máy chủ 9/8/2026 11:00:02 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:00:02 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:00:17 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:00:17 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:00:46 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:00:46 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:00:47 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/8/2026 11:00:48 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/8/2026 11:01:08 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:01:08 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:01:25 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:01:25 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:01:43 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:01:43 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:02:07 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:02:07 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:02:29 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:02:29 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:02:30 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:02:30 PM] CLIENT REQUEST IMAGE: 1 petFrame3/2013.png
+
+[Máy chủ 9/8/2026 11:02:30 PM] Load ASSETS: petFrame3/2013.png
+
+[Máy chủ 9/8/2026 11:02:47 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 11:02:47 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 11:02:47 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 11:02:55 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:02:55 PM] CLIENT REQUEST IMAGE: 1 petFrame3/2005.png
+
+[Máy chủ 9/8/2026 11:02:55 PM] Load ASSETS: petFrame3/2005.png
+
+[Máy chủ 9/8/2026 11:02:57 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:02:57 PM] CLIENT REQUEST IMAGE: 1 petFrame3/2012.png
+
+[Máy chủ 9/8/2026 11:02:57 PM] Load ASSETS: petFrame3/2012.png
+
+[Máy chủ 9/8/2026 11:02:57 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:02:57 PM] CLIENT REQUEST IMAGE: 1 petFrame3/2013.png
+
+[Máy chủ 9/8/2026 11:02:57 PM] Load ASSETS: petFrame3/2013.png
+
+[Máy chủ 9/8/2026 11:02:57 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:02:57 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:02:59 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/8/2026 11:02:59 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:02:59 PM] CLIENT REQUEST IMAGE: 1 petFrame3/1.png
+
+[Máy chủ 9/8/2026 11:02:59 PM] Load ASSETS: petFrame3/1.png
+
+[Máy chủ 9/8/2026 11:10:42 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:10:42 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:11:11 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:11:11 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:11:32 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:11:32 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:13:47 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:13:47 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:24:46 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:24:46 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:29:07 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:29:07 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:29:54 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:29:54 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:37:00 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:37:00 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:37:17 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:37:17 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:42:59 PM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/8/2026 11:42:59 PM] CLIENT REQUEST IMAGE: 2 anim_characters/50.png
+
+[Máy chủ 9/8/2026 11:42:59 PM] Load ASSETS: anim_characters/50.png
+
+[Máy chủ 9/8/2026 11:43:19 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:43:19 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:43:44 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:43:44 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:44:11 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:44:11 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:44:32 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:44:32 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:44:55 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:44:55 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:45:14 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:45:14 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:45:15 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/8/2026 11:45:16 PM] CLIENT REQUEST IMAGE: icons/1.icon.png
+
+[Máy chủ 9/8/2026 11:45:16 PM] Load ASSETS: icons/1.icon.png
+
+[Máy chủ 9/8/2026 11:45:19 PM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/8/2026 11:45:19 PM] CLIENT REQUEST IMAGE: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 11:45:19 PM] Load ASSETS: anim_characters/50_icon.png
+
+[Máy chủ 9/8/2026 11:45:31 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:45:31 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:45:59 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:45:59 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:46:21 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:46:21 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:46:48 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:46:48 PM] onClientSpeedRespose
+
+[Máy chủ 9/8/2026 11:47:03 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/8/2026 11:47:03 PM] onClientSpeedRespose
+

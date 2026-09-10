@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Du an nay khong chay gi ca - no chi COMPILE tang Runtime.
+
+    Gopet.Net.UnityCompat da bit lo cho Assets/Scripts/Net, nhung Runtime/ dung
+    UnityEngine nen nam ngoai tam no. Ket qua: RemoteAssetCache.cs khong duoc
+    THU GI compile cho toi khi nguoi dung focus vao Unity Editor - co the la
+    hang gio sau khi viet.
+
+    O day tham chieu thang DLL cua Unity da cai, nen bat loi cu phap va sai API
+    ngay tai cho.
+
+    Duong dan Unity doc tu UNITY_MANAGED_DIR, mac dinh la ban dang cai tren may
+    nay. May khac chi can dat lai bien moi truong.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Gopet.Runtime.UnityCompat</AssemblyName>
+    <UnityManagedDir Condition="'$(UNITY_MANAGED_DIR)' != ''">$(UNITY_MANAGED_DIR)</UnityManagedDir>
+    <UnityManagedDir Condition="'$(UnityManagedDir)' == ''">D:\Unity Editor\6000.5.4f1\Editor\Data\Managed\UnityEngine</UnityManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\UiLogic\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\Runtime\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <!-- Texture2D.LoadImage la extension method nam trong module nay. -->
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <!--
+      uGUI khong nam trong thu muc Managed cua Editor ma la mot package, nen lay
+      ban Unity da bien dich trong Library. Chay verify truoc khi Unity kip
+      compile lan dau thi khong co file nay - mo Editor mot lan la xong.
+    -->
+    <!-- Font, Text: TextRenderingModule. UI, IMGUI: cac module con lai. -->
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TilemapModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.TilemapModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GridModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.GridModule.dll</HintPath>
+    </Reference>
+    <!-- InputRouter dung Input System; EnsureEventSystem dung InputSystemUIInputModule. -->
+    <Reference Include="Unity.InputSystem">
+      <HintPath>..\..\Library\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <!-- SoundBank/SoundManager dung AudioClip, AudioSource. -->
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

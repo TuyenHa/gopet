@@ -1,0 +1,388 @@
+﻿[Máy chủ 9/10/2026 10:04:16 PM] Trình dọn rác: True
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu vật phẩm từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu quái từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu cường hóa cánh từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu cửa hàng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu boss từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu map từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu trao đổi thưởng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu shop đấu trường từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu exps từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu các dòng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu danh hiệu từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu trùng sinh thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Tải dữ liệu hiệu ứng thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/10/2026 10:04:16 PM] Thời gian bảo trì định kỳ: 9/11/2026 5:00:00 AM
+
+[Máy chủ 9/10/2026 10:04:16 PM] HTTP API chạy KHÔNG xác thực (apiKey rỗng). Chỉ chấp nhận được vì đang bind loopback. Đặt apiKey trong config/server.json trước khi mở ra ngoài.
+
+[Máy chủ 9/10/2026 10:04:16 PM] Cổng game nghe ở 127.0.0.1:19180 (chỉ cục bộ)
+
+[Máy chủ 9/11/2026 2:26:05 AM] Ghi log gói tin: D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\log\packet-dump-server.log
+
+[Máy chủ 9/11/2026 2:26:21 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/11/2026 2:26:21 AM] Bang hội MSG: 14
+
+[Máy chủ 9/11/2026 2:26:28 AM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/11/2026 2:26:46 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/11/2026 2:26:46 AM] onClientSpeedRespose
+
+[Máy chủ 9/11/2026 2:27:02 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/11/2026 2:27:03 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/11/2026 2:27:03 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/11/2026 2:27:03 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/11/2026 2:27:05 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/11/2026 2:27:05 AM] onClientSpeedRespose
+
+� 9/10/2026 6:54:03 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 6:54:03 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 6:54:13 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 6:54:52 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:54:52 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:54:52 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:54:52 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:54:52 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 6:56:35 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:56:35 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:56:35 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:56:35 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:56:35 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 6:57:17 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:57:17 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 6:57:17 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:57:17 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 6:57:17 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 7:00:29 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:00:29 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:00:29 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:00:29 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:00:29 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 7:11:40 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:11:40 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:11:40 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:11:40 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:11:40 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 7:11:49 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 7:12:42 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:12:42 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 7:12:42 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:12:42 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 7:12:42 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 7:12:50 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 7:18:22 PM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 7:18:22 PM] Bang hội MSG: 14
+
+[Máy chủ 9/10/2026 7:18:39 PM]  MESSAGE SERVICE: 28
+
+[Máy chủ 9/10/2026 7:18:45 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 7:18:45 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 7:40:22 PM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 7:40:22 PM] Bang hội MSG: 14
+
+[Máy chủ 9/10/2026 8:24:48 PM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 8:24:48 PM] Bang hội MSG: 14
+
+[Máy chủ 9/10/2026 8:25:10 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:25:10 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:25:27 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:25:27 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:25:33 PM]  MESSAGE SERVICE: 62
+
+[Máy chủ 9/10/2026 8:25:37 PM]  MESSAGE SERVICE: 28
+
+[Máy chủ 9/10/2026 8:26:12 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:26:12 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:26:46 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:26:46 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:27:00 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:27:00 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:27:01 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:27:01 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:27:01 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 8:27:04 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:27:04 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:27:09 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:09 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:27:09 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 8:27:09 PM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/10/2026 8:27:11 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:11 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:25 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:27:25 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:27:39 PM]  MESSAGE SERVICE: 21
+
+[Máy chủ 9/10/2026 8:27:49 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:27:49 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:27:56 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:57 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:57 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:58 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:58 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:27:59 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:28:00 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:28:00 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:28:00 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:28:08 PM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 8:28:10 PM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 8:28:11 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:28:11 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:28:12 PM]  MESSAGE SERVICE: 17
+
+[Máy chủ 9/10/2026 8:28:15 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:28:15 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:28:15 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:28:15 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:28:15 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 8:28:23 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:28:23 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:28:24 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 8:28:24 PM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/10/2026 8:29:39 PM] BCrypt.Net.SaltParseException: Invalid salt version
+[Máy chủ 9/10/2026 8:29:39 PM]    at BCrypt.Net.BCrypt.HashPassword(String inputKey, String salt, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:29:39 PM]    at BCrypt.Net.BCrypt.Verify(String text, String hash, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:29:39 PM]    at Gopet.Shared.Helper.GopetHashHelper.VerifyHash(String Hash, String Text) in D:\game\SRCGOPETGOC\GServer\Util\GopetHashHelper.cs:line 17
+[Máy chủ 9/10/2026 8:29:39 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp) in D:\game\SRCGOPETGOC\GServer\Server\Player.cs:line 616
+
+[Máy chủ 9/10/2026 8:30:27 PM] BCrypt.Net.SaltParseException: Invalid salt version
+[Máy chủ 9/10/2026 8:30:27 PM]    at BCrypt.Net.BCrypt.HashPassword(String inputKey, String salt, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:30:27 PM]    at BCrypt.Net.BCrypt.Verify(String text, String hash, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:30:27 PM]    at Gopet.Shared.Helper.GopetHashHelper.VerifyHash(String Hash, String Text) in D:\game\SRCGOPETGOC\GServer\Util\GopetHashHelper.cs:line 17
+[Máy chủ 9/10/2026 8:30:27 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp) in D:\game\SRCGOPETGOC\GServer\Server\Player.cs:line 616
+
+[Máy chủ 9/10/2026 8:31:35 PM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 8:31:35 PM] Bang hội MSG: 14
+
+[Máy chủ 9/10/2026 8:32:02 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:32:02 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:32:20 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:32:20 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:32:44 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:32:44 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:33:03 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:33:03 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:33:25 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:33:25 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:33:41 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:33:41 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:40:40 PM] BCrypt.Net.SaltParseException: Invalid salt version
+[Máy chủ 9/10/2026 8:40:40 PM]    at BCrypt.Net.BCrypt.HashPassword(String inputKey, String salt, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:40:40 PM]    at BCrypt.Net.BCrypt.Verify(String text, String hash, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:40:40 PM]    at Gopet.Shared.Helper.GopetHashHelper.VerifyHash(String Hash, String Text) in D:\game\SRCGOPETGOC\GServer\Util\GopetHashHelper.cs:line 17
+[Máy chủ 9/10/2026 8:40:40 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp) in D:\game\SRCGOPETGOC\GServer\Server\Player.cs:line 616
+
+[Máy chủ 9/10/2026 8:46:01 PM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/10/2026 8:46:01 PM] Bang hội MSG: 14
+
+[Máy chủ 9/10/2026 8:46:21 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:46:21 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:46:38 PM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/10/2026 8:46:38 PM] onClientSpeedRespose
+
+[Máy chủ 9/10/2026 8:47:31 PM] BCrypt.Net.SaltParseException: Invalid salt version
+[Máy chủ 9/10/2026 8:47:31 PM]    at BCrypt.Net.BCrypt.HashPassword(String inputKey, String salt, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:47:31 PM]    at BCrypt.Net.BCrypt.Verify(String text, String hash, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:47:31 PM]    at Gopet.Shared.Helper.GopetHashHelper.VerifyHash(String Hash, String Text) in D:\game\SRCGOPETGOC\GServer\Util\GopetHashHelper.cs:line 17
+[Máy chủ 9/10/2026 8:47:31 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp) in D:\game\SRCGOPETGOC\GServer\Server\Player.cs:line 616
+
+[Máy chủ 9/10/2026 8:51:19 PM] BCrypt.Net.SaltParseException: Invalid salt version
+[Máy chủ 9/10/2026 8:51:19 PM]    at BCrypt.Net.BCrypt.HashPassword(String inputKey, String salt, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:51:19 PM]    at BCrypt.Net.BCrypt.Verify(String text, String hash, Boolean enhancedEntropy, HashType hashType)
+[Máy chủ 9/10/2026 8:51:19 PM]    at Gopet.Shared.Helper.GopetHashHelper.VerifyHash(String Hash, String Text) in D:\game\SRCGOPETGOC\GServer\Util\GopetHashHelper.cs:line 17
+[Máy chủ 9/10/2026 8:51:19 PM]    at Player.login(String username, String password, String version, Boolean SkipIpv4Check, Boolean IsPassOtp) in D:\game\SRCGOPETGOC\GServer\Server\Player.cs:line 616
+
+[Máy chủ 9/10/2026 8:53:27 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:53:27 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:53:27 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:53:27 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:53:27 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 8:53:35 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:53:35 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:53:36 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 8:53:36 PM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/10/2026 8:53:55 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:53:55 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:55:01 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:55:01 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:55:02 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:55:02 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:55:02 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 8:55:10 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:55:10 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:55:10 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 8:55:11 PM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/10/2026 8:55:24 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:55:24 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:55:50 PM] CLIENT REQUEST IMAGE: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:55:50 PM] Load ASSETS: npcs/arena.png
+
+[Máy chủ 9/10/2026 8:55:50 PM] CLIENT REQUEST IMAGE: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:55:50 PM] Load ASSETS: npcs/Tien_Nu.png
+
+[Máy chủ 9/10/2026 8:55:50 PM] CLIENT REQUEST IMAGE: khong-he-ton-tai-9x8y7z.png
+
+[Máy chủ 9/10/2026 8:55:59 PM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/10/2026 8:55:59 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:55:59 PM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/10/2026 8:55:59 PM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/10/2026 8:56:13 PM]  MESSAGE SERVICE: 5
+
+[Máy chủ 9/10/2026 8:56:13 PM]  MESSAGE SERVICE: 5
+

@@ -1,0 +1,39 @@
+# --- Unity ---
+[Ll]ibrary/
+[Tt]emp/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+*.unitypackage
+*.apk
+*.aab
+*.app
+
+# Unity sinh csproj/sln ở thư mục gốc dự án — bỏ qua chúng,
+# nhưng KHÔNG bỏ qua csproj của test project (viết tay, phải commit).
+# Unity 6 dùng định dạng .slnx mới bên cạnh .sln.
+/*.csproj
+/*.sln
+/*.slnx
+/*.user
+.vscode/
+.idea/
+
+# --- .NET / test ---
+bin/
+obj/
+TestResults/
+
+# --- Packet dump ---
+# Có thể chứa tên tài khoản và nội dung chat. Không commit.
+*.log
+packet-dump-*
+
+# --- Node ---
+node_modules/
+
+# --- OS ---
+.DS_Store
+Thumbs.db

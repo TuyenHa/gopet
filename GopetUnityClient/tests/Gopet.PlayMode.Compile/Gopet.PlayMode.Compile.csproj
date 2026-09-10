@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Chi COMPILE PlayMode test, khong chay.
+
+    Ly do ton tai: PlayMode test chi chay duoc khi Unity Editor DA DONG. Neu chung
+    khong compile duoc thi ca lan chay hong, ma luc do nguoi dung da dong Editor
+    roi - mat cong vo ich. Buoc nay bat loi cu phap va sai API ngay tai cho.
+
+    Tham chieu DLL trong Library (Unity sinh ra khi build lan dau).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Gopet.PlayMode.Compile</AssemblyName>
+    <UnityManagedDir Condition="'$(UNITY_MANAGED_DIR)' != ''">$(UNITY_MANAGED_DIR)</UnityManagedDir>
+    <UnityManagedDir Condition="'$(UnityManagedDir)' == ''">D:\Unity Editor\6000.5.4f1\Editor\Data\Managed\UnityEngine</UnityManagedDir>
+    <LibDir>..\..\Library</LibDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\UiLogic\**\*.cs" />
+    <Compile Include="..\..\Assets\Scripts\Runtime\**\*.cs" />
+    <Compile Include="..\..\Assets\Tests\PlayMode\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TilemapModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.TilemapModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GridModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.GridModule.dll</HintPath>
+    </Reference>
+    <!-- InputRouter dung Input System; EnsureEventSystem dung InputSystemUIInputModule. -->
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(LibDir)\ScriptAssemblies\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <!-- SoundBank/SoundManager dung AudioClip, AudioSource. -->
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(UnityManagedDir)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(LibDir)\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <!-- InputRouterTests bom phim that qua InputTestFixture. -->
+    <Reference Include="Unity.InputSystem.TestFramework">
+      <HintPath>$(LibDir)\ScriptAssemblies\Unity.InputSystem.TestFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TestRunner">
+      <HintPath>$(LibDir)\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>$(LibDir)\PackageCache\com.unity.ext.nunit@44f7d31723bd\net472\unity-custom\nunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Du an nay khong chay gi ca - no chi COMPILE Assets/Editor.
+
+    Cung mot ly do voi Gopet.Runtime.UnityCompat: Assets/Editor dung UnityEditor,
+    khong asmdef nao trong Assets/Scripts phu toi. Khong co du an nay thi
+    JarAssetImportSettings.cs (AssetPostprocessor) khong duoc THU GI compile
+    cho toi khi nguoi dung mo Unity Editor - co the la hang gio sau khi viet,
+    va sai API TextureImporter/AudioImporter thi luc do moi lo ra.
+
+    Duong dan Unity doc tu UNITY_MANAGED_DIR, mac dinh la ban dang cai tren may
+    nay. May khac chi can dat lai bien moi truong.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Gopet.Editor.UnityCompat</AssemblyName>
+    <UnityManagedDir Condition="'$(UNITY_MANAGED_DIR)' != ''">$(UNITY_MANAGED_DIR)</UnityManagedDir>
+    <UnityManagedDir Condition="'$(UnityManagedDir)' == ''">D:\Unity Editor\6000.5.4f1\Editor\Data\Managed\UnityEngine</UnityManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Editor\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      UnityEngine.dll o thu muc Managed goc khong phai facade thuan - no dinh
+      nghia LAI mot so enum (FilterMode, TextureWrapMode...) trung voi
+      UnityEngine.CoreModule.dll, nen KHONG tham chieu ca hai cung luc (CS0433
+      mo ho kieu). Rieng no da du: Object, cac enum texture/audio can dung o day.
+    -->
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityManagedDir)\..\UnityEngine.dll</HintPath>
+    </Reference>
+    <!-- Ca API UnityEditor (AssetPostprocessor, TextureImporter, AudioImporter...)
+         nam trong mot assembly duy nhat, o thu muc Managed goc chu khong trong
+         thu muc con UnityEngine\ nhu cac module engine. -->
+    <Reference Include="UnityEditor">
+      <HintPath>$(UnityManagedDir)\..\UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

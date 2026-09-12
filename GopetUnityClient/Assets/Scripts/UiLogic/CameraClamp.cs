@@ -39,5 +39,6 @@ namespace Gopet.UiLogic
             if (c > mapSize - viewSize) return mapSize - viewSize;
             return c;
         }
+
     }
 }

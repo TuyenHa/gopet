@@ -28,7 +28,7 @@ namespace Gopet.UiLogic
         private const sbyte ShopEnergy = 11;
 
         // PET_SERVICE sub — arena PVP/PVE (jar eg.java case 26: en(81).a(58).a(0)).
-        private const sbyte PetServiceArena = 58;
+        private const sbyte PetServiceArena = GopetCmd.ARENA_MENU;
 
         /// <summary>Nhãn tiếng Việt hiện trên map (jar eg.java:55-155). Rỗng nghĩa là không đặt tên (server-driven).</summary>
         public static string LabelOf(int buildingType)
@@ -126,11 +126,11 @@ namespace Gopet.UiLogic
                 case 31: return BuildingAction.Send(Message.Create(GopetCmd.PET_SERVICE)
                     .PutSByte(GopetCmd.GYM));
 
-                // case 32 — heal pet: yêu cầu có pet. Ở đây dùng LocalMenu để UI layer trigger
-                // pet follow / recovery flow đang có sẵn.
+                // case 32 — JAR gọi dc.b(petTemplateId), tức PET_SERVICE/MAGIC (11).
+                // Server bỏ qua int cũ nên Unity chỉ cần mở profile pet hiện đang theo.
                 case 32:
                     return hasPet
-                        ? BuildingAction.LocalMenu(LocalMenu.PetFollowTrigger)
+                        ? BuildingAction.LocalMenu(LocalMenu.PetProfile)
                         : BuildingAction.Toast("Bạn không dẫn theo pet");
 
                 // case 5/6/9/24/default — jar không làm gì (return sớm).
@@ -159,7 +159,7 @@ namespace Gopet.UiLogic
             BeautySalon,
             HairSalon,
             Garage,
-            PetFollowTrigger,
+            PetProfile,
         }
     }
 

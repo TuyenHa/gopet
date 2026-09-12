@@ -13,12 +13,22 @@ namespace Gopet.Net.Pet
     public sealed class PetEquipHandler
     {
         public event Action<PetEquipInfo> EquipInfoReceived;
+        public event Action<PetEquipDelta> EquipChanged;
+        public event Action<PetEquipItem> EquipItemRefreshed;
 
         public void RegisterOn(MessageRouter router)
         {
             if (router == null) throw new ArgumentNullException(nameof(router));
             router.RegisterEnvelope(GopetCmd.PET_SERVICE);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.EQUIP_INFO, OnEquipInfo);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.USE_EQUIP_ITEM,
+                message => OnSimpleDelta(message, true, "USE_EQUIP_ITEM"));
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.UNEQUIP_ITEM,
+                message => OnSimpleDelta(message, false, "UNEQUIP_ITEM"));
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.REMOVE_ITEM_EQUIP,
+                OnRemoved);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.ON_UNQUIP_GEM,
+                OnItemRefreshed);
         }
 
         private void OnEquipInfo(Message message)
@@ -47,6 +57,34 @@ namespace Gopet.Net.Pet
             info.FrameNumber = r.ReadSByte();
             r.ExpectFullyConsumed("EQUIP_INFO");
             EquipInfoReceived?.Invoke(info);
+        }
+
+        private void OnSimpleDelta(Message message, bool equipped, string context)
+        {
+            var accepted = message.Reader.ReadSByte() == 1;
+            var itemId = message.Reader.ReadInt();
+            message.Reader.ExpectFullyConsumed(context);
+            EquipChanged?.Invoke(new PetEquipDelta
+            {
+                ItemId = itemId, Equipped = equipped, Removed = false, Accepted = accepted
+            });
+        }
+
+        private void OnRemoved(Message message)
+        {
+            var itemId = message.Reader.ReadInt();
+            message.Reader.ExpectFullyConsumed("REMOVE_ITEM_EQUIP");
+            EquipChanged?.Invoke(new PetEquipDelta
+            {
+                ItemId = itemId, Equipped = false, Removed = true, Accepted = true
+            });
+        }
+
+        private void OnItemRefreshed(Message message)
+        {
+            var item = ReadItem(message.Reader);
+            message.Reader.ExpectFullyConsumed("ON_UNQUIP_GEM");
+            EquipItemRefreshed?.Invoke(item);
         }
 
         private static PetEquipItem ReadItem(JavaBinaryReader r)

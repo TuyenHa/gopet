@@ -102,6 +102,8 @@ public partial class MenuController
     public const int MENU_SELECT_ITEM_TO_GIVE_BY_ADMIN = 1050;
     public const int MENU_SELECT_PET_TO_DEF_LEAGUE = 1051;
     public const int MENU_SELECT_TYPE_PAYMENT_TO_ARENA_JOURNALISM = 1052;
+    /// <summary>Local arena hub exposed by PET_SERVICE/ARENA_MENU.</summary>
+    public const int MENU_ARENA_HUB = 1091;
     public const int MENU_MERGE_WING = 1053;
     public const int MENU_SHOW_ALL_TATTO = 1054;
     public const int MENU_ADMIN_SHOW_ALL_ACHIEVEMENT = 1055;

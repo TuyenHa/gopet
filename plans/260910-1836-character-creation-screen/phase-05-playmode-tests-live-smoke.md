@@ -1,11 +1,26 @@
 ---
 phase: 5
 title: "PlayMode Tests + Live Smoke"
-status: pending
+status: partial
 priority: P2
 effort: "0.5d"
 dependencies: [4]
 ---
+
+## Kết quả (2026-09-11)
+
+- Unit test `LoginFlowCharacterTests.cs`: đã có sẵn, phủ đủ mọi case phase yêu cầu (happy/reject/
+  tên sai/rớt mạng/nối lại) — xác nhận lại xanh, 625/625 trong `dotnet test tests/Gopet.Net.Tests`.
+  `Sanitize` đã public, không cần đổi signature.
+- PlayMode test `CharacterCreationViewTests.cs`: đã có sẵn, đủ 2 case (sanitize+validate,
+  submit nữ). **Chưa chạy được** — `run-playmode-tests.ps1` cần đóng Unity Editor, Editor đang mở
+  lúc kiểm tra; không tự ý đóng.
+- Live-smoke đăng ký→tạo char→vào map: **chặn bởi 2 lý do ngoài tầm code** — REGISTER bị chính
+  sách server chặn theo danh sách từ cấm, và DB Docker chứa dữ liệu người dùng thật nên không tự
+  ý chèn account test. Xem `reports/live-smoke.md` để biết chi tiết + 2 lựa chọn đề xuất cho
+  người dùng.
+- **Cần người dùng**: (1) đóng Unity Editor rồi chạy `run-playmode-tests.ps1` tay; (2) quyết định
+  có cho chèn 1 account test vào DB để live-smoke đầy đủ hay không.
 
 # Phase 5: PlayMode Tests + Live Smoke
 

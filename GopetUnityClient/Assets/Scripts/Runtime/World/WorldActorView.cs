@@ -77,15 +77,32 @@ namespace Gopet.Runtime.World
             view._clicked = clicked;
             view.MakeLabel(labelText, view._renderer.sortingOrder + 20);
             view.ConfigureCollider(bounds);
-            assets.Get(imagePath, ImagePackets.TypeNpc, texture =>
+
+            // Ảnh NPC/quái vốn do jar tải qua mạng (`dg.a` gọi `cp.a(path, 2)`), nhưng
+            // phần lớn đã có sẵn cục bộ (unpack từ asset gốc vào Resources/Jar/Art/Raw/npcs).
+            // Dùng ngay bản cục bộ nếu có — khỏi chờ round-trip server, và không phụ
+            // thuộc server có phục vụ đúng file hay không. Vắng bản cục bộ mới xin mạng.
+            var localTexture = JarActorSprites.LoadLocalTexture(imagePath);
+            if (localTexture != null)
             {
-                if (view == null || texture == null) return;
-                view._frames = Frames(imagePath, texture, Mathf.Max(1, frameCount));
+                view._frames = Frames(imagePath, localTexture, Mathf.Max(1, frameCount));
                 view._frame = 0;
                 view._renderer.sprite = view._frames[0];
                 view.ConfigureCollider(bounds);
                 view.PlaceLabel();
-            });
+            }
+            else
+            {
+                assets.Get(imagePath, ImagePackets.TypeNpc, texture =>
+                {
+                    if (view == null || texture == null) return;
+                    view._frames = Frames(imagePath, texture, Mathf.Max(1, frameCount));
+                    view._frame = 0;
+                    view._renderer.sprite = view._frames[0];
+                    view.ConfigureCollider(bounds);
+                    view.PlaceLabel();
+                });
+            }
             return view;
         }
 

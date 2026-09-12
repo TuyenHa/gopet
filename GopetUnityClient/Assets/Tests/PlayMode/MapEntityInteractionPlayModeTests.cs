@@ -62,10 +62,14 @@ namespace Gopet.PlayModeTests
             // nhãn cách arrow theo X, và cách theo Y khác nhau tuỳ portal (9-23).
             // Fix: căn giữa nhãn ngay tâm arrow (cả X và Y), nhích lên chút chống đè glyph.
             //
-            // Khoá bằng: mỗi portal, cả 2 trục (X, Y) từ nhãn đến TÂM arrow đều ≤ 8 px.
+            // Khoá bằng: mỗi portal, trục Y từ nhãn đến TÂM arrow ≤ 8 px. Trục X cũng
+            // ≤ 8 px TRỪ KHI portal nằm sát biên map (vd "Đường lên núi" X=45/576, arrow
+            // dx=-34 đẩy nhãn ra ngoài map) — khi đó nhãn bị kẹp vào trong biên map thay
+            // vì bám sát tâm arrow, nên chỉ khoá "chữ không tràn ra ngoài map".
             var renderer = MapRenderer.Create(null, 11);
             var portals = renderer.GetComponentsInChildren<MapPortalView>();
             var mapH = renderer.Map.HeightPixels;
+            var mapW = renderer.Map.WidthPixels;
 
             foreach (var portal in portals)
             {
@@ -95,10 +99,24 @@ namespace Gopet.PlayModeTests
                 var arrowCenterWorldY = mapH - (nearest.Y - nearest.YOffset - nearest.Bounds[3] * 0.5f);
                 var distX = Mathf.Abs(labelWorldX - arrowCenterWorldX);
                 var distY = Mathf.Abs(labelWorldY - arrowCenterWorldY);
-                Assert.LessOrEqual(distX, 8f,
-                    $"portal '{entity.Name}': nhãn X={labelWorldX} cách tâm arrow X={arrowCenterWorldX} {distX} px");
                 Assert.LessOrEqual(distY, 8f,
                     $"portal '{entity.Name}': nhãn Y={labelWorldY} cách tâm arrow Y={arrowCenterWorldY} {distY} px");
+
+                // NameScale 0.75 khớp LabelScale trong MapPortalView (private, không expose).
+                var halfTextWidth = JarFont.Width(entity.Name) * 0.5f * 0.75f;
+                var arrowFitsInMap = arrowCenterWorldX - halfTextWidth >= 0f && arrowCenterWorldX + halfTextWidth <= mapW;
+                if (arrowFitsInMap)
+                {
+                    Assert.LessOrEqual(distX, 8f,
+                        $"portal '{entity.Name}': nhãn X={labelWorldX} cách tâm arrow X={arrowCenterWorldX} {distX} px");
+                }
+                else
+                {
+                    Assert.GreaterOrEqual(labelWorldX - halfTextWidth, -0.5f,
+                        $"portal '{entity.Name}': nhãn vẫn tràn mép TRÁI map (labelX={labelWorldX})");
+                    Assert.LessOrEqual(labelWorldX + halfTextWidth, mapW + 0.5f,
+                        $"portal '{entity.Name}': nhãn vẫn tràn mép PHẢI map (labelX={labelWorldX})");
+                }
             }
 
             Object.Destroy(renderer.gameObject);
@@ -115,6 +133,28 @@ namespace Gopet.PlayModeTests
                 if (Mathf.Abs(e.X - jarX) <= 1 && Mathf.Abs(e.Y - jarY) <= 1) return e;
             }
             return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Map11_Portal_BamVaoChuTenMapCungSangMap()
+        {
+            // Trước fix: collider chỉ bao vùng arrow (Raw5 bounds), còn chữ tên map bị
+            // đẩy ra xa arrow (dx tới 34px) nên nằm NGOÀI collider — bấm đúng chữ không
+            // sang map được. Fix: collider gộp cả vùng arrow lẫn vùng chữ.
+            var renderer = MapRenderer.Create(null, 11);
+            var portals = renderer.GetComponentsInChildren<MapPortalView>();
+
+            foreach (var portal in portals)
+            {
+                var label = portal.GetComponentInChildren<JarNameLabel>();
+                var labelWorldPos = (Vector2)label.transform.position;
+                var collider = portal.GetComponent<BoxCollider2D>();
+                Assert.IsTrue(collider.OverlapPoint(labelWorldPos),
+                    $"portal '{portal.name}': collider phải bao trùm vị trí chữ tên map ({labelWorldPos}) để bấm vào chữ cũng sang map được.");
+            }
+
+            Object.Destroy(renderer.gameObject);
+            yield return null;
         }
 
         [UnityTest]

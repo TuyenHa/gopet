@@ -131,5 +131,42 @@ namespace Gopet.Net.Tests
             Assert.Equal(GopetCmd.EQUIP_INFO, r.ReadSByte());
             Assert.Equal(555, r.ReadInt());
         }
+
+        [Theory]
+        [InlineData(GopetCmd.USE_EQUIP_ITEM, true)]
+        [InlineData(GopetCmd.UNEQUIP_ITEM, false)]
+        public void EquipDelta_DocTrangThai(sbyte sub, bool equipped)
+        {
+            var router = new MessageRouter();
+            var handler = new PetEquipHandler();
+            handler.RegisterOn(router);
+            PetEquipDelta received = null;
+            handler.EquipChanged += value => received = value;
+
+            using var message = Message.Create(GopetCmd.PET_SERVICE).PutSByte(sub)
+                .PutSByte(1).PutInt(77);
+            router.Dispatch(Message.FromWire(message.ToWire(), false));
+
+            Assert.True(received.Accepted);
+            Assert.Equal(77, received.ItemId);
+            Assert.Equal(equipped, received.Equipped);
+        }
+
+        [Fact]
+        public void RemoveEquip_DocItemId()
+        {
+            var router = new MessageRouter();
+            var handler = new PetEquipHandler();
+            handler.RegisterOn(router);
+            PetEquipDelta received = null;
+            handler.EquipChanged += value => received = value;
+
+            using var message = Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.REMOVE_ITEM_EQUIP).PutInt(91);
+            router.Dispatch(Message.FromWire(message.ToWire(), false));
+
+            Assert.True(received.Removed);
+            Assert.Equal(91, received.ItemId);
+        }
     }
 }

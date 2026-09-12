@@ -12,6 +12,7 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class CharacterMenuButton : MonoBehaviour
     {
+        private GameObject _mailBadge;
         public event Action Clicked;
 
         public static CharacterMenuButton Create(Transform parent)
@@ -35,8 +36,28 @@ namespace Gopet.Runtime.UI
             label.color = Color.white;
 
             var comp = go.AddComponent<CharacterMenuButton>();
+            comp._mailBadge = MakeMailBadge(go.transform);
             go.GetComponent<Button>().onClick.AddListener(() => comp.Clicked?.Invoke());
             return comp;
+        }
+
+        public void SetMailUnread(bool value)
+        {
+            if (_mailBadge != null) _mailBadge.SetActive(value);
+        }
+
+        private static GameObject MakeMailBadge(Transform parent)
+        {
+            var go = new GameObject("Mail Unread", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-3f, -3f);
+            rect.sizeDelta = new Vector2(14f, 14f);
+            go.GetComponent<Image>().color = new Color(.95f, .2f, .2f, 1f);
+            RoundedUiSprite.Apply(go.GetComponent<Image>());
+            go.SetActive(false);
+            return go;
         }
     }
 }

@@ -641,7 +641,7 @@ public class GopetPlace : Place
                                 boss.TimeOut = DateTime.Now.AddMilliseconds(GopetManager.TIME_BOSS_DISPOINTED);
                                 addNewMob(boss);
                                 nGopetMobs.add(boss);
-                                PlayerManager.showBanner((l) => string.Format(l.BannerLanguage[LanguageData.BANNER_SHOW_BOSS_SUMMON], boss.Template.name, this.map.mapTemplate.name, this.zoneID));
+                                PlayerManager.showBossBanner((l) => string.Format(l.BannerLanguage[LanguageData.BANNER_SHOW_BOSS_SUMMON], boss.Template.name, this.map.mapTemplate.name, this.zoneID));
                                 numMobDie[i] = 0;
                                 goto END_INIT_MOB;
                             }

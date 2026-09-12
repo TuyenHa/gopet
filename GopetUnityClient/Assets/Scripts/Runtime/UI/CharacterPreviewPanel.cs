@@ -1,15 +1,13 @@
 using System;
-using Gopet.Runtime.World;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    /// <summary>Hai preset avatar world-space với lớp chọn uGUI để dùng được trên touch.</summary>
     public sealed class CharacterPreviewPanel : MonoBehaviour
     {
-        private Image _highlight;
+        private static readonly Color Blue = new Color(0.16f, 0.53f, 0.91f, 1f);
         private RectTransform _highlightRect;
         private CharacterPreviewSlot[] _slots;
 
@@ -18,16 +16,15 @@ namespace Gopet.Runtime.UI
         public CharacterPreviewSlot FemaleSlot => _slots == null ? null : _slots[1];
         public event Action<sbyte> GenderChanged;
 
-        public static CharacterPreviewPanel Create(Transform parent, Vector2 size)
+        public static CharacterPreviewPanel Create(Transform parent, Vector2 size, Font font = null)
         {
             var go = new GameObject("CharacterPreviewPanel", typeof(RectTransform));
             go.transform.SetParent(parent, false);
             var root = (RectTransform)go.transform;
             root.anchorMin = root.anchorMax = root.pivot = new Vector2(0.5f, 0.5f);
             root.sizeDelta = size;
-
             var panel = go.AddComponent<CharacterPreviewPanel>();
-            panel.Build(size);
+            panel.Build(font);
             return panel;
         }
 
@@ -44,84 +41,98 @@ namespace Gopet.Runtime.UI
             return gender >= 0 && gender < 2 && _slots != null ? _slots[gender] : null;
         }
 
-        private void Build(Vector2 size)
+        private void Build(Font font)
         {
             _slots = new CharacterPreviewSlot[2];
             for (sbyte gender = 0; gender < 2; gender++)
             {
-                var go = new GameObject(gender == 0 ? "Male" : "Female",
-                    typeof(RectTransform), typeof(Image), typeof(BoxCollider2D), typeof(CharacterPreviewSlot));
-                go.transform.SetParent(transform, false);
-                var rect = (RectTransform)go.transform;
-                rect.anchorMin = new Vector2(gender == 0 ? 0f : 0.5f, 0f);
-                rect.anchorMax = new Vector2(gender == 0 ? 0.5f : 1f, 1f);
-                rect.offsetMin = new Vector2(8f, 8f);
-                rect.offsetMax = new Vector2(-8f, -8f);
-
-                var clickImage = go.GetComponent<Image>();
-                clickImage.color = new Color(1f, 1f, 1f, 0.015f);
-                clickImage.raycastTarget = true;
-                var collider = go.GetComponent<BoxCollider2D>();
-                collider.size = new Vector2(48f, 64f);
-                collider.offset = Vector2.zero;
-
-                var slot = go.GetComponent<CharacterPreviewSlot>();
-                slot.Initialize(this, gender);
+                var slot = MakeSlot(gender);
                 _slots[gender] = slot;
-
-                try
-                {
-                    var avatar = AvatarAppearance.Create(go.transform, gender);
-                    avatar.transform.localPosition = new Vector3(0f, -8f, 0f);
-                    avatar.SetSortingOrder(20);
-                }
-                catch (Exception ex)
-                {
-                    // Keep the selectable slot usable in an editor/test scene without unpacked jar art.
-                    Debug.LogWarning($"[Gopet] Không dựng được avatar giới tính {gender}: {ex.Message}");
-                }
-
-                try
-                {
-                    var label = Gopet.Runtime.World.JarNameLabel.Create(go.transform,
-                        new Vector3(0f, -42f, 0f), 1f, gender == 0 ? "Nam" : "Nữ");
-                    label.SetSortingOrder(40);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[Gopet] Không dựng được nhãn giới tính {gender}: {ex.Message}");
-                }
+                CharacterPreviewAvatar.Create(slot.transform, gender);
+                MakeLabel(slot.transform, font, gender);
             }
+            MakeHighlight(font);
+            SelectedGender = 0;
+        }
 
-            var frame = new GameObject("Highlight", typeof(RectTransform), typeof(Image), typeof(Outline));
+        private CharacterPreviewSlot MakeSlot(sbyte gender)
+        {
+            var go = new GameObject(gender == 0 ? "Male" : "Female",
+                typeof(RectTransform), typeof(Image), typeof(Shadow), typeof(CharacterPreviewSlot));
+            go.transform.SetParent(transform, false);
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(gender == 0 ? 0f : 0.51f, 0f);
+            rect.anchorMax = new Vector2(gender == 0 ? 0.49f : 1f, 1f);
+            rect.offsetMin = new Vector2(5f, 5f);
+            rect.offsetMax = new Vector2(-5f, -5f);
+
+            var image = go.GetComponent<Image>();
+            RoundedUiSprite.Apply(image);
+            image.color = new Color(1f, 1f, 1f, 0.90f);
+            image.raycastTarget = true;
+            var shadow = go.GetComponent<Shadow>();
+            shadow.effectColor = new Color(0.10f, 0.20f, 0.32f, 0.18f);
+            shadow.effectDistance = new Vector2(0f, -4f);
+
+            var slot = go.GetComponent<CharacterPreviewSlot>();
+            slot.Initialize(this, gender);
+            return slot;
+        }
+
+        private static void MakeLabel(Transform parent, Font font, sbyte gender)
+        {
+            var label = UiBuilder.MakeText(parent, font, "GenderLabel", 18, false);
+            label.text = gender == 0 ? "♂   Nam" : "♀   Nữ";
+            label.alignment = TextAnchor.MiddleCenter;
+            label.fontStyle = FontStyle.Bold;
+            label.color = gender == 0 ? Blue : new Color(0.93f, 0.26f, 0.52f, 1f);
+            var rect = (RectTransform)label.transform;
+            rect.anchorMin = new Vector2(0f, 0.03f);
+            rect.anchorMax = new Vector2(1f, 0.25f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+        }
+
+        private void MakeHighlight(Font font)
+        {
+            var frame = new GameObject("SelectedFrame", typeof(RectTransform), typeof(Image), typeof(Outline));
             frame.transform.SetParent(transform, false);
             _highlightRect = (RectTransform)frame.transform;
-            _highlightRect.anchorMin = new Vector2(0f, 0f);
-            _highlightRect.anchorMax = new Vector2(0.5f, 1f);
-            _highlightRect.offsetMin = new Vector2(4f, 4f);
-            _highlightRect.offsetMax = new Vector2(-4f, -4f);
-            _highlight = frame.GetComponent<Image>();
-            RoundedUiSprite.Apply(_highlight);
-            _highlight.color = new Color(1f, 0.8f, 0.2f, 0.06f);
-            _highlight.raycastTarget = false;
+            var image = frame.GetComponent<Image>();
+            RoundedUiSprite.Apply(image);
+            image.color = new Color(0.16f, 0.53f, 0.91f, 0.02f);
+            image.raycastTarget = false;
             var outline = frame.GetComponent<Outline>();
-            outline.effectColor = new Color(1f, 0.8f, 0.2f, 1f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            outline.effectColor = Blue;
+            outline.effectDistance = new Vector2(2.5f, -2.5f);
+
+            var badge = new GameObject("CheckBadge", typeof(RectTransform), typeof(Image));
+            badge.transform.SetParent(frame.transform, false);
+            var badgeRect = (RectTransform)badge.transform;
+            badgeRect.anchorMin = badgeRect.anchorMax = new Vector2(0.90f, 0.87f);
+            badgeRect.sizeDelta = new Vector2(34f, 34f);
+            RoundedUiSprite.Apply(badge.GetComponent<Image>());
+            badge.GetComponent<Image>().color = Blue;
+
+            var check = UiBuilder.MakeText(badge.transform, font, "Check", 24, true);
+            check.text = "✓";
+            check.color = Color.white;
+            check.fontStyle = FontStyle.Bold;
+            check.alignment = TextAnchor.MiddleCenter;
+            check.raycastTarget = false;
+            MoveHighlight(0);
             frame.transform.SetAsLastSibling();
-            SelectedGender = 0;
         }
 
         private void MoveHighlight(sbyte gender)
         {
             if (_highlightRect == null) return;
-            _highlightRect.anchorMin = new Vector2(gender == 0 ? 0f : 0.5f, 0f);
-            _highlightRect.anchorMax = new Vector2(gender == 0 ? 0.5f : 1f, 1f);
-            _highlightRect.offsetMin = new Vector2(4f, 4f);
-            _highlightRect.offsetMax = new Vector2(-4f, -4f);
+            _highlightRect.anchorMin = new Vector2(gender == 0 ? 0f : 0.51f, 0f);
+            _highlightRect.anchorMax = new Vector2(gender == 0 ? 0.49f : 1f, 1f);
+            _highlightRect.offsetMin = new Vector2(1f, 1f);
+            _highlightRect.offsetMax = new Vector2(-1f, -1f);
         }
     }
 
-    /// <summary>Lớp click trên một ô avatar; giữ cả IPointerClickHandler và collider 2D cho các scene khác nhau.</summary>
     public sealed class CharacterPreviewSlot : MonoBehaviour, IPointerClickHandler
     {
         private CharacterPreviewPanel _owner;

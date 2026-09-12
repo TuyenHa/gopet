@@ -5,10 +5,7 @@ using Gopet.Net.Bank;
 namespace Gopet.UiLogic
 {
     /// <summary>
-    /// 12 mục menu chính của nhân vật, đối chiếu <c>fr.java:129-141</c> (jar J2ME).
-    ///
-    /// <para><b>Cân nhắc đã chốt:</b> "Chat" (jar cd 3286) trùng ý với "Chat khu vực"
-    /// (cd 331) — jar giữ cả hai để tương thích cũ, Unity gộp làm một dòng.</para>
+    /// Các thao tác menu chính của nhân vật, đối chiếu <c>fr.java:129-141</c> (jar J2ME).
     /// </summary>
     public enum CharacterMenuAction
     {
@@ -68,11 +65,8 @@ namespace Gopet.UiLogic
         {
             new CharacterMenuEntry(CharacterMenuAction.FriendManage,   "Bạn bè",         CharacterMenuActionKind.Server),
             new CharacterMenuEntry(CharacterMenuAction.Mail,           "Hộp thư",        CharacterMenuActionKind.Server),
-            // Chat cộng đồng/bang: mở panel chat cần channel-picker riêng (Phase 5).
-            // Không gửi opcode ở lần bấm menu — chỉ khi Submit text mới gửi CHAT_GLOBAL / GUILD_CHAT.
-            new CharacterMenuEntry(CharacterMenuAction.CommunityChat,  "Chat cộng đồng", CharacterMenuActionKind.Client),
+            // Chat khu vực và cộng đồng đã nằm cố định ở thanh dưới HUD nên không lặp lại trong menu.
             new CharacterMenuEntry(CharacterMenuAction.GuildChat,      "Chat bang hội",  CharacterMenuActionKind.Client),
-            new CharacterMenuEntry(CharacterMenuAction.PlaceChat,      "Chat khu vực",   CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Wardrobe,       "Tủ quần áo",     CharacterMenuActionKind.Server),
             new CharacterMenuEntry(CharacterMenuAction.SelectPet,      "Chọn pet",       CharacterMenuActionKind.Server),
             // Trang bị pet: gửi EQUIP_INFO với userId self → server bơm EQUIP_INFO xuống.
@@ -84,7 +78,7 @@ namespace Gopet.UiLogic
             new CharacterMenuEntry(CharacterMenuAction.Channels,       "Đổi khu vực",    CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Teleport,       "Bản đồ",         CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Tasks,          "Nhiệm vụ",       CharacterMenuActionKind.Server),
-            new CharacterMenuEntry(CharacterMenuAction.AutoAttack,     "Tự đánh quái",   CharacterMenuActionKind.Server),
+            new CharacterMenuEntry(CharacterMenuAction.AutoAttack,     "Tự đánh quái",   CharacterMenuActionKind.Client),
             // Ngân hàng (ATM): trigger opcode 44 top-level → server bơm ListOption 3 dòng
             // qua Guider generic — không cần UI riêng.
             new CharacterMenuEntry(CharacterMenuAction.Bank,           "Ngân hàng",      CharacterMenuActionKind.Server),
@@ -151,12 +145,6 @@ namespace Gopet.UiLogic
                     // PET_SERVICE/54 mở danh sách nhiệm vụ đang nhận; các màn tiếp theo
                     // đều dùng MenuScreen/ListOption server-driven.
                     message = Message.Create(GopetCmd.PET_SERVICE).PutSByte(GopetCmd.SHOW_LIST_TASK);
-                    return true;
-
-                case CharacterMenuAction.AutoAttack:
-                    // Server chọn quái rảnh đầu tiên trong khu và bắt đầu battle nếu nhân vật
-                    // chưa chiến đấu. Đây là một lần kích hoạt, không phải vòng spam client.
-                    message = Message.Create(GopetCmd.PET_SERVICE).PutSByte(GopetCmd.AUTO_ATTACK_SUPPORT);
                     return true;
 
                 default:

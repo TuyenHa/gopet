@@ -16,6 +16,13 @@ namespace Gopet.Net.Tests
             return (round.Id, sub, ints);
         }
 
+        [Fact] public void RequestHiddenStats_101_NoPlayerControlledId()
+        {
+            var r = Roundtrip(PetEquipPackets.RequestHiddenStats(), 0);
+            Assert.Equal(GopetCmd.PET_SERVICE, r.opcode);
+            Assert.Equal(GopetCmd.HIDDEN_STATS_INFO, r.sub);
+        }
+
         [Fact] public void Equip_29_Int()
         {
             var r = Roundtrip(PetEquipPackets.Equip(1001), 1);

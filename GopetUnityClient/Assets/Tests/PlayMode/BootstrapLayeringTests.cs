@@ -85,22 +85,23 @@ namespace Gopet.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator NutAmThanh_AnKhiSplash_HienLaiSauKhiDong()
+        public IEnumerator Bootstrap_KhongTaoMinimap()
         {
             _host = new GameObject("Bootstrap");
             _host.AddComponent<GopetBootstrap>();
 
             yield return null;
 
+            var minimap = Object.FindAnyObjectByType<MinimapWidget>(FindObjectsInactive.Include);
             var soundToggle = Object.FindAnyObjectByType<SoundToggleButton>(FindObjectsInactive.Include);
             var splash = Object.FindAnyObjectByType<JarSplashScreen>();
-            Assert.IsNotNull(soundToggle);
+            Assert.IsNull(minimap, "Minimap đã ẩn nhưng Bootstrap vẫn tạo GameObject thừa.");
+            Assert.IsNull(soundToggle, "Nút loa cũ vẫn còn được bootstrap dựng.");
             Assert.IsNotNull(splash);
-            Assert.IsFalse(soundToggle.gameObject.activeSelf, "Nút âm thanh đang đè lên tranh splash.");
 
             splash.OnPointerClick(new PointerEventData(EventSystem.current));
 
-            Assert.IsTrue(soundToggle.gameObject.activeSelf, "Nút âm thanh không hiện lại sau splash.");
+            Assert.IsNull(Object.FindAnyObjectByType<MinimapWidget>(FindObjectsInactive.Include));
         }
 
         /// <summary>Không có EventSystem thì không cú chạm nào tới được uGUI.</summary>

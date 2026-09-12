@@ -76,6 +76,14 @@ namespace Gopet.Runtime
             _connectPending = true;
         }
 
+        /// <summary>Đóng kết nối do người dùng chủ động đăng xuất.</summary>
+        public void Disconnect()
+        {
+            _connectPending = false;
+            _pendingDisconnectReason = null;
+            Cleanup();
+        }
+
         public void Send(Message message)
         {
             if (!IsConnected)

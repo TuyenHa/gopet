@@ -65,7 +65,15 @@ namespace Gopet.Runtime.World
         public static Tile TileFromMap(JarMapLayout map, int strip, int cell)
         {
             if (strip < 0 || strip >= map.ImageCount) return null;
-            var imageId = map.ResourceIds[strip];
+            return TileFromImage(map.ResourceIds[strip], cell);
+        }
+
+        /// <summary>
+        /// Lấy tile trực tiếp theo id ảnh. MapRenderer dùng hàm này cho các skin map cục bộ
+        /// có cùng bố cục ô với strip gốc (ví dụ viền đá riêng của Thành Phố Linh Thú).
+        /// </summary>
+        public static Tile TileFromImage(int imageId, int cell)
+        {
             var key = imageId * 100 + cell;
             if (TileCache.TryGetValue(key, out var cached) && cached != null) return cached;
             var sprite = Cell(imageId, cell);

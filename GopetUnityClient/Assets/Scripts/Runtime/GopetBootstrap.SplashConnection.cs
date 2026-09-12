@@ -8,7 +8,7 @@ namespace Gopet.Runtime
     /// <summary>Kiểm tra máy chủ trong lúc splash còn hiện và chặn chuyển màn khi lỗi.</summary>
     public sealed partial class GopetBootstrap
     {
-        private void StartSplashConnection(Transform canvasParent, Font font, SoundToggleButton soundToggle)
+        private void StartSplashConnection(Transform canvasParent, Font font)
         {
             _login.SetPresentationEnabled(false);
 
@@ -36,7 +36,6 @@ namespace Gopet.Runtime
                 _flow.StageChanged -= stageChanged;
                 popup.Hide();
                 _login.SetPresentationEnabled(true);
-                soundToggle.gameObject.SetActive(true);
             };
 
             _flow.Start(host, port);

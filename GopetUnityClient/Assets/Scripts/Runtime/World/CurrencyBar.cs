@@ -21,12 +21,12 @@ namespace Gopet.Runtime.World
     public sealed class CurrencyBar : MonoBehaviour
     {
         // Layout hàng ngang COMPACT — không chèn HUD trái (CharacterHud) & phải (ShopServiceEventHud).
-        // Icon 18×18, text ngắn (100k/1.5M) → 1 item ~ 55px + gap 6 + padding 6.
-        private const float IconSize = 18f;
-        private const float ItemMinWidth = 52f;
-        private const float ItemHeight = 22f;
-        private const float ItemGap = 6f;
-        private const float PanelPadding = 6f;
+        // Bản compact để cụm vàng/đậu/lượng không chạm nhóm icon cửa hàng bên phải.
+        private const float IconSize = 14f;
+        private const float ItemMinWidth = 48f;
+        private const float ItemHeight = 20f;
+        private const float ItemGap = 4f;
+        private const float PanelPadding = 4f;
 
         private static readonly (string label, Color color)[] IconStyles =
         {
@@ -52,12 +52,12 @@ namespace Gopet.Runtime.World
                 typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
             go.transform.SetParent(parent, false);
 
-            // Neo top-left, đặt CẠNH PHẢI của CharacterHud (rộng 260 + margin 12 = 272)
+            // Neo top-left, đặt CẠNH PHẢI của CharacterHud (rộng 240 + margin 12 = 252)
             // để không chạm shop icons ở góc phải-trên (ShopServiceEventHud).
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(288f, -8f);
+            rect.anchoredPosition = new Vector2(268f, -8f);
             rect.sizeDelta = new Vector2(0f, ItemHeight + PanelPadding * 2);
 
             var panel = go.GetComponent<Image>();
@@ -129,7 +129,7 @@ namespace Gopet.Runtime.World
             var go = new GameObject($"Item:{name}", typeof(RectTransform), typeof(HorizontalLayoutGroup));
             go.transform.SetParent(transform, false);
             var layout = go.GetComponent<HorizontalLayoutGroup>();
-            layout.spacing = 4f;
+            layout.spacing = 2f;
             layout.childAlignment = TextAnchor.MiddleLeft;
             // childControlWidth = true là bắt buộc: nếu false, HorizontalLayoutGroup KHÔNG
             // ghi đè sizeDelta của child → icon/text render ở 100×100 mặc định của
@@ -140,16 +140,18 @@ namespace Gopet.Runtime.World
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
             var le = go.AddComponent<LayoutElement>();
+            le.minWidth = ItemMinWidth;
+            le.preferredWidth = ItemMinWidth;
             le.preferredHeight = ItemHeight;
 
             MakeIcon(go.transform, style);
 
-            var text = UiBuilder.MakeText(go.transform, _font, "Value", 12, false);
+            var text = UiBuilder.MakeText(go.transform, _font, "Value", 11, false);
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleLeft;
             text.color = Color.white;
             var tle = text.gameObject.AddComponent<LayoutElement>();
-            tle.preferredWidth = 44f;   // đủ cho "100.0k" ~ 6 char, không dài hơn
+            tle.preferredWidth = 32f;   // đủ cho "999.9k" ở cỡ chữ compact
             tle.preferredHeight = ItemHeight;
             var shadow = text.gameObject.AddComponent<Shadow>();
             shadow.effectColor = new Color(0f, 0f, 0f, 0.9f);

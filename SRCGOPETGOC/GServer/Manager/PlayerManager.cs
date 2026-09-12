@@ -172,6 +172,61 @@ public class PlayerManager : UpdateThread
         chatGlobal("Máy chủ", text);
     }
 
+    /// <summary>
+    /// Gửi thông báo boss bằng cả protocol banner cũ (cho J2ME) và protocol boss riêng
+    /// (cho Unity). Unity chỉ nối ticker với BOSS_BANNER_MESSAGE nên banner đăng nhập
+    /// hoặc banner hệ thống khác không làm thanh thông báo xuất hiện.
+    /// </summary>
+    public static void showBossBannerZ(String text)
+    {
+        Message legacy = new Message(GopetCMD.SERVER_MESSAGE);
+        legacy.putsbyte(GopetCMD.BANNER_MESSAGE);
+        legacy.putUTF(text);
+        legacy.writer().flush();
+        sendMessage(legacy);
+
+        Message boss = new Message(GopetCMD.SERVER_MESSAGE);
+        boss.putsbyte(GopetCMD.BOSS_BANNER_MESSAGE);
+        boss.putUTF(text);
+        boss.writer().flush();
+        sendMessage(boss);
+
+        chatGlobal("Máy chủ", text);
+    }
+
+    public static void showBossBanner(Func<LanguageData, string> func)
+    {
+        Dictionary<LanguageData, Message> legacyMessages = new Dictionary<LanguageData, Message>();
+        Dictionary<LanguageData, Message> bossMessages = new Dictionary<LanguageData, Message>();
+        foreach (var item in GopetManager.Language)
+        {
+            string text = func.Invoke(item.Value);
+
+            Message legacy = new Message(GopetCMD.SERVER_MESSAGE);
+            legacy.putsbyte(GopetCMD.BANNER_MESSAGE);
+            legacy.putUTF(text);
+            legacy.writer().flush();
+            legacyMessages[item.Value] = legacy;
+
+            Message boss = new Message(GopetCMD.SERVER_MESSAGE);
+            boss.putsbyte(GopetCMD.BOSS_BANNER_MESSAGE);
+            boss.putUTF(text);
+            boss.writer().flush();
+            bossMessages[item.Value] = boss;
+
+            if (item.Key == "vi")
+            {
+                chatGlobal("Máy chủ", text);
+            }
+        }
+
+        foreach (var player in players)
+        {
+            player.session.sendMessage(legacyMessages[player.Language]);
+            player.session.sendMessage(bossMessages[player.Language]);
+        }
+    }
+
     public static void showBanner(Func<LanguageData, string> func)
     {
         Dictionary<LanguageData, Message> messages = new Dictionary<LanguageData, Message>();

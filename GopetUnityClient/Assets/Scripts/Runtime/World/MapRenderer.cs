@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Gopet.Runtime.UI;
 using Gopet.UiLogic;
 using UnityEngine;
@@ -15,11 +16,35 @@ namespace Gopet.Runtime.World
     /// </summary>
     public sealed class MapRenderer : MonoBehaviour
     {
+        private const int BeastCityMapId = 11;
+        private const int SnowGrassImageIdA = 161;
+        private const int SnowGrassImageIdB = 162;
+        private const int SnowBorderImageId = 3;
+        private const int GrassImageIdA = 11161;
+        private const int GrassImageIdB = 11162;
+        private const int StoneBorderImageId = 11003;
+
+        private static Material _unlitMaterial;
+        private readonly List<MapPortalView> _portals = new List<MapPortalView>();
+        private Transform _self;
+        private int _mapId;
+
         /// <summary>Map hiện đang render — để component khác (camera, MovementController) đọc kích thước.</summary>
         public JarMapLayout Map { get; private set; }
 
         public event System.Action<JarMapEntity> PortalSelected;
         public event System.Action<JarMapEntity> BuildingSelected;
+
+        /// <summary>
+        /// MapScene gọi khi self avatar spawn/đổi map — mọi portal cần biết vị trí self
+        /// để tự bật/tắt nút "Vào" theo khoảng cách (xem <see cref="MapPortalView"/>).
+        /// </summary>
+        public void SetSelf(Transform self)
+        {
+            _self = self;
+            foreach (var portal in _portals)
+                if (portal != null) portal.SetSelfTransform(self);
+        }
 
         /// <summary>Dựng map lên một <see cref="GameObject"/> mới dưới <paramref name="parent"/>.</summary>
         public static MapRenderer Create(Transform parent, int mapId)
@@ -28,6 +53,7 @@ namespace Gopet.Runtime.World
             if (parent != null) go.transform.SetParent(parent, false);
 
             var renderer = go.AddComponent<MapRenderer>();
+            renderer._mapId = mapId;
             renderer.Build(JarMaps.Load(mapId));
             return renderer;
         }
@@ -55,6 +81,7 @@ namespace Gopet.Runtime.World
                 var tilemap = layerGo.GetComponent<Tilemap>();
                 var tileRenderer = layerGo.GetComponent<TilemapRenderer>();
                 tileRenderer.sortingOrder = sortingOrder;
+                ApplyUnlitMaterial(tileRenderer);
                 // Sprite tile có pivot trên-trái để dùng chung với nền uGUI. Neo nó
                 // vào góc trên-trái của cell; mặc định (0.5,0.5) làm cả map lệch 12 px.
                 tilemap.tileAnchor = new Vector3(0f, 1f, 0f);
@@ -67,16 +94,33 @@ namespace Gopet.Runtime.World
                     {
                         var tile = layer[row][col];
                         var strip = JarMapLayout.StripOf(tile);
-                        if (strip < 0) continue;
+                        if (strip < 0 || strip >= map.ImageCount) continue;
 
                         var unityRow = map.HeightTiles - 1 - row;
-                        tiles[unityRow * map.WidthTiles + col] =
-                            TileAssetProvider.TileFromMap(map, strip, JarMapLayout.CellOf(tile));
+                        var imageId = ResolveSkinImageId(_mapId, map.ResourceIds[strip]);
+
+                        // Các strip thay thế giữ nguyên thứ tự ô gốc, nên dữ liệu map tự xếp đúng
+                        // cỏ, nền đường, cạnh và góc đá mà không phải sửa file map nhị phân.
+                        tiles[unityRow * map.WidthTiles + col] = TileAssetProvider.TileFromImage(
+                            imageId, JarMapLayout.CellOf(tile));
                     }
                 }
+
                 tilemap.SetTilesBlock(bounds, tiles);
                 tilemap.CompressBounds();
             }
+        }
+
+        private static int ResolveSkinImageId(int mapId, int imageId)
+        {
+            if (mapId == BeastCityMapId)
+            {
+                if (imageId == SnowGrassImageIdA) return GrassImageIdA;
+                if (imageId == SnowGrassImageIdB) return GrassImageIdB;
+                if (imageId == SnowBorderImageId) return StoneBorderImageId;
+            }
+
+            return imageId;
         }
 
         /// <summary>
@@ -126,6 +170,8 @@ namespace Gopet.Runtime.World
                 if (string.IsNullOrEmpty(entity.Name)) continue;
                 var portal = MapPortalView.Create(transform, entity, map, map.HeightPixels);
                 portal.Selected += e => PortalSelected?.Invoke(e);
+                _portals.Add(portal);
+                if (_self != null) portal.SetSelfTransform(_self);
             }
         }
 
@@ -139,6 +185,26 @@ namespace Gopet.Runtime.World
             var sr = go.GetComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.sortingOrder = sortingOrder;
+            ApplyUnlitMaterial(sr);
+        }
+
+        private static void ApplyUnlitMaterial(Renderer renderer)
+        {
+            if (_unlitMaterial == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")
+                             ?? Shader.Find("Sprites/Default");
+                if (shader != null)
+                {
+                    _unlitMaterial = new Material(shader)
+                    {
+                        name = "Gopet World Sprite Unlit",
+                        hideFlags = HideFlags.HideAndDontSave
+                    };
+                }
+            }
+
+            if (_unlitMaterial != null) renderer.sharedMaterial = _unlitMaterial;
         }
     }
 }

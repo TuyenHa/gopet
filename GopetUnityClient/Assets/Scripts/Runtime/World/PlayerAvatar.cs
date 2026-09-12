@@ -33,6 +33,10 @@ namespace Gopet.Runtime.World
 
         public int UserId { get; private set; }
         public string PlayerName { get; private set; }
+        /// <summary>Current foot coordinate in the map's top-down JAR coordinate system.</summary>
+        public int JarY => _targetJarY;
+        public (int jarX, int jarY) JarPosition =>
+            MapPlacement.WorldToJar(_interp.X, _interp.Y, _mapHeightPixels);
 
         public static PlayerAvatar Spawn(Transform parent, int userId, string name, int gender,
             int jarX, int jarY, int mapHeightPixels)

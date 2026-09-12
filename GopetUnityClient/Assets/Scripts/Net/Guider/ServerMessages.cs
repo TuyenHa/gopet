@@ -1,6 +1,6 @@
 namespace Gopet.Net.Guider
 {
-    /// <summary>Payload UTF duy nhất của POPUP_MESSAGE và BANNER_MESSAGE.</summary>
+    /// <summary>Payload UTF của POPUP_MESSAGE, BANNER_MESSAGE và BOSS_BANNER_MESSAGE.</summary>
     public static class ServerTextMessage
     {
         public static string Parse(Message message, string label)

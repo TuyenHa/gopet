@@ -52,7 +52,10 @@ namespace Gopet.Runtime.World
             mc._mapId = mapId;
             mc._userId = userId;
             mc._jarX = initialJarX;
-            mc._jarY = initialJarY;
+            mc._jarY = MapCollision.NearestVisiblePlayerY(
+                scene.Map?.Map, initialJarX, initialJarY);
+            if (mc._jarY != initialJarY)
+                scene.Self?.SnapTo(initialJarX, (int)mc._jarY);
             return mc;
         }
 
@@ -100,10 +103,19 @@ namespace Gopet.Runtime.World
             var nextY = _jarY + dy * delta;
             var map = _scene.Map?.Map;
             if (MapCollision.CanStand(map, Mathf.RoundToInt(nextX), Mathf.RoundToInt(_jarY))) _jarX = nextX;
-            if (MapCollision.CanStand(map, Mathf.RoundToInt(_jarX), Mathf.RoundToInt(nextY))) _jarY = nextY;
+            // Enforce the visual top margin only while travelling upward. A server spawn/warp
+            // inside that margin must still be able to walk downward instead of becoming stuck.
+            var canMoveY = dy < 0f
+                ? MapCollision.CanPlayerStand(map, Mathf.RoundToInt(_jarX), Mathf.RoundToInt(nextY))
+                : MapCollision.CanStand(map, Mathf.RoundToInt(_jarX), Mathf.RoundToInt(nextY));
+            if (canMoveY) _jarY = nextY;
 
             LastDirection = MapPlacement.Direction4(Mathf.RoundToInt(dx * 100), Mathf.RoundToInt(dy * 100));
-            if (_camera != null) _camera.FaceRight = LastDirection == 0;
+            // Walking vertically must keep the last horizontal look direction. Resetting it to
+            // left on every up/down frame makes the camera jump sideways and also disturbs the
+            // apparent pet trail at corners.
+            if (_camera != null && (LastDirection == 0 || LastDirection == 1))
+                _camera.FaceRight = LastDirection == 0;
 
             _scene.Self.SnapTo((int)_jarX, (int)_jarY);
             _scene.Self.SetLocomotion(LastDirection, true);
@@ -121,7 +133,9 @@ namespace Gopet.Runtime.World
             if (_sampler.Recording) _sampler.Flush((int)_jarX, (int)_jarY);
             _mapId = mapId;
             _jarX = jarX;
-            _jarY = jarY;
+            _jarY = MapCollision.NearestVisiblePlayerY(_scene.Map?.Map, jarX, jarY);
+            if (_jarY != jarY)
+                _scene.Self?.SnapTo(jarX, (int)_jarY);
         }
 
         private (float dx, float dy) ReadDirection()

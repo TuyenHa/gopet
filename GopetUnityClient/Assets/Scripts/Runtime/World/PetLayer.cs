@@ -41,7 +41,10 @@ namespace Gopet.Runtime.World
                 if (_pets.TryGetValue(e.OwnerUserId, out var existing))
                 {
                     // Same owner, entry đổi → refresh (Destroy old, Create new).
-                    Destroy(existing.gameObject);
+                    // existing có thể đã tự huỷ (PetAvatar.LateUpdate khi owner mất do đổi
+                    // map) mà không báo lại cho PetLayer — check null (Unity override ==)
+                    // trước khi Destroy, tránh MissingReferenceException.
+                    if (existing != null) Destroy(existing.gameObject);
                     _pets.Remove(e.OwnerUserId);
                 }
                 Spawn(e);
@@ -57,7 +60,7 @@ namespace Gopet.Runtime.World
             _pending.Remove(ownerUserId);
             if (_pets.TryGetValue(ownerUserId, out var pet))
             {
-                Destroy(pet.gameObject);
+                if (pet != null) Destroy(pet.gameObject);
                 _pets.Remove(ownerUserId);
             }
         }

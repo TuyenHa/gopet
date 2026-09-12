@@ -1,11 +1,24 @@
 ---
 phase: 4
 title: "Test & Parity"
-status: pending
+status: completed
 priority: P2
 effort: "0.5d"
 dependencies: [2, 3]
 ---
+
+## Kết quả (2026-09-11)
+
+- Unit test logic thuần: dùng bộ test sẵn có (`JarMapLayoutTests` trên `maps/11.dat` thật,
+  `BuildingDispatcherTests` 10 case buildingType→opcode) — không dựng fixture byte tự chế theo
+  đúng quy ước đã chốt trong codebase. `dotnet test`: 625/625 PASS.
+- **`WarpChecks.cs` mới** thêm vào `Gopet.Net.LiveSmoke`, chạy byte thật qua GServer đang sống:
+  warp map 11 → 15 (Đại Linh Cảnh) → về 11, cả hai chiều PASS. Xem
+  `reports/parity-warp-shop.md`.
+- `verify.ps1`: 9/10 — check 10/10 (200 dòng/file) fail trên 12 file nợ kỹ thuật có từ trước,
+  không liên quan phase này.
+- Còn lại: đối chiếu ảnh chụp Unity↔jar bằng tay (thị giác thuần, không tự động hoá được) và bấm
+  tay 6/7 shop còn lại (đã khoá đúng wire bằng test, chưa bấm tay xác nhận UI).
 
 # Phase 4: Test & Parity
 

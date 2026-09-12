@@ -27,7 +27,7 @@ try:
 except ImportError:
     sys.exit("Missing dependency 'python-dotenv'. Run: pip install -r requirements.txt")
 
-MODEL = "gpt-image-1.5"
+MODEL = "gpt-image-2"
 VALID_SIZES = ("1024x1024", "1024x1536", "1536x1024", "auto")
 VALID_QUALITY = ("low", "medium", "high", "auto")
 DEFAULT_OUTPUT_DIR = Path(__file__).parent / "output"

@@ -60,7 +60,7 @@ Khối lượng thật: **696 vị trí `put*`** trên server = số field clien
 | 5.1 | [Asset từ jar + màn đăng nhập J2ME](./phase-05-1-jar-assets-and-login-skin.md) | Code xong, verify + PlayMode xanh (108/108); còn đối chiếu ảnh chụp FreeJ2ME bằng tay |
 | 6 | [Map Rendering & Movement](./phase-06-map-rendering-movement.md) | End-to-end xanh (INIT_PLAYER/MAP_UPDATE/move-echo LiveSmoke pass); còn Memory Profiler + Android fps + jar diff-dump chờ device/manual |
 | 7 | [Pet Battle](./phase-07-pet-battle-outline.md) | PvE + PvP live-smoke đều xanh (byte thật qua GServer, 2 tài khoản PvP riêng) — chỉ còn PlayMode Editor Test Runner, chờ đóng Unity |
-| 8 | [Long Tail Features (Outline)](./phase-08-long-tail-features-outline.md) | In progress — server dialogs complete; critical HUD/security baseline implemented |
+| 8 | [Long Tail Features (Outline)](./phase-08-long-tail-features-outline.md) | In progress — ~65 items complete; dialogs/HUD/guild/security/kiosk hardening done; ChallengePlace/MarketPlace live-certified; ArenaPlace/ClanPlace blocked; Pet League → separate plan |
 
 **P5.1 nằm ngoài đường găng.** Nó là việc mỹ thuật, hoãn hoặc cắt được, không đụng dòng logic nào.
 

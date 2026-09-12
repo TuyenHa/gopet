@@ -63,6 +63,7 @@ namespace Gopet.Net.LiveSmoke
 
             if (!AcquireFreePet(socket, router, guider, () => freePetMenu)) return;
             if (!SelectPetToFollow(socket, router, () => petInventory)) return;
+            RemainingParityChecks.Run(socket, router);
             if (!WarpToMobMap(socket, router, mapHandler)) return;
             if (!WaitForMobs(socket, router, () => mobs)) return;
 

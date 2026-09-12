@@ -3,22 +3,23 @@ using System;
 namespace Gopet.Net.Guild
 {
     /// <summary>
-    /// Bắt gói <c>PET_SERVICE (81) / CLAN (91) / CLAN_INFO (14)</c> để lấy <b>clanId</b>
-    /// của self. Wire (server) — xem <c>GameController.clanInfo</c> (line 2509):
-    /// <code>int clanId, sbyte count, count × UTF description</code>.
-    ///
-    /// <para>Chỉ đọc clanId — description lines không cần cho chat SEND. View đầy đủ
-    /// cho panel bang hội sẽ dựng riêng khi mở Phase 8 guild.</para>
+    /// Dispatches all <c>PET_SERVICE (81) / CLAN (91) / sub</c> responses.
+    /// Parsing lives in the partial file <c>GuildInfoHandler.Parsers.cs</c>.
     /// </summary>
-    public sealed class GuildInfoHandler
+    public sealed partial class GuildInfoHandler
     {
-        // Sub trong CLAN family.
-        private const sbyte SubClanInfo = 14;
-
-        /// <summary>Bang hiện tại; 0 nếu chưa có bang / chưa nhận CLAN_INFO.</summary>
         public int ClanId { get; private set; }
 
         public event Action<int> ClanIdChanged;
+        public event Action<GuildClanInfo> ClanInfoReceived;
+        public event Action<GuildListResponse> GuildListReceived;
+        public event Action<GuildMemberListResponse> MemberListReceived;
+        public event Action<GuildDonateResponse> DonateOptionsReceived;
+        public event Action<GuildTopResponse> TopFundReceived;
+        public event Action<GuildChatHistory> ChatHistoryReceived;
+        public event Action<GuildChatIncoming> ChatMessageReceived;
+        public event Action<GuildSkillResponse> SkillInfoReceived;
+        public event Action<GuildNameInPlace> NameInPlaceReceived;
 
         public void RegisterOn(MessageRouter router)
         {
@@ -34,16 +35,40 @@ namespace Gopet.Net.Guild
             var sub = r.ReadSByte();
             switch (sub)
             {
-                case SubClanInfo:
-                    var clanId = r.ReadInt();
-                    // Bỏ qua phần description — không parse để giữ handler nhỏ.
-                    if (clanId != ClanId)
-                    {
-                        ClanId = clanId;
-                        ClanIdChanged?.Invoke(clanId);
-                    }
+                case GopetCmd.GUILD_LIST:
+                    GuildListReceived?.Invoke(ParseGuildList(r));
                     break;
-                // Sub khác (donate/topFund/…) chưa cần trong scope này.
+                case GopetCmd.CLAN_INFO_MEMBER:
+                    MemberListReceived?.Invoke(ParseMemberList(r));
+                    break;
+                case GopetCmd.DONATE_CLAN:
+                    DonateOptionsReceived?.Invoke(ParseDonateOptions(r));
+                    break;
+                case GopetCmd.CLAN_INFO:
+                    var info = ParseClanInfo(r);
+                    if (info.ClanId != ClanId)
+                    {
+                        ClanId = info.ClanId;
+                        ClanIdChanged?.Invoke(info.ClanId);
+                    }
+                    ClanInfoReceived?.Invoke(info);
+                    break;
+                case GopetCmd.GUILD_TOP_GROWTH_POINT:
+                case GopetCmd.GUILD_TOP_FUND:
+                    TopFundReceived?.Invoke(ParseTopResponse(r));
+                    break;
+                case GopetCmd.GUILD_CHAT:
+                    ChatHistoryReceived?.Invoke(ParseChatHistory(r));
+                    break;
+                case GopetCmd.GUILD_ON_PLAYER_CHAT:
+                    ChatMessageReceived?.Invoke(ParseChatIncoming(r));
+                    break;
+                case GopetCmd.GUILD_NAME_IN_PLACE:
+                    NameInPlaceReceived?.Invoke(ParseNameInPlace(r));
+                    break;
+                case GopetCmd.GUILD_CLAN_SKILL:
+                    SkillInfoReceived?.Invoke(ParseSkillInfo(r));
+                    break;
             }
         }
     }

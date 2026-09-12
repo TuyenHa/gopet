@@ -67,5 +67,23 @@ namespace Gopet.Net.Tests
             var handler = new ChatHandler();
             Assert.Throws<System.InvalidOperationException>(() => handler.SendChat("x"));
         }
+
+        [Fact]
+        public void GlobalChat_DocDungNguoiGuiVaNoiDung()
+        {
+            var router = new MessageRouter();
+            var handler = new ChatHandler();
+            handler.RegisterOn(router);
+            GlobalChat received = null;
+            handler.GlobalChatReceived += value => received = value;
+
+            using var built = Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.CHAT_GLOBAL).PutUtf("Admin").PutUtf("Thông báo");
+            router.Dispatch(Message.FromWire(built.ToWire(), false));
+
+            Assert.NotNull(received);
+            Assert.Equal("Admin", received.Sender);
+            Assert.Equal("Thông báo", received.Text);
+        }
     }
 }

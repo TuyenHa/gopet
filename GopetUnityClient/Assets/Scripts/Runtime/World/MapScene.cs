@@ -30,6 +30,12 @@ namespace Gopet.Runtime.World
         public Transform TryGetAvatarTransform(int userId) =>
             _avatars.TryGetValue(userId, out var a) && a != null ? a.transform : null;
 
+        /// <summary>Tên hiển thị của người chơi trên map, dùng cho lịch sử chat khu vực.</summary>
+        public string TryGetAvatarName(int userId) =>
+            _avatars.TryGetValue(userId, out var avatar) && avatar != null
+                ? avatar.PlayerName
+                : null;
+
         public void ApplySkin(int userId, string path, RemoteAssetCache assets)
         {
             if (_avatars.TryGetValue(userId, out var avatar) && avatar != null)
@@ -118,6 +124,7 @@ namespace Gopet.Runtime.World
             if (faceDir.HasValue) avatar.SetLocomotion(faceDir.Value, false);
             avatar.Tapped += OnAvatarTapped;
             _avatars[userId] = avatar;
+            if (userId == _selfUserId) _map.SetSelf(avatar.transform);
             AvatarSpawned?.Invoke(avatar);
             return avatar;
         }

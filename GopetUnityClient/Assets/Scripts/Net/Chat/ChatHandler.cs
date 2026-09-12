@@ -12,6 +12,13 @@ namespace Gopet.Net.Chat
         public bool IsPetInteraction => Text == "kiss" || Text == "play" || Text == "poke";
     }
 
+    /// <summary>Tin nhắn cộng đồng do server phát cho mọi người chơi.</summary>
+    public sealed class GlobalChat
+    {
+        public string Sender;
+        public string Text;
+    }
+
     /// <summary>
     /// Chat khu vực (<c>ON_PLACE_CHAT</c>, opcode 9). Thuần C# — testable, cùng pattern
     /// với <c>MapHandler</c>.
@@ -34,11 +41,14 @@ namespace Gopet.Net.Chat
 
         /// <summary>Server bơm chat khu vực xuống — client hiện bong bóng.</summary>
         public event Action<PlaceChat> ChatReceived;
+        public event Action<GlobalChat> GlobalChatReceived;
 
         public void RegisterOn(MessageRouter router)
         {
             if (router == null) throw new ArgumentNullException(nameof(router));
             router.Register(GopetCmd.ON_PLACE_CHAT, OnChat);
+            router.RegisterEnvelope(GopetCmd.PET_SERVICE);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.CHAT_GLOBAL, OnGlobalChat);
         }
 
         /// <summary>Gửi chat khu vực. Text UTF-8, không giới hạn độ dài phía server nhưng client cắt trước ở tầng UI.</summary>
@@ -60,6 +70,17 @@ namespace Gopet.Net.Chat
                 Text = r.ReadUtf()
             };
             ChatReceived?.Invoke(evt);
+        }
+
+        private void OnGlobalChat(Message msg)
+        {
+            var value = new GlobalChat
+            {
+                Sender = msg.Reader.ReadUtf(),
+                Text = msg.Reader.ReadUtf()
+            };
+            msg.Reader.ExpectFullyConsumed("CHAT_GLOBAL");
+            GlobalChatReceived?.Invoke(value);
         }
     }
 }

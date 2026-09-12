@@ -201,6 +201,10 @@ public class GameController
     private long timeMove = Utilities.CurrentTimeMillis;
     private int hackMoveCounter = 0;
     public const long TIME_MOVE_SEND = 2000;
+    // Client gửi một path tối đa mỗi 2 giây. 600 px là hơn ba lần tốc độ
+    // đi Unity/J2ME chuẩn trong khoảng đó, đủ dung sai mạng nhưng không cho
+    // phép thay đổi tọa độ hàng nghìn pixel trong một gói.
+    private const long MAX_MOVE_DISTANCE_PX = 600;
 
     public void onMessage(Message message)
     {
@@ -225,25 +229,41 @@ public class GameController
                     GopetPlace place = (GopetPlace)player.getPlace();
                     if (place != null)
                     {
+                        // Reject obviously forged paths before broadcasting them.  The
+                        // J2ME client emits at most a short path every two seconds;
+                        // accepting arbitrarily long/high-frequency paths lets a
+                        // modified client teleport and also amplifies the packet to
+                        // every player in the place.
+                        if (!player.playerData.isAdmin)
+                        {
+                            var now = Utilities.CurrentTimeMillis;
+                            var targetX = points[points.Length - 2];
+                            var targetY = points[points.Length - 1];
+                            var deltaX = (long)targetX - player.playerData.x;
+                            var deltaY = (long)targetY - player.playerData.y;
+                            var isTeleport = deltaX * deltaX + deltaY * deltaY >
+                                MAX_MOVE_DISTANCE_PX * MAX_MOVE_DISTANCE_PX;
+                            if (points.Length > 30 || now - timeMove < TIME_MOVE_SEND || isTeleport)
+                            {
+                                hackMoveCounter++;
+                                if (hackMoveCounter > 200)
+                                {
+                                    player.user.ban(UserData.BAN_TIME, "HackMove", now + 60_000L * 15);
+                                    player.session.Close();
+                                    break;
+                                }
+                                break;
+                            }
+                            timeMove = now;
+                            // Decay the counter after a valid interval so a player
+                            // cannot be banned by a few isolated network retries.
+                            if (hackMoveCounter > 0) hackMoveCounter--;
+                        }
+
                         player.playerData.x = points[points.Length - 2];
                         player.playerData.y = points[points.Length - 1];
                         place.sendMove(player.user.user_id, b1, points);
                     }
-                    /*if (points.Length > 30 && !player.playerData.isAdmin)
-                    {
-                        hackMoveCounter++;
-                    }
-
-                    if (!(Utilities.CurrentTimeMillis - timeMove > TIME_MOVE_SEND) && !player.playerData.isAdmin)
-                    {
-                        hackMoveCounter++;
-                    }
-                    timeMove = Utilities.CurrentTimeMillis;
-
-                    if (hackMoveCounter > 200)
-                    {
-                        player.session.Close();
-                    }*/
                 }
                 break;
             case GopetCMD.ON_PLACE_CHAT:
@@ -1020,6 +1040,9 @@ public class GameController
             case GopetCMD.GET_PLAYER_INFO:
                 getInfo(message.readsbyte(), message.readInt());
                 break;
+            case GopetCMD.HIDDEN_STATS_INFO:
+                showSelectedPetHiddenStats();
+                break;
             case GopetCMD.TATTOO:
                 tatto(message.readsbyte(), message);
                 break;
@@ -1028,6 +1051,19 @@ public class GameController
                 break;
             case GopetCMD.REQUEST_SHOP:
                 requestShop(message.readsbyte());
+                break;
+            case GopetCMD.ARENA_MENU:
+                // The Unity/J2ME arena building sends one trailing mode byte.  The
+                // current server only exposes mode 0; consume it so malformed modes
+                // cannot desynchronise the PET_SERVICE envelope.
+                if (message.reader().readsbyte() == 0)
+                {
+                    showArenaHub();
+                }
+                else
+                {
+                    player.redDialog(player.Language.BugWarning);
+                }
                 break;
             case GopetCMD.UNEQUIP_ITEM:
                 unEquipItem(message.readInt());
@@ -1493,12 +1529,22 @@ public class GameController
 
     private void mapTeleMenu()
     {
+        // TELE_MENU phải chỉ quảng cáo map mà chính ON_PLAYER_WARPING cho phép.
+        // Trước đây map 26-28 vẫn được gửi cho người chưa mở thượng giới; chọn vào
+        // bị CheckSky từ chối, khiến client đã fade đen nhưng không nhận MapUpdated.
+        // Đồng thời TeleMapId có map 22 lặp hai lần nên loại trùng tại đây.
+        List<int> availableMapIds = new();
+        foreach (int mapId in GopetManager.TeleMapId)
+        {
+            if (mapId >= 26 && !player.playerData.isOnSky) continue;
+            if (!availableMapIds.Contains(mapId)) availableMapIds.Add(mapId);
+        }
+
         Message ms = new Message(GopetCMD.MGO_COMMAND);
         ms.putsbyte(GopetCMD.TELE_MENU);
-        ms.putsbyte((sbyte)GopetManager.TeleMapId.Length);
-        for (int i = 0; i < GopetManager.TeleMapId.Length; i++)
+        ms.putsbyte((sbyte)availableMapIds.Count);
+        foreach (int j in availableMapIds)
         {
-            int j = GopetManager.TeleMapId[i];
             GopetMap mapData = MapManager.maps.get(j);
             ms.putsbyte((sbyte)j);
             ms.putUTF(mapData.mapTemplate.getName(player));
@@ -1947,6 +1993,26 @@ public class GameController
                 equipInfo(user_id);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Hidden stats belong to a player's own selected pet. The request intentionally
+    /// carries no pet/user id, so a modified client cannot inspect another player's pet.
+    /// The existing dialog transport works on both J2ME and Unity clients.
+    /// </summary>
+    private void showSelectedPetHiddenStats()
+    {
+        var pet = player.getPet();
+        if (pet == null)
+        {
+            player.petNotFollow();
+            return;
+        }
+
+        var hidden = pet.TakeAllHiddenStat().Select(x => x.Comment).ToArray();
+        player.okDialog(hidden.Length == 0
+            ? "Thú cưng này chưa có kích ẩn."
+            : $"Những kích ẩn bao gồm: {string.Join(", ", hidden)}");
     }
 
     public void notEnoughCoin()
@@ -2779,7 +2845,9 @@ public class GameController
             m.putInt(sellItem.itemId);
             m.putUTF(sellItem.getFrameImgPath());
             m.putUTF(sellItem.getName(player));
-            m.putUTF(sellItem.getDescription(player));
+            m.putUTF(sellItem.pet == null
+                ? sellItem.getDescription(player)
+                : getKioskPetDescription(sellItem.pet));
             m.putInt(Utilities.round((sellItem.expireTime - Utilities.CurrentTimeMillis) / 1000l));
             if (sellItem.pet != null)
             {
@@ -4622,6 +4690,50 @@ public class GameController
         }
         m.cleanup();
         player.session.sendMessage(m);
+    }
+
+    /// <summary>
+    /// The KIOSK packet is also consumed by the legacy J2ME client, so preserve its
+    /// wire layout and enrich the existing description field for a pet listing.
+    /// </summary>
+    private string getKioskPetDescription(Pet pet)
+    {
+        var lines = new List<string>
+        {
+            pet.getPetTemplate().getDesc(),
+            $"Lv {pet.lvl}  ATK {pet.getAtk()}  DEF {pet.getDef()}",
+            $"HP {pet.maxHp}  MP {pet.maxMp}"
+        };
+
+        if (pet.skill != null && pet.skill.Length > 0)
+        {
+            var skills = pet.skill
+                .Where(x => x != null && x.Length >= 2 && GopetManager.PETSKILL_HASH_MAP.ContainsKey(x[0]))
+                .Select(x => $"{GopetManager.PETSKILL_HASH_MAP[x[0]].getName(player)} {x[1]}");
+            lines.Add("Kỹ năng: " + string.Join(", ", skills));
+        }
+
+        if (pet.tatto != null && pet.tatto.Count > 0)
+            lines.Add("Tattoo: " + string.Join(", ", pet.tatto.Select(x => x.getName(player))));
+
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>
+    /// Arena used to be a dead building click: the client sent PET_SERVICE/58 but
+    /// the server had no matching branch.  Keep the hub server-driven so both
+    /// clients reuse the generic list UI and all money/eligibility checks remain
+    /// in their existing handlers.
+    /// </summary>
+    private void showArenaHub()
+    {
+        var options = new JArrayList<Option>();
+        options.add(new Option(0, "Đăng ký đấu trường"));
+        options.add(new Option(1, "Bảng xếp hạng đấu trường"));
+        options.add(new Option(2, "Cửa hàng đấu trường"));
+        options.add(new Option(3, "Chọn thú phòng thủ League"));
+        options.add(new Option(4, "Top Pet League"));
+        player.controller.sendListOption(MenuController.MENU_ARENA_HUB, "Đấu trường", "", options);
     }
 
     private void requestJoinClanById(int clanId)

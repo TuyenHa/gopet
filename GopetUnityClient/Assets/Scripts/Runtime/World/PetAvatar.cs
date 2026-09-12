@@ -9,8 +9,8 @@ using UnityEngine;
 namespace Gopet.Runtime.World
 {
     /// <summary>
-    /// Sprite pet đi cùng player. Bám vào owner theo offset ngang phải,
-    /// cycle qua frame ~200ms.
+    /// Sprite pet đi cùng player. Đi lại đúng quỹ đạo cũ của owner ở một khoảng cách cố định,
+    /// kể cả khi rẽ góc hoặc quay đầu; cycle qua frame ~200ms.
     ///
     /// <para>Frame layout khớp <see cref="WorldActorView.Frames"/>: sprite là 1 strip
     /// ngang gồm N frame kề nhau (server bơm <c>frameNum</c>). Xẻ width/frameNum,
@@ -19,7 +19,10 @@ namespace Gopet.Runtime.World
     /// </summary>
     public sealed class PetAvatar : MonoBehaviour
     {
-        private const float FollowOffsetX = -28f; // pet đi kèm bên trái owner, cách 28 unit
+        private const float FollowDistance = 40f;
+        private const float InitialOffsetX = 28f;
+        private const float TrailSampleSpacing = 1.5f;
+        private const float TeleportDistance = 160f;
         private const float FrameInterval = 0.2f;
 
         private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
@@ -31,6 +34,9 @@ namespace Gopet.Runtime.World
         private float _nextFrameTime;
         private int _frame;
         private short _verticalOffset;
+        private readonly PositionTrail _trail = new PositionTrail();
+        private Vector3 _lastOwnerPosition;
+        private bool _positionInitialized;
 
         public int OwnerUserId { get; private set; }
 
@@ -43,6 +49,7 @@ namespace Gopet.Runtime.World
             view._owner = owner;
             view.OwnerUserId = entry.OwnerUserId;
             view._verticalOffset = entry.VerticalOffset;
+            view.SnapBesideOwner();
 
             var spriteGo = new GameObject("Sprite", typeof(SpriteRenderer));
             spriteGo.transform.SetParent(go.transform, false);
@@ -80,9 +87,30 @@ namespace Gopet.Runtime.World
             }
 
             var ownerPos = _owner.position;
-            transform.position = new Vector3(ownerPos.x + FollowOffsetX, ownerPos.y + _verticalOffset, ownerPos.z);
-            // Sort: pet cùng dòng với chân owner (dùng y ownerPos để match).
-            _renderer.sortingOrder = MapPlacement.ActorSortingOrder((int)(-ownerPos.y)) - 1;
+            if (!_positionInitialized) SnapBesideOwner();
+
+            if (Vector2.Distance(ownerPos, _lastOwnerPosition) >= TeleportDistance)
+            {
+                SnapBesideOwner();
+                ownerPos = _owner.position;
+            }
+
+            _trail.Add(ownerPos.x, ownerPos.y, TrailSampleSpacing);
+            if (_trail.TotalLength >= FollowDistance)
+            {
+                var (trailX, trailY) = _trail.PointBehind(FollowDistance);
+                transform.position = new Vector3(
+                    trailX, trailY + _verticalOffset, ownerPos.z);
+            }
+            _lastOwnerPosition = ownerPos;
+
+            // Use the owner's JAR foot row; converting from world Y here used to put pets in
+            // the wrong sorting band on tall maps.
+            var ownerAvatar = _owner.GetComponent<PlayerAvatar>();
+            var jarY = ownerAvatar != null ? ownerAvatar.JarY : 0;
+            var order = MapPlacement.ActorSortingOrder(jarY) - 1;
+            _renderer.sortingOrder = order;
+            _label?.SetSortingOrder(order + 20);
 
             if (_frames.Length > 1 && Time.time >= _nextFrameTime)
             {
@@ -90,6 +118,23 @@ namespace Gopet.Runtime.World
                 _frame = (_frame + 1) % _frames.Length;
                 _renderer.sprite = _frames[_frame];
             }
+        }
+
+        private void SnapBesideOwner()
+        {
+            if (_owner == null) return;
+            var ownerPos = _owner.position;
+            transform.position = new Vector3(
+                ownerPos.x + InitialOffsetX,
+                ownerPos.y + _verticalOffset,
+                ownerPos.z);
+            // Seed the trail from the pet's initial ground position to the owner. The pet can
+            // therefore wait visibly beside a stationary owner, then start following without
+            // a jump no matter which direction the owner moves first.
+            _trail.Reset(ownerPos.x + InitialOffsetX, ownerPos.y);
+            _trail.Add(ownerPos.x, ownerPos.y, 0.01f);
+            _lastOwnerPosition = ownerPos;
+            _positionInitialized = true;
         }
 
         private static Sprite[] SliceFrames(string path, Texture2D texture, int count)

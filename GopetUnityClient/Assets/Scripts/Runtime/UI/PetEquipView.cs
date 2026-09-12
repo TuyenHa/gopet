@@ -22,6 +22,7 @@ namespace Gopet.Runtime.UI
 
         public event Action CloseRequested;
         public event Action<PetEquipItem, PetSlotActionsView.Action> ActionChosen;
+        public event Action HiddenStatsRequested;
         /// <summary>Tap slot RỖNG — GameSession sẽ gửi RequestNormalInventory qua đường này.</summary>
         public event Action<EquipSlot> EmptySlotTapped;
 
@@ -86,6 +87,20 @@ namespace Gopet.Runtime.UI
             _headerStats.alignment = TextAnchor.MiddleLeft;
             _headerStats.color = UiBuilder.TextMuted;
             HeaderRect(_headerStats.rectTransform, 26f, 16f);
+
+            var hiddenStats = new GameObject("Kích ẩn", typeof(RectTransform), typeof(Image), typeof(Button));
+            hiddenStats.transform.SetParent(panel, false);
+            var hiddenRect = (RectTransform)hiddenStats.transform;
+            hiddenRect.anchorMin = hiddenRect.anchorMax = new Vector2(1f, 1f);
+            hiddenRect.pivot = new Vector2(1f, 1f);
+            hiddenRect.anchoredPosition = new Vector2(-12f, -10f);
+            hiddenRect.sizeDelta = new Vector2(92f, 26f);
+            hiddenStats.GetComponent<Image>().color = UiBuilder.ButtonFace;
+            var hiddenLabel = UiBuilder.MakeText(hiddenStats.transform, font, "Nhãn", 11, false);
+            UiBuilder.Stretch(hiddenLabel.rectTransform);
+            hiddenLabel.alignment = TextAnchor.MiddleCenter;
+            hiddenLabel.text = "Kích ẩn";
+            hiddenStats.GetComponent<Button>().onClick.AddListener(() => HiddenStatsRequested?.Invoke());
 
             AddSlot(panel, EquipSlot.Hat,    "Nón",    0);
             AddSlot(panel, EquipSlot.Weapon, "Vũ khí", 1);

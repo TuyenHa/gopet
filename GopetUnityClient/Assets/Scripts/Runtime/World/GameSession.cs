@@ -4,7 +4,9 @@ using Gopet.Net.Chat;
 using Gopet.Net.Map;
 using Gopet.Net.Guider;
 using Gopet.Net.Guild;
+using Gopet.Net.Kiosk;
 using Gopet.Net.Battle;
+using Gopet.Runtime.Audio;
 using Gopet.Net.Pet;
 using Gopet.Net.Player;
 using Gopet.Net.Social;
@@ -69,16 +71,20 @@ namespace Gopet.Runtime.World
         private PetEquipHandler _petEquipHandler;
         private PetEquipView _petEquipView;
         private ChoiceDialogView _channelDialog;
-        private ChoiceDialogView _teleportDialog;
+        private MapPickerView _mapPickerView;
         private PetZoneHandler _petZoneHandler;
         private PetLayer _petLayer;
         private bool _hasPetFollowing;
         private GuildInfoHandler _guildInfoHandler;
+        private GuildView _guildView;
+        private GuildNameLayer _guildNameLayer;
         private CharacterAnimationHandler _characterAnimationHandler;
         private CharacterAnimationLayer _characterAnimationLayer;
         private CharacterSkinHandler _characterSkinHandler;
         private CharacterSkinLayer _characterSkinLayer;
         private CharacterWingLayer _characterWingLayer;
+        private KioskHandler _kioskHandler;
+        private KioskListingView _kioskDialog;
         private WarpFadeOverlay _warpFade;
         /// <summary>User bấm menu "Trang bị pet" mở lần này → tự spawn view khi EQUIP_INFO tới.
         /// Nếu không có cờ, EQUIP_INFO đến do server tự bơm (sau equip/unequip) → chỉ update view
@@ -93,6 +99,9 @@ namespace Gopet.Runtime.World
         }
 
         public MapScene Scene => _scene;
+
+        /// <summary>Server từ chối warp bằng dialog nên sẽ không có MapLoaded để tự mở fade.</summary>
+        public void CancelWarpTransition() => _warpFade?.FadeIn();
 
         /// <summary>Gọi sau LOGIN_SUCCES. Tự dựng scene, wire handler, xin server cho vào map.</summary>
         public static GameSession Start(GopetClient client, LoginSuccess login,
@@ -135,13 +144,16 @@ namespace Gopet.Runtime.World
             s._camera = CameraFollower.Attach(mainCamera, s._scene);
             s._hud = GameHud.Create(parent ?? s._scene.transform, s._chatHandler, login.Name);
             s._hud.Send = client.Send;
+            s._hud.PlaceChatNameProvider = s._scene.TryGetAvatarName;
             s._hud.Character.BindAssets(assets);
-            guider.BannerShown += s._hud.Ticker.Show;
+            s.UpdateMapName();
+            guider.BossBannerShown += s._hud.Ticker.Show;
             s._worldStatusHandler.BossHpUpdated += s._scene.ApplyBossHp;
             s._worldStatusHandler.PlaceTimeUpdated += s._hud.ShowPlaceTime;
             s._worldStatusHandler.BigTextShown += s._hud.ShowBigText;
             s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
                 s._battleHandler, s.SetBattleMode);
+            s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");
 
             // Stats & tiền tệ nhân vật — MONEY_INFO/STAR_INFO/ENERGY_INFO của PET_SERVICE.
             // Char KHÔNG có HP/MP/Level; đó là stat pet (xem CharacterHud comment).
@@ -165,6 +177,7 @@ namespace Gopet.Runtime.World
             s._letterHandler = new LetterHandler();
             s._letterHandler.RegisterOn(client.Router);
             s._letterHandler.MailboxReceived += s.OnMailboxReceived;
+            s._letterHandler.HasLetterReceived += n => s._menuButton.SetMailUnread(n.HasUnread);
             s._letterHandler.HasLetterReceived += n =>
                 Debug.Log($"[Gopet] HAS_LETTER: {(n.HasUnread ? "có thư mới" : "hết thư mới")}");
 
@@ -172,13 +185,22 @@ namespace Gopet.Runtime.World
             s._petEquipHandler = new PetEquipHandler();
             s._petEquipHandler.RegisterOn(client.Router);
             s._petEquipHandler.EquipInfoReceived += s.OnPetEquipInfo;
+            s.InitializeRemainingParityHandlers();
 
             // Pet-follow render — SEND_LIST_PET_ZONE khi vào map + PET_UNFOLLOW + MY_PET_INFO.
             // Bang: nghe CLAN_INFO để có clanId cho chat SEND.
             s._guildInfoHandler = new GuildInfoHandler();
             s._guildInfoHandler.RegisterOn(client.Router);
             s._hud.ClanIdProvider = () => s._guildInfoHandler.ClanId;
-            // Prime: xin CLAN_INFO ngay để user có thể chat bang mà không cần gõ 2 lần.
+            s._guildInfoHandler.ClanInfoReceived += info => s.OnGuildClanInfo(info);
+            s._guildInfoHandler.GuildListReceived += resp => s._guildView?.ShowGuildList(resp);
+            s._guildInfoHandler.MemberListReceived += resp => s._guildView?.ShowMembers(resp);
+            s._guildInfoHandler.DonateOptionsReceived += resp => s._guildView?.ShowDonateOptions(resp.Options);
+            s._guildInfoHandler.TopFundReceived += resp => s._guildView?.ShowTopFund(resp);
+            s._guildInfoHandler.ChatHistoryReceived += resp => s._guildView?.ShowChatHistory(resp);
+            s._guildInfoHandler.ChatMessageReceived += msg => s._guildView?.AppendChat(msg.Who, msg.Text);
+            s._guildInfoHandler.SkillInfoReceived += resp => s._guildView?.ShowSkills(resp);
+            s._guildNameLayer = new GuildNameLayer(s._scene, s._guildInfoHandler);
             client.Send(GuildPackets.RequestClanInfo());
 
             s._petZoneHandler = new PetZoneHandler();
@@ -233,9 +255,17 @@ namespace Gopet.Runtime.World
             }
             s._characterWingLayer = new CharacterWingLayer(s._scene, assets, wings);
 
+            // Kiosk owner packet is outside COMMAND_GUIDER. Browsing and pricing still
+            // use GenericMenuView/InputDialog; this handler restores the missing owner
+            // state so a player can add or cancel the current listing.
+            s._kioskHandler = new KioskHandler();
+            s._kioskHandler.RegisterOn(client.Router);
+            s._kioskHandler.ListingReceived += s.OnKioskListingReceived;
+
             // Đổi map → camera phải recenter theo map MỚI. Không thì nó đứng chỗ cũ và
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.
             s._scene.MapLoaded += () => s._camera?.Recenter();
+            s._scene.MapLoaded += s.UpdateMapName;
 
             // Gắn MovementController khi SELF vừa spawn — sự kiện đến từ opcode 29
             // (ON_UPDATE_PLAYER_IN_MAP), KHÔNG phải opcode 24 (ON_PLAYER_ENTER_MAP)
@@ -247,6 +277,7 @@ namespace Gopet.Runtime.World
             s._warpFade = WarpFadeOverlay.Create(s._hudParent);
             s._scene.PortalSelected += portal =>
             {
+                SoundManager.Instance?.PlayEffect("s_outMap_0");
                 s._warpFade.FadeOut();
                 s._mapHandler.SendWarp(portal.ExtraA, portal.ExtraB, 1);
             };
@@ -269,6 +300,9 @@ namespace Gopet.Runtime.World
             // ngay sau loginOK (Player.cs:522). Gửi thừa gây double init/exit/enter.
             return s;
         }
+
+        private void UpdateMapName() =>
+            _hud?.Character?.SetMapName(MapDisplayNames.Get(_scene.MapId));
 
         private void OnSelfSpawned(PlayerEnterMap evt)
         {
@@ -321,18 +355,25 @@ namespace Gopet.Runtime.World
             switch (action)
             {
                 case CharacterMenuAction.PlaceChat:
+                    OpenChatHistory(false);
                     // Chat khu vực — chỉ đơn giản là mở focus vào chat input.
                     // GameHud giữ input; MessageRouter đã register ON_PLACE_CHAT.
                     Debug.Log("[Gopet] Menu -> tập trung vào chat khu vực (đã có sẵn ở dưới HUD).");
+                    break;
+                case CharacterMenuAction.CommunityChat:
+                    OpenChatHistory(true);
                     break;
                 case CharacterMenuAction.ChangePassword:
                     OpenChangePassword();
                     break;
                 case CharacterMenuAction.Settings:
-                    Debug.Log("[Gopet] Menu -> Cài đặt (đợi Phase 5).");
+                    OpenSettings();
                     break;
                 case CharacterMenuAction.Logout:
-                    Debug.Log("[Gopet] Menu -> Đăng xuất (đợi Phase 5 wire LoginFlow.Reset).");
+                    LogoutRequested?.Invoke();
+                    break;
+                case CharacterMenuAction.AutoAttack:
+                    SetAutoAttack(!_autoAttack.Enabled);
                     break;
                 case CharacterMenuAction.PetEquipment:
                     _petEquipRequestPending = true;
@@ -344,6 +385,9 @@ namespace Gopet.Runtime.World
                     break;
                 case CharacterMenuAction.Teleport:
                     _mapTeleportHandler.RequestOptions();
+                    break;
+                case CharacterMenuAction.GuildChat:
+                    OpenGuildView();
                     break;
                 case CharacterMenuAction.Exit:
                     Application.Quit();
@@ -362,6 +406,7 @@ namespace Gopet.Runtime.World
                 _petEquipView = PetEquipView.Create(_hudParent, _assets);
                 _petEquipView.CloseRequested += ClosePetEquipView;
                 _petEquipView.ActionChosen += OnPetEquipAction;
+                _petEquipView.HiddenStatsRequested += () => _client.Send(PetEquipPackets.RequestHiddenStats());
                 _petEquipView.EmptySlotTapped += _ =>
                 {
                     _client.Send(PetEquipPackets.RequestNormalInventory());
@@ -508,13 +553,7 @@ namespace Gopet.Runtime.World
 
         private void OnMailboxReceived(Mailbox mailbox)
         {
-            if (_mailboxView != null) Object.Destroy(_mailboxView.gameObject);
-            _mailboxView = MailboxView.Create(_hudParent, mailbox);
-            _mailboxView.CloseRequested += () =>
-            {
-                if (_mailboxView != null) Object.Destroy(_mailboxView.gameObject);
-                _mailboxView = null;
-            };
+            ShowMailbox(mailbox);
         }
 
         private void ClosePetRadial()
@@ -579,11 +618,35 @@ namespace Gopet.Runtime.World
 
         private static Camera EnsureMainCamera()
         {
-            if (Camera.main != null) return Camera.main;
+            const string worldCameraName = "Gopet World Camera";
+            var cameraObject = GameObject.Find(worldCameraName);
+            var camera = cameraObject == null ? null : cameraObject.GetComponent<Camera>();
+            if (camera == null)
+            {
+                cameraObject = new GameObject(worldCameraName, typeof(Camera));
+                camera = cameraObject.GetComponent<Camera>();
+            }
 
-            var go = new GameObject("MainCamera", typeof(Camera));
-            go.tag = "MainCamera";
-            return go.GetComponent<Camera>();
+            foreach (var other in Object.FindObjectsByType<Camera>())
+            {
+                if (other == camera) continue;
+                other.enabled = false;
+                if (other.CompareTag("MainCamera")) other.tag = "Untagged";
+            }
+
+            camera.gameObject.tag = "MainCamera";
+            camera.gameObject.SetActive(true);
+            camera.enabled = true;
+            camera.targetTexture = null;
+            camera.targetDisplay = 0;
+            camera.depth = 0f;
+            camera.rect = new Rect(0f, 0f, 1f, 1f);
+            camera.cullingMask = ~0;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = UiBuilder.JarBackground;
+            Debug.Log($"[Gopet] World camera sẵn sàng: {camera.name}, display={camera.targetDisplay}, " +
+                      $"rect={camera.rect}, mask={camera.cullingMask}, enabled={camera.enabled}");
+            return camera;
         }
     }
 }

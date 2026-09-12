@@ -22,6 +22,11 @@ namespace Gopet.Net.Pet
         public static Message RequestEquipInfo(int userId) =>
             PetService(GopetCmd.EQUIP_INFO).PutInt(userId);
 
+        /// <summary>Yêu cầu server hiện các kích ẩn của pet đang theo. Gói không mang
+        /// user/pet id nên server chỉ có thể trả dữ liệu của chính người gửi.</summary>
+        public static Message RequestHiddenStats() =>
+            PetService(GopetCmd.HIDDEN_STATS_INFO);
+
         /// <summary>PET_INVENTORY (5) — server bơm menu list pets sở hữu; user chọn để đưa ra làm active pet.</summary>
         public static Message RequestPetInventory() =>
             PetService(GopetCmd.PET_INVENTORY);

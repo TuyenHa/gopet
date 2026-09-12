@@ -49,4 +49,12 @@ namespace Gopet.Net.Pet
         public sbyte FrameNumber;
         public PetEquipItem[] Items;
     }
+
+    public sealed class PetEquipDelta
+    {
+        public int ItemId;
+        public bool Equipped;
+        public bool Removed;
+        public bool Accepted;
+    }
 }

@@ -173,6 +173,7 @@ namespace Gopet.Data.Map
                 if (sellItem.user_id == player.user.user_id)
                 {
                     player.redDialog(player.Language.CannotBuyThisItemOfYourself);
+                    return;
                 }
                 if (sellItem.AssignedName != null && !string.IsNullOrEmpty(sellItem.AssignedName) && sellItem.AssignedName != player.playerData.name)
                 {

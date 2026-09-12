@@ -4,14 +4,18 @@ using Xunit;
 
 namespace Gopet.Net.Tests
 {
-    /// <summary>12 mục menu char khớp jar; opcode gửi khớp fr.java + dc.java.</summary>
+    /// <summary>Menu char Unity; opcode gửi khớp fr.java + dc.java.</summary>
     public sealed class CharacterMenuTests
     {
         [Fact]
-        public void CoDung20Muc()
+        public void CoDung18Muc()
         {
-            // Menu jar + trang bị, ngân hàng và đổi khu vực.
-            Assert.Equal(20, CharacterMenu.Entries.Count);
+            // Chat khu vực/cộng đồng đã có ở thanh dưới nên bị ẩn khỏi menu.
+            Assert.Equal(18, CharacterMenu.Entries.Count);
+            Assert.DoesNotContain(CharacterMenu.Entries,
+                entry => entry.Action == CharacterMenuAction.PlaceChat);
+            Assert.DoesNotContain(CharacterMenu.Entries,
+                entry => entry.Action == CharacterMenuAction.CommunityChat);
         }
 
         [Theory]
@@ -23,7 +27,6 @@ namespace Gopet.Net.Tests
         [InlineData(CharacterMenuAction.GemInventory,   GopetCmd.PET_SERVICE, GopetCmd.SHOW_GEM_INVENTORY)]
         [InlineData(CharacterMenuAction.WingInventory,  GopetCmd.PET_SERVICE, GopetCmd.WING)]
         [InlineData(CharacterMenuAction.Tasks,          GopetCmd.PET_SERVICE, GopetCmd.SHOW_LIST_TASK)]
-        [InlineData(CharacterMenuAction.AutoAttack,     GopetCmd.PET_SERVICE, GopetCmd.AUTO_ATTACK_SUPPORT)]
         // Bank: opcode 44 top-level, KHÔNG body → chỉ verify opcode; sub-check bỏ qua
         // bằng way khác dưới đây.
         public void ServerAction_GuiDungOpcodeVaSub(CharacterMenuAction action, int expectedOpcode, int expectedSub)
@@ -43,6 +46,7 @@ namespace Gopet.Net.Tests
         [InlineData(CharacterMenuAction.Channels)]
         [InlineData(CharacterMenuAction.Teleport)]
         [InlineData(CharacterMenuAction.Settings)]
+        [InlineData(CharacterMenuAction.AutoAttack)]
         [InlineData(CharacterMenuAction.Logout)]
         [InlineData(CharacterMenuAction.Exit)]
         public void ClientAction_KhongDungMessage(CharacterMenuAction action)

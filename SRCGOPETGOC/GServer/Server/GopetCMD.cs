@@ -98,6 +98,7 @@ public class GopetCMD
     public const sbyte LOGIN_FAILED = 4;
     public const sbyte BANNER_MESSAGE = 1;
     public const sbyte POPUP_MESSAGE = 5;
+    public const sbyte BOSS_BANNER_MESSAGE = 6;
     public const sbyte KIOSK = 86;
     public const sbyte REQUEST_SHOP_SKIN = 60;
     public const sbyte SELECT_METERIAL_ENCHANT = 46;
@@ -114,6 +115,8 @@ public class GopetCMD
     public const sbyte PLAYER_CHALLENGE = 12;
     public const sbyte PLAYER_PK = 96;
     public const sbyte PLAYER_BATTLE = 59;
+    /// <summary>Open the arena hub from the arena building (PET_SERVICE sub-command).</summary>
+    public const sbyte ARENA_MENU = 58;
     public const sbyte SELECT_ITEM_GEM_TATTO = 2;
     public const sbyte SELECT_ITEM_REMOVE_TATOO = 3;
     public const sbyte GUIDER_IMGDIALOG = 11;
@@ -161,6 +164,8 @@ public class GopetCMD
     public const sbyte WING_TYPE_UNEQUIP = 5;
     public const sbyte WING_TYPE_ENCHANT = 6;
     public const sbyte SHOW_TATTO_PET_IN_KIOSK = 99;
+    /// <summary>Return the current player's selected pet hidden-stat names.</summary>
+    public const sbyte HIDDEN_STATS_INFO = 101;
     public const sbyte ON_PET_INTERACT = 17;
     public const sbyte ON_PET_INTERACT_KISS = 0;
     public const sbyte ON_PET_INTERACT_PLAY = 1;

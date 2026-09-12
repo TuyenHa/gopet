@@ -26,6 +26,29 @@ public partial class MenuController
     {
         switch (menuId)
         {
+            case MENU_ARENA_HUB:
+                switch (index)
+                {
+                    case 0:
+                        selectNpcOption(OP_ARENA_JOURNALISM, player);
+                        break;
+                    case 1:
+                        selectNpcOption(OP_SHOW_TOP_ACCUMULATED_POINT, player);
+                        break;
+                    case 2:
+                        selectNpcOption(OP_SHOP_ARENA, player);
+                        break;
+                    case 3:
+                        selectNpcOption(OP_SELECT_PET_DEF_LEAGUE, player);
+                        break;
+                    case 4:
+                        selectNpcOption(OP_TOP_AREAN_POINT, player);
+                        break;
+                    default:
+                        player.redDialog(player.Language.BugWarning);
+                        break;
+                }
+                return;
             case MENU_UNEQUIP_SKIN:
             case MENU_UNEQUIP_PET:
                 {

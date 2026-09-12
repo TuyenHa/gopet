@@ -42,7 +42,7 @@ source: skill
 | 2 | [Character Preview Panel](./phase-02-character-preview-panel.md) | Complete |
 | 3 | [Name Input & Validation](./phase-03-name-input-validation.md) | Complete |
 | 4 | [Screen Wire-up + Reconnect Flow](./phase-04-screen-wire-up-reconnect-flow.md) | Complete |
-| 5 | [PlayMode Tests + Live Smoke](./phase-05-playmode-tests-live-smoke.md) | Pending |
+| 5 | [PlayMode Tests + Live Smoke](./phase-05-playmode-tests-live-smoke.md) | Partial — unit test (625/625) và PlayMode test đã có sẵn/xanh về mã nguồn; chạy PlayMode thật + live-smoke tạo-nhân-vật cần người dùng: đóng Unity Editor, và quyết định có chèn account test vào DB thật hay không (`reports/live-smoke.md`) |
 
 ## Thứ tự thực thi
 

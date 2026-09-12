@@ -4,7 +4,7 @@ description: >-
   Cổng dịch chuyển (tên map đích + warp) và tương tác nhà/cửa hàng (giáp/mũ/vũ
   khí/thức ăn/atm/magic/gym) cho map TP Linh Thú, đối chiếu
   client.jar_Decompiler.com.
-status: pending
+status: completed
 priority: P2
 branch: ''
 tags:
@@ -39,7 +39,7 @@ Map TP Linh Thú (mapId 11) trong Unity hiện thiếu 3 mảng so với jar:
 | 1 | [Decode & Verify](./phase-01-decode-verify.md) | Completed |
 | 2 | [Portal Warp + Map-Name Label](./phase-02-portal-warp-map-name-label.md) | Completed — code + PlayMode test viết xong; runtime warp trong Editor cần xác nhận tay (Unity đang mở, batch-mode PlayMode bị chặn) |
 | 3 | [Building Shop Interaction](./phase-03-building-shop-interaction.md) | Completed — tìm và sửa bug thật: `REQUEST_SHOP` gửi sai bọc (top-level thay vì sub-command PET_SERVICE), xác nhận bằng LiveSmoke với GServer thật. Mua item thật còn chặn bởi DB test chưa seed |
-| 4 | [Test & Parity](./phase-04-test-parity.md) | Pending |
+| 4 | [Test & Parity](./phase-04-test-parity.md) | Completed — 625/625 unit test xanh, live-smoke byte thật xác nhận warp 2 chiều (11↔15) qua GServer đang chạy (`reports/parity-warp-shop.md`); còn đối chiếu ảnh Unity↔jar bằng tay |
 
 ## Key facts (đã khảo sát)
 

@@ -1,0 +1,171 @@
+using System;
+using Gopet.Net.Guild;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Gopet.Runtime.UI
+{
+    /// <summary>
+    /// Panel quản lý bang hội: 5 tab (Info, Members, Chat, Top, Skills).
+    /// Nếu chưa có bang → hiện danh sách bang + tìm kiếm + gia nhập.
+    /// </summary>
+    public sealed partial class GuildView : MonoBehaviour
+    {
+        private const float Padding = 8f;
+        private const float TabHeight = 32f;
+        private const float HeaderHeight = 36f;
+        private const int TabCount = 5;
+
+        private static readonly string[] TabLabels = { "Thông tin", "Thành viên", "Chat", "Top", "Kỹ năng" };
+        private static readonly Color TabActive = new Color(0.95f, 0.75f, 0.2f, 1f);
+        private static readonly Color TabInactive = new Color(0.25f, 0.28f, 0.35f, 1f);
+
+        private Font _font;
+        private Transform _panel;
+        private Button[] _tabButtons;
+        private Image[] _tabImages;
+        private GameObject[] _tabPages;
+        private int _activeTab = -1;
+        private int _clanId;
+
+        public event Action CloseRequested;
+        public event Action<int> JoinRequested;
+        public event Action<string> SearchRequested;
+        public event Action<int> KickRequested;
+        public event Action<int, string> ChatSent;
+        public event Action<int> SkillRentRequested;
+        public event Action TopFundRequested;
+        public event Action MemberListRequested;
+        public event Action DonateRequested;
+        public event Action ChatHistoryRequested;
+
+        public static GuildView Create(Transform parent)
+        {
+            var backdrop = new GameObject("Guild Backdrop", typeof(RectTransform), typeof(Image), typeof(Button));
+            backdrop.transform.SetParent(parent, false);
+            UiBuilder.Stretch((RectTransform)backdrop.transform);
+            backdrop.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+
+            var view = backdrop.AddComponent<GuildView>();
+            backdrop.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
+
+            var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(backdrop.transform, false);
+            var rect = (RectTransform)panel.transform;
+            rect.anchorMin = new Vector2(0.05f, 0.05f);
+            rect.anchorMax = new Vector2(0.95f, 0.95f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var img = panel.GetComponent<Image>();
+            RoundedUiSprite.Apply(img);
+            img.color = new Color(0.08f, 0.11f, 0.16f, 0.96f);
+            img.raycastTarget = true;
+
+            view._font = UiBuilder.BuiltinFont();
+            view._panel = panel.transform;
+            view.BuildHeader();
+            view.BuildTabs();
+            view.BuildPages();
+            view.SelectTab(0);
+            return view;
+        }
+
+        private void BuildHeader()
+        {
+            var title = UiBuilder.MakeText(_panel, _font, "Title", 16, false);
+            title.text = "Bang hội";
+            title.fontStyle = FontStyle.Bold;
+            title.alignment = TextAnchor.MiddleCenter;
+            title.color = UiBuilder.TextMain;
+            UiBuilder.PlaceRow(title.rectTransform, Padding, 22f, Padding);
+
+            var closeGo = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
+            closeGo.transform.SetParent(_panel, false);
+            var cr = (RectTransform)closeGo.transform;
+            cr.anchorMin = cr.anchorMax = new Vector2(1f, 1f);
+            cr.pivot = new Vector2(1f, 1f);
+            cr.anchoredPosition = new Vector2(-Padding, -Padding);
+            cr.sizeDelta = new Vector2(28f, 28f);
+            RoundedUiSprite.Apply(closeGo.GetComponent<Image>());
+            closeGo.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 1f);
+            var xLabel = UiBuilder.MakeText(closeGo.transform, _font, "X", 16, true);
+            xLabel.text = "X";
+            xLabel.alignment = TextAnchor.MiddleCenter;
+            xLabel.fontStyle = FontStyle.Bold;
+            closeGo.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke());
+        }
+
+        private void BuildTabs()
+        {
+            _tabButtons = new Button[TabCount];
+            _tabImages = new Image[TabCount];
+
+            var tabBar = new GameObject("TabBar", typeof(RectTransform));
+            tabBar.transform.SetParent(_panel, false);
+            UiBuilder.PlaceRow((RectTransform)tabBar.transform, HeaderHeight, TabHeight, Padding);
+
+            for (var i = 0; i < TabCount; i++)
+            {
+                var go = new GameObject($"Tab:{TabLabels[i]}", typeof(RectTransform), typeof(Image), typeof(Button));
+                go.transform.SetParent(tabBar.transform, false);
+                var r = (RectTransform)go.transform;
+                float xMin = (float)i / TabCount;
+                float xMax = (float)(i + 1) / TabCount;
+                r.anchorMin = new Vector2(xMin, 0f);
+                r.anchorMax = new Vector2(xMax, 1f);
+                r.offsetMin = new Vector2(2f, 0f);
+                r.offsetMax = new Vector2(-2f, 0f);
+
+                _tabImages[i] = go.GetComponent<Image>();
+                RoundedUiSprite.Apply(_tabImages[i]);
+                _tabImages[i].color = TabInactive;
+
+                var label = UiBuilder.MakeText(go.transform, _font, "Label", 12, true);
+                label.text = TabLabels[i];
+                label.alignment = TextAnchor.MiddleCenter;
+                label.fontStyle = FontStyle.Bold;
+
+                _tabButtons[i] = go.GetComponent<Button>();
+                var idx = i;
+                _tabButtons[i].onClick.AddListener(() => SelectTab(idx));
+            }
+        }
+
+        private void BuildPages()
+        {
+            _tabPages = new GameObject[TabCount];
+            float top = HeaderHeight + TabHeight + 4f;
+
+            for (var i = 0; i < TabCount; i++)
+            {
+                var page = new GameObject($"Page:{TabLabels[i]}", typeof(RectTransform));
+                page.transform.SetParent(_panel, false);
+                var r = (RectTransform)page.transform;
+                r.anchorMin = new Vector2(0f, 0f);
+                r.anchorMax = new Vector2(1f, 1f);
+                r.offsetMin = new Vector2(Padding, Padding);
+                r.offsetMax = new Vector2(-Padding, -top);
+                _tabPages[i] = page;
+            }
+
+            BuildInfoPage(_tabPages[0].transform);
+            BuildMembersPage(_tabPages[1].transform);
+            BuildChatPage(_tabPages[2].transform);
+            BuildTopPage(_tabPages[3].transform);
+            BuildSkillsPage(_tabPages[4].transform);
+        }
+
+        private void SelectTab(int index)
+        {
+            if (index == _activeTab) return;
+            _activeTab = index;
+            for (var i = 0; i < TabCount; i++)
+            {
+                _tabImages[i].color = i == index ? TabActive : TabInactive;
+                _tabPages[i].SetActive(i == index);
+            }
+            if (index == 1) MemberListRequested?.Invoke();
+            if (index == 2) ChatHistoryRequested?.Invoke();
+            if (index == 3) TopFundRequested?.Invoke();
+        }
+    }
+}

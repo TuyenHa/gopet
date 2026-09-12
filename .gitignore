@@ -3,3 +3,7 @@
 
 SRCGOPETGOC.rar
 tools/freej2me/
+.tmp-build-server*
+.tmp-build-register*
+
+SRCGOPETGOC/GServer/bin*

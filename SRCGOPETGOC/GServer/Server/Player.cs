@@ -210,11 +210,12 @@ Thread.Sleep(1000);
                     }
                     else
                     {
-                        conn.Execute("INSERT INTO `user`(`user_id`, `username`, `password` , `ipv4Create` , `dayCreate`, `avatar`) VALUES (NULL,@username,@password, @ipv4Create, @dayCreate, NULL)",
+                        conn.Execute("INSERT INTO `user`(`user_id`, `username`, `password`, `role`, `ipv4Create`, `dayCreate`, `avatar`) VALUES (NULL, @username, @password, @role, @ipv4Create, @dayCreate, NULL)",
                             new
                             {
                                 username = username,
                                 password = GopetHashHelper.ComputeHash(password),
+                                role = UserData.ROLE_USER,
                                 ipv4Create = ((IPEndPoint)session.CSocket.RemoteEndPoint).Address.ToString(),
                                 dayCreate = Utilities.CurrentTimeMillis
                             });
@@ -326,8 +327,15 @@ Thread.Sleep(1000);
                 s_SpeedStopWatch.Stop();
                 if (s_SpeedStopWatch.Elapsed + TimeSpan.FromSeconds(2) < m_SpeedTime)
                 {
-                    //user.ban(UserData.BAN_TIME, "HackSpeed", Utilities.CurrentTimeMillis + (1000 * 60 * 60));
-                    //session.Close();
+                    // Re-enable the production guard.  The old implementation only
+                    // wrote a history entry, which made the speed challenge useless
+                    // against modified clients.  Keep admins exempt and use a short
+                    // temporary ban so false positives are recoverable.
+                    if (user != null && !playerData.isAdmin)
+                    {
+                        user.ban(UserData.BAN_TIME, "HackSpeed", Utilities.CurrentTimeMillis + (1000L * 60 * 60));
+                        session.Close();
+                    }
                     HistoryManager.Instance.add(new History(this).setLog($"Hệ thống ban acc do người dùng speed. Trạng thái TimeSpeedCheck={m_SpeedTime}, TimeSpeedCheck + 2 giây={m_SpeedTime + TimeSpan.FromSeconds(2)}, Đồng hồ đo = {s_SpeedStopWatch.Elapsed} "));
                     return;
                 }
@@ -525,7 +533,6 @@ Thread.Sleep(1000);
             if (playerData != null)
             {
                 controller.updateUserInfo();
-                showBanner(Language.WarningPlayerWhenLogin);
                 getPet()?.applyInfo(this);
                 if (ServerSetting.instance.isOnlyAdminLogin)
                 {

@@ -80,7 +80,7 @@ namespace Gopet.Data.Event
                         gopetPlace.addNewMob(boss);
                         gopetPlace.sendMob(new Collections.JArrayList<Mob.Mob>(new Mob.Mob[] { boss }));
                         WasSummonBoss.Add(item1);
-                        PlayerManager.showBanner((l) => string.Format(l.BannerLanguage[Language.LanguageData.BANNER_SHOW_BOSS_SUMMON], item1.name, gopetPlace.map.mapTemplate.name, gopetPlace.zoneID));
+                        PlayerManager.showBossBanner((l) => string.Format(l.BannerLanguage[Language.LanguageData.BANNER_SHOW_BOSS_SUMMON], item1.name, gopetPlace.map.mapTemplate.name, gopetPlace.zoneID));
                     }
                     else
                     {
@@ -93,7 +93,7 @@ namespace Gopet.Data.Event
                             boss.SetId(firstMob.GetId());
                             gopetPlace.mobs.Add(boss);
                             WasSummonBoss.Add(item1);
-                            PlayerManager.showBanner((l) => string.Format(l.BannerLanguage[Language.LanguageData.BANNER_SHOW_BOSS_SUMMON], item1.name, gopetPlace.map.mapTemplate.name, gopetPlace.zoneID));
+                            PlayerManager.showBossBanner((l) => string.Format(l.BannerLanguage[Language.LanguageData.BANNER_SHOW_BOSS_SUMMON], item1.name, gopetPlace.map.mapTemplate.name, gopetPlace.zoneID));
                         }
                     }
                 }

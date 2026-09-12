@@ -1,3 +1,5 @@
+using Gopet.Net;
+using Gopet.Net.Pet;
 using Gopet.Runtime.UI;
 using Gopet.UiLogic;
 using UnityEngine;
@@ -39,8 +41,31 @@ namespace Gopet.Runtime.World
                     Debug.Log($"[Gopet] Building '{label}' (type {entity.BuildingType}) → gửi opcode {action.Packet.Id}.");
                     break;
                 case BuildingAction.Kind.LocalMenu:
-                    ShowToast($"'{label}' — chưa mở trong Unity (menu local, chờ phase kế).");
-                    Debug.Log($"[Gopet] Building '{label}' (type {entity.BuildingType}) → menu local {action.Menu} (chưa impl).");
+                    if (!_actionThrottle.TryAcquire($"building:{entity.BuildingType}", 500, out var menuMs))
+                    {
+                        ShowToast($"Thao tác quá nhanh, thử lại sau {menuMs} ms.");
+                        return;
+                    }
+                    switch (action.Menu)
+                    {
+                        case BuildingDispatcher.LocalMenu.ChangeZone:
+                            _channelHandler.RequestChannels();
+                            break;
+                        case BuildingDispatcher.LocalMenu.TicketRoom:
+                            _mapTeleportHandler.RequestOptions();
+                            break;
+                        case BuildingDispatcher.LocalMenu.Mailbox:
+                            _client.Send(Message.Create(GopetCmd.LETTER_COMMAND)
+                                .PutSByte(GopetCmd.LETTER_BOX));
+                            break;
+                        case BuildingDispatcher.LocalMenu.PetProfile:
+                            _client.Send(PetProfilePackets.RequestProfile());
+                            break;
+                        default:
+                            ShowToast($"'{label}' — chưa mở trong Unity (menu local, chờ phase kế).");
+                            Debug.Log($"[Gopet] Building '{label}' (type {entity.BuildingType}) → menu local {action.Menu} (chưa impl).");
+                            break;
+                    }
                     break;
                 case BuildingAction.Kind.Toast:
                     ShowToast(action.ToastText);

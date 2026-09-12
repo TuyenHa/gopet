@@ -6,11 +6,7 @@ namespace Gopet.Runtime.UI
 {
     /// <summary>
     /// Thanh HUD 3 nút góc trên-phải: <b>Cửa hàng</b>, <b>Dịch vụ</b>, <b>Sự kiện</b>.
-    /// Xếp NGAY TRƯỚC <see cref="SoundToggleButton"/> theo trục X.
-    ///
-    /// <para>Đặt trên CANVAS CHUNG (không phải <see cref="PixelCanvas.Content"/>) như
-    /// <see cref="SoundToggleButton"/>: nút HUD phải bám góc màn hình thật, không co
-    /// theo letterbox.</para>
+    /// Bám góc màn hình thật trên canvas chung, không co theo letterbox của PixelCanvas.
     ///
     /// <para>Icon load từ <see cref="HudSkin"/>; thiếu file thì <b>lùi về nhãn chữ
     /// gọn</b> chứ không ném — mất icon không đáng để chặn HUD.</para>
@@ -18,16 +14,15 @@ namespace Gopet.Runtime.UI
     public sealed class ShopServiceEventHud : MonoBehaviour
     {
         /// <summary>
-        /// Cạnh nút HUD theo tỉ lệ chiều cao. TO HƠN <see cref="SoundToggleButton"/>
-        /// (0.05) vì mỗi nút cần chỗ cho icon + nhãn chữ 2-3 âm tiết bên dưới.
+        /// Cạnh nút HUD theo tỉ lệ chiều cao.
         /// </summary>
         private const float SizeFrac = 0.09f;
 
         /// <summary>Khoảng cách giữa các nút, theo tỉ lệ chiều cao.</summary>
         private const float GapFrac = 0.012f;
 
-        /// <summary>Chừa chỗ cho <see cref="SoundToggleButton"/> đứng NGOÀI cùng bên phải.</summary>
-        private const float ReservedRightFrac = 0.05f + 0.025f + 0.012f;
+        /// <summary>Khoảng cách của nút ngoài cùng tới mép phải.</summary>
+        private const float ReservedRightFrac = 0.012f;
 
         private const float TopMarginFrac = 0.015f;
 
@@ -49,9 +44,7 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<ShopServiceEventHud>();
 
-            // Xếp phải → trái: Sự kiện, Dịch vụ, Cửa hàng. Nút phải nhất cách mép
-            // ReservedRightFrac để CHỪA CHỖ cho SoundToggleButton — nếu đặt trùng,
-            // hai Image raycast chồng nhau và loa "ăn" click của Sự kiện.
+            // Xếp phải → trái: Sự kiện, Dịch vụ, Cửa hàng.
             var right = ReservedRightFrac;
             MakeButton(go.transform, font, HudSkin.Event, "Sự kiện", right,
                 () => view.EventClicked?.Invoke());

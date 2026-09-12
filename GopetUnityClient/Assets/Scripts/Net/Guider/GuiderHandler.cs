@@ -39,6 +39,9 @@ namespace Gopet.Net.Guider
 
         public event Action<string> BannerShown;
 
+        /// <summary>Thông báo boss chuyên biệt; ticker gameplay chỉ nghe sự kiện này.</summary>
+        public event Action<string> BossBannerShown;
+
         public event Action<ImageDialogSpec> ImageDialogShown;
 
         public void RegisterOn(MessageRouter router)
@@ -65,6 +68,8 @@ namespace Gopet.Net.Guider
                 m => PopupShown?.Invoke(ServerTextMessage.Parse(m, "POPUP_MESSAGE")));
             router.RegisterSub(GopetCmd.SERVER_MESSAGE, GopetCmd.BANNER_MESSAGE,
                 m => BannerShown?.Invoke(ServerTextMessage.Parse(m, "BANNER_MESSAGE")));
+            router.RegisterSub(GopetCmd.SERVER_MESSAGE, GopetCmd.BOSS_BANNER_MESSAGE,
+                m => BossBannerShown?.Invoke(ServerTextMessage.Parse(m, "BOSS_BANNER_MESSAGE")));
         }
 
         /// <summary>

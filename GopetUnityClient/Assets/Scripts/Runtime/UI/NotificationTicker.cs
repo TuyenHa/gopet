@@ -18,12 +18,15 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class NotificationTicker : MonoBehaviour
     {
-        private const string SpeakerResource = "Ui/Hud/notify-speaker";
+        // Asset generated specifically for the Linh Thu City announcement HUD.
+        // The ticker itself remains data-driven: it is hidden until BossBannerShown
+        // delivers non-empty text from the server.
+        private const string SpeakerResource = "Ui/Hud/notify-speaker-v2";
 
-        // CharacterHud (280×86 tại 12,-12) chiếm y=[12..98] ở góc trên-trái. TopMargin=110
-        // đặt ticker HẲN dưới HUD, không chồng lấn tên/HP/MP/EXP. SideMargin=252 cho
+        // CharacterHud (280×86 tại 12,-12) chiếm y=[12..98] ở góc trên-trái. TopMargin=92
+        // nâng ticker thêm 10px theo bố cục gameplay. SideMargin=252 cho
         // width = 960-504 = 456 (dài hơn bản 260 cũ 15px như yêu cầu).
-        private const float TopMargin = 110f;
+        private const float TopMargin = 92f;
         private const float SideMargin = 252f;
         private const float Height = 36f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài

@@ -38,6 +38,24 @@ namespace Gopet.Net.Tests
         }
 
         [Fact]
+        public void BossBanner_UsesDedicatedEvent()
+        {
+            var pair = CreateGuider();
+            string regular = null;
+            string boss = null;
+            pair.handler.BannerShown += text => regular = text;
+            pair.handler.BossBannerShown += text => boss = text;
+
+            using var message = Message.Create(GopetCmd.SERVER_MESSAGE)
+                .PutSByte(GopetCmd.BOSS_BANNER_MESSAGE)
+                .PutUtf("Boss thế giới đã xuất hiện");
+            pair.router.Dispatch(Message.FromWire(message.ToWire(), false));
+
+            Assert.Null(regular);
+            Assert.Equal("Boss thế giới đã xuất hiện", boss);
+        }
+
+        [Fact]
         public void ImageDialog_ParsesCaptchaShape()
         {
             var pair = CreateGuider();

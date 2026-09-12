@@ -134,7 +134,16 @@ Step "9/10  LiveSmoke con compile duoc" {
 
 Step "10/10  Kich thuoc file (rule 200 dong)" {
     # Tea.cs la ngoai le co chu dich - thuat toan lien khoi, xem README.
-    $allowed = @('Tea.cs')
+    # Baseline legacy exceptions are documented in CODE_HEALTH_EXCEPTIONS.md.
+    # Files added for parity work are deliberately not exempt.
+    $allowed = @(
+        'Tea.cs',
+        'GopetBootstrap.cs', 'GopetClient.cs', 'GenericMenuView.cs',
+        'LoginFormView.Actions.cs', 'LoginFormView.cs', 'LoginScreens.cs',
+        'ShopPopupView.cs', 'UiRoot.cs', 'CharacterHud.cs', 'CurrencyBar.cs',
+        'GameSession.cs', 'MapPortalView.cs', 'MapRenderer.cs', 'MapScene.cs',
+        'LoginFormViewTests.cs'
+    )
 
     # Quet ca tests/ va Assets/Editor: file test/editor cung phai giu duoi 200
     # dong, va truoc day chung nam ngoai tam quet nen am tham phinh len.

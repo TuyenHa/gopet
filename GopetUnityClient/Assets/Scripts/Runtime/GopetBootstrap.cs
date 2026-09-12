@@ -12,6 +12,7 @@ using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime
@@ -38,6 +39,7 @@ namespace Gopet.Runtime
         private LoginScreens _login;
         private PixelCanvas _pixelCanvas;
         private SoundManager _sound;
+        private GameSession _session;
 
         public GopetClient Client => _client;
 
@@ -85,12 +87,6 @@ namespace Gopet.Runtime
             // thì hộp OTP nằm dưới, vừa không thấy vừa không bấm được.
             _login = LoginScreens.Create(canvas.transform, font);
 
-            // Cùng canvas, dựng NGAY SAU LoginScreens: nằm trên màn đăng nhập (bấm
-            // được xuyên suốt splash lẫn đăng nhập) nhưng dưới UiRoot — hộp OTP hiện
-            // đè lên là đúng, một nút góc màn hình không nên tranh raycast với nó.
-            var soundToggle = SoundToggleButton.Create(canvas.transform, _sound, font);
-            soundToggle.gameObject.SetActive(false);
-
             _ui = UiRoot.Create(canvas.transform, font);
             _ui.Initialize(guider, assets);
 
@@ -127,7 +123,8 @@ namespace Gopet.Runtime
             {
                 Debug.Log($"[Gopet] Đăng nhập xong: {_flow.Success}. Vào map…");
                 VerticalSplitRevealTransition.Create(transform, _login.CompleteReadyPresentation);
-                GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
+                _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
+                _session.LogoutRequested += LogoutToLogin;
                 // Bật HUD 3 nút góc-phải NGAY sau khi vào map — trước đó ẩn để không
                 // đè lên splash / màn đăng nhập.
                 hud.gameObject.SetActive(true);
@@ -135,7 +132,15 @@ namespace Gopet.Runtime
 
             WireKeyboard();
 
-            StartSplashConnection(canvas.transform, font, soundToggle);
+            StartSplashConnection(canvas.transform, font);
+        }
+
+        private void LogoutToLogin()
+        {
+            _client.Disconnect();
+            var active = SceneManager.GetActiveScene();
+            if (active.buildIndex >= 0) SceneManager.LoadScene(active.buildIndex);
+            else SceneManager.LoadScene(active.name);
         }
 
         /// <summary>
@@ -164,7 +169,11 @@ namespace Gopet.Runtime
             auth.DialogShown += _flow.OnDialog;
             auth.ErrorDialogShown += text =>
             {
-                if (_flow.Stage == LoginStage.Ready) _ui.ShowServerError(text);
+                if (_flow.Stage == LoginStage.Ready)
+                {
+                    _session?.CancelWarpTransition();
+                    _ui.ShowServerError(text);
+                }
             };
             auth.SuccessDialogShown += text =>
             {

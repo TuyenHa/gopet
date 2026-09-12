@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gopet.Net.Battle;
+using Gopet.Runtime.Audio;
 using Gopet.Runtime.Assets;
 using Gopet.Runtime.UI;
 using UnityEngine;
@@ -52,7 +53,19 @@ namespace Gopet.Runtime.World
                 if (target == null) continue;
                 target.Apply(effect.HpDelta, effect.MpDelta);
                 BattleEffectView.Play(transform, target.EffectAnchor, effect.SkillId);
-                if (effect.SkillId == 1) BattleFloatText.CreateMiss(target.transform);
+                if (effect.SkillId == 1)
+                {
+                    BattleFloatText.CreateMiss(target.transform);
+                    SoundManager.Instance?.PlayEffect("s_attack_miss");
+                }
+                else if (effect.SkillId == 2)
+                {
+                    SoundManager.Instance?.PlayEffect("s_attack_crit");
+                }
+                else if (effect.HpDelta < 0)
+                {
+                    SoundManager.Instance?.PlayEffect("s_hit");
+                }
             }
             UnlockActions();
         }
@@ -103,7 +116,11 @@ namespace Gopet.Runtime.World
             rect.pivot = new Vector2(0.5f, 0f); rect.anchoredPosition = new Vector2(0f, 12f);
             rect.sizeDelta = new Vector2(510f, 72f);
             _actions.GetComponent<Image>().color = new Color(0.02f, 0.14f, 0.23f, 0.93f);
-            AddAction("Đánh", "attack", -170f, () => { _handler.SendNormalAttack(); LockActions(); });
+            AddAction("Đánh", "attack", -170f, () =>
+            {
+                SoundManager.Instance?.PlayEffect("s_attack");
+                _handler.SendNormalAttack(); LockActions();
+            });
             AddAction("Kỹ năng", "skill", 0f, () => _skillMenu.SetActive(!_skillMenu.activeSelf));
             AddAction("Vật phẩm", "potion", 170f, () => { _handler.SendUseItem(); LockActions(); });
         }
@@ -112,6 +129,7 @@ namespace Gopet.Runtime.World
         {
             var button = MakeButton(_actions.transform, label, icon, new Vector2(0.5f, 0.5f),
                 new Vector2(x, 0f), new Vector2(150f, 52f));
+            button.onClick.AddListener(() => SoundManager.Instance?.PlayEffect("s_button_ingame"));
             button.onClick.AddListener(action); _buttons.Add(button);
         }
 
@@ -135,7 +153,11 @@ namespace Gopet.Runtime.World
             button.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
             button.interactable = skill.MpCost <= _start.LocalPet.Mp;
             _skillButtons.Add(button);
-            button.onClick.AddListener(() => { _handler.SendSkill(skill.Id); _skillMenu.SetActive(false); LockActions(); });
+            button.onClick.AddListener(() =>
+            {
+                SoundManager.Instance?.PlayEffect("s_button_ingame");
+                _handler.SendSkill(skill.Id); _skillMenu.SetActive(false); LockActions();
+            });
         }
 
         private static Button MakeButton(Transform parent, string label, string icon, Vector2 anchor,

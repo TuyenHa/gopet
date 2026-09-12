@@ -47,5 +47,6 @@ namespace Gopet.Net.Tests
             Assert.Equal(0, CameraClamp.ClampAxis(50, 320, 200));
             Assert.Equal(0, CameraClamp.ClampAxis(-10, 320, 200));
         }
+
     }
 }

@@ -24,6 +24,7 @@ namespace Gopet.Runtime.UI
         private RemoteAssetCache _assets;
         private Font _font;
         private ShopPopupView _shopPopup;
+        private AtmPopupView _atmPopup;
         public Func<MenuScreen, bool> MenuInterceptor { get; set; }
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
@@ -31,6 +32,7 @@ namespace Gopet.Runtime.UI
 
         /// <summary>Popup cửa hàng nếu đang mở, ngược lại <c>null</c>.</summary>
         public ShopPopupView ShopPopup => _shopPopup;
+        public AtmPopupView AtmPopup => _atmPopup;
 
         public static UiRoot Create(Transform parent, Font font)
         {
@@ -81,6 +83,8 @@ namespace Gopet.Runtime.UI
 
         private void ShowMenu(MenuScreen screen)
         {
+            if (_atmPopup != null && _atmPopup.TryConsumeMenu(screen)) return;
+
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
@@ -118,6 +122,18 @@ namespace Gopet.Runtime.UI
             Push(_shopPopup, _shopPopup.gameObject);
         }
 
+        /// <summary>Mở popup ATM và yêu cầu đúng menu 1039 của server.</summary>
+        public void OpenAtmPopup(Action requestAtm)
+        {
+            if (_atmPopup != null) return;
+
+            _atmPopup = AtmPopupView.Create(transform, _font, _guider, _assets, requestAtm);
+            _atmPopup.Closed += () => Close(_atmPopup);
+            _atmPopup.ConfirmRequested += ShowConfirm;
+            Push(_atmPopup, _atmPopup.gameObject);
+            _atmPopup.RequestAtm();
+        }
+
         /// <summary>Toast nhanh, không chặn tương tác — dùng cho "sắp có" v.v.</summary>
         public void ShowToast(string text)
         {
@@ -126,6 +142,8 @@ namespace Gopet.Runtime.UI
 
         private void ShowListOption(ListOptionScreen screen)
         {
+            if (_atmPopup != null && _atmPopup.TryConsumeListOption(screen)) return;
+
             var labels = new string[screen.Options.Length];
             for (var i = 0; i < labels.Length; i++) labels[i] = screen.Options[i].Text;
 
@@ -136,6 +154,7 @@ namespace Gopet.Runtime.UI
                 _guider.Select(screen, index);
                 Close(view);
             };
+            view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
         }
@@ -151,12 +170,15 @@ namespace Gopet.Runtime.UI
                 _guider.AnswerYesNo(request.DialogId, index == 0);
                 Close(view);
             };
+            view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
         }
 
         private void ShowInputDialog(InputDialogSpec spec)
         {
+            if (_atmPopup != null && _atmPopup.TryConsumeInput(spec)) return;
+
             var view = InputDialogView.Create(transform, _font);
             view.Bind(spec);
             view.Submitted += (dialogId, texts) =>
@@ -180,6 +202,7 @@ namespace Gopet.Runtime.UI
                 _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
                 Close(view);
             };
+            view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
         }
@@ -187,12 +210,21 @@ namespace Gopet.Runtime.UI
         private void ShowConfirm(MenuSelection.ConfirmPrompt prompt, Action onYes)
         {
             var view = ChoiceDialogView.Create(transform, _font);
-            view.Bind(prompt.Text, new[] { prompt.ConfirmLabel, prompt.CancelLabel });
+            // Một số menu cũ, trong đó có ATM, gửi cả left/right command là
+            // "OK". Nút thứ hai vẫn là nhánh huỷ nên không được hiển thị trùng.
+            var cancelLabel = prompt.CancelLabel;
+            if (string.IsNullOrWhiteSpace(cancelLabel) ||
+                string.Equals(cancelLabel.Trim(), prompt.ConfirmLabel?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                cancelLabel = "Hủy";
+            }
+            view.Bind(prompt.Text, new[] { prompt.ConfirmLabel, cancelLabel });
             view.Chosen += index =>
             {
                 Close(view);
                 if (index == 0) onYes();
             };
+            view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
         }
@@ -212,6 +244,7 @@ namespace Gopet.Runtime.UI
             // Bỏ tham chiếu popup shop khi nó bị đóng — không thì lần sau MenuShown
             // vẫn cố gọi TryConsumeMenu trên view đã Destroy.
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
+            if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
         }
 
         private void DestroyView(object screen)

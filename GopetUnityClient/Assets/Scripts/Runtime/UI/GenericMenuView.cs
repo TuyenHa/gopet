@@ -209,6 +209,10 @@ namespace Gopet.Runtime.UI
             var hitArea = gameObject.AddComponent<Image>();
             hitArea.color = Color.clear;
             hitArea.raycastTarget = true;
+            // Menu nhúng trong popup phải bị cắt ở đúng viewport; nếu thiếu mask,
+            // các dòng dài sẽ tràn ra ngoài panel dù ScrollRect vẫn được bật.
+            if (gameObject.GetComponent<RectMask2D>() == null)
+                gameObject.AddComponent<RectMask2D>();
 
             var content = new GameObject("Content", typeof(RectTransform));
             content.transform.SetParent(transform, false);

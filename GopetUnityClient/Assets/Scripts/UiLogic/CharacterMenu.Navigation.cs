@@ -85,7 +85,7 @@ namespace Gopet.UiLogic
 
         private static readonly IReadOnlyList<CharacterMenuNode> ServiceNodes = new[]
         {
-            CharacterMenuNode.Run("Ngân hàng", CharacterMenuAction.Bank),
+            CharacterMenuNode.Run("ATM", CharacterMenuAction.Bank),
         };
 
         private static readonly IReadOnlyList<CharacterMenuNode> EmptyNodes =

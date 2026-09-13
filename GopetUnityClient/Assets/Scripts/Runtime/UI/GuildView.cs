@@ -14,11 +14,15 @@ namespace Gopet.Runtime.UI
         private const float Padding = 8f;
         private const float TabHeight = 32f;
         private const float HeaderHeight = 36f;
+        private const float CloseSize = 34f;
         private const int TabCount = 5;
 
         private static readonly string[] TabLabels = { "Thông tin", "Thành viên", "Chat", "Top", "Kỹ năng" };
         private static readonly Color TabActive = new Color(0.95f, 0.75f, 0.2f, 1f);
-        private static readonly Color TabInactive = new Color(0.25f, 0.28f, 0.35f, 1f);
+        private static readonly Color TabInactive = new Color(0.86f, 0.91f, 0.99f, 1f);
+        private static readonly Color GuildText = new Color(0.10f, 0.15f, 0.23f, 1f);
+        private static readonly Color GuildMutedText = new Color(0.34f, 0.40f, 0.50f, 1f);
+        private static readonly Color GuildRow = new Color(0.88f, 0.93f, 1f, 1f);
 
         private Font _font;
         private Transform _panel;
@@ -41,13 +45,12 @@ namespace Gopet.Runtime.UI
 
         public static GuildView Create(Transform parent)
         {
-            var backdrop = new GameObject("Guild Backdrop", typeof(RectTransform), typeof(Image), typeof(Button));
+            var backdrop = new GameObject("Guild Backdrop", typeof(RectTransform), typeof(Image));
             backdrop.transform.SetParent(parent, false);
             UiBuilder.Stretch((RectTransform)backdrop.transform);
             backdrop.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
 
             var view = backdrop.AddComponent<GuildView>();
-            backdrop.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
 
             var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
             panel.transform.SetParent(backdrop.transform, false);
@@ -57,8 +60,11 @@ namespace Gopet.Runtime.UI
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             var img = panel.GetComponent<Image>();
             RoundedUiSprite.Apply(img);
-            img.color = new Color(0.08f, 0.11f, 0.16f, 0.96f);
+            img.color = new Color(0.97f, 0.985f, 1f, 1f);
             img.raycastTarget = true;
+            var outline = panel.AddComponent<Outline>();
+            outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
+            outline.effectDistance = new Vector2(2f, -2f);
 
             view._font = UiBuilder.BuiltinFont();
             view._panel = panel.transform;
@@ -75,22 +81,34 @@ namespace Gopet.Runtime.UI
             title.text = "Bang hội";
             title.fontStyle = FontStyle.Bold;
             title.alignment = TextAnchor.MiddleCenter;
-            title.color = UiBuilder.TextMain;
+            title.color = GuildText;
             UiBuilder.PlaceRow(title.rectTransform, Padding, 22f, Padding);
 
             var closeGo = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
             closeGo.transform.SetParent(_panel, false);
             var cr = (RectTransform)closeGo.transform;
             cr.anchorMin = cr.anchorMax = new Vector2(1f, 1f);
-            cr.pivot = new Vector2(1f, 1f);
-            cr.anchoredPosition = new Vector2(-Padding, -Padding);
-            cr.sizeDelta = new Vector2(28f, 28f);
-            RoundedUiSprite.Apply(closeGo.GetComponent<Image>());
-            closeGo.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 1f);
-            var xLabel = UiBuilder.MakeText(closeGo.transform, _font, "X", 16, true);
-            xLabel.text = "X";
-            xLabel.alignment = TextAnchor.MiddleCenter;
-            xLabel.fontStyle = FontStyle.Bold;
+            cr.pivot = new Vector2(0.5f, 0.5f);
+            cr.anchoredPosition = new Vector2(4f, 4f);
+            cr.sizeDelta = new Vector2(CloseSize, CloseSize);
+
+            var closeImage = closeGo.GetComponent<Image>();
+            closeImage.preserveAspect = true;
+            var closeSprite = HudSkin.Get(HudSkin.Close);
+            if (closeSprite != null)
+            {
+                closeImage.sprite = closeSprite;
+                closeImage.color = Color.white;
+            }
+            else
+            {
+                closeImage.color = new Color(0.86f, 0.28f, 0.28f, 1f);
+                var xLabel = UiBuilder.MakeText(closeGo.transform, _font, "X", 18, true);
+                xLabel.text = "×";
+                xLabel.alignment = TextAnchor.MiddleCenter;
+                xLabel.fontStyle = FontStyle.Bold;
+                xLabel.color = Color.white;
+            }
             closeGo.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke());
         }
 
@@ -123,6 +141,7 @@ namespace Gopet.Runtime.UI
                 label.text = TabLabels[i];
                 label.alignment = TextAnchor.MiddleCenter;
                 label.fontStyle = FontStyle.Bold;
+                label.color = GuildText;
 
                 _tabButtons[i] = go.GetComponent<Button>();
                 var idx = i;

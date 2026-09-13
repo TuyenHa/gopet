@@ -8,11 +8,20 @@ namespace Gopet.Runtime.UI
         public void ShowServerError(string text)
         {
             ShowServerNotice(text, true);
+            RefreshAtmAfterNotice();
         }
 
         public void ShowServerSuccess(string text)
         {
             ShowServerNotice(text, false);
+            RefreshAtmAfterNotice();
+        }
+
+        private void RefreshAtmAfterNotice()
+        {
+            // Dựng notice trước để response không bị che hoặc bị thay thế bởi
+            // lần request lại menu ATM. Request này chỉ cập nhật số dư/menu sau đó.
+            if (_atmPopup != null) _atmPopup.RequestAtm();
         }
 
         private void ShowServerNotice(string text, bool error)

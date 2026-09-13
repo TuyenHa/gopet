@@ -16,7 +16,7 @@ namespace Gopet.Runtime.UI
             _membersTitle.text = "Thành viên";
             _membersTitle.fontStyle = FontStyle.Bold;
             _membersTitle.alignment = TextAnchor.UpperCenter;
-            _membersTitle.color = UiBuilder.TextMain;
+            _membersTitle.color = GuildText;
             var tr = _membersTitle.rectTransform;
             tr.anchorMin = new Vector2(0f, 1f);
             tr.anchorMax = Vector2.one;
@@ -58,11 +58,11 @@ namespace Gopet.Runtime.UI
             r.offsetMin = new Vector2(0f, -(top + 36f));
             r.offsetMax = new Vector2(0f, -top);
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
+            go.GetComponent<Image>().color = GuildRow;
 
             var nameLabel = UiBuilder.MakeText(go.transform, _font, "Name", 12, false);
             nameLabel.text = member.Name;
-            nameLabel.color = UiBuilder.TextMain;
+            nameLabel.color = GuildText;
             var nr = nameLabel.rectTransform;
             nr.anchorMin = Vector2.zero;
             nr.anchorMax = new Vector2(0.55f, 1f);
@@ -71,7 +71,7 @@ namespace Gopet.Runtime.UI
 
             var fundLabel = UiBuilder.MakeText(go.transform, _font, "Fund", 11, false);
             fundLabel.text = member.FundInfo;
-            fundLabel.color = UiBuilder.TextMuted;
+            fundLabel.color = GuildMutedText;
             fundLabel.alignment = TextAnchor.MiddleRight;
             var fr = fundLabel.rectTransform;
             fr.anchorMin = new Vector2(0.55f, 0f);

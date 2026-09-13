@@ -34,7 +34,7 @@ namespace Gopet.Runtime.UI
             fr.anchorMax = new Vector2(0.78f, 1f);
             fr.offsetMin = new Vector2(0f, 2f);
             fr.offsetMax = new Vector2(-4f, -2f);
-            fieldGo.GetComponent<Image>().color = UiBuilder.Field;
+            fieldGo.GetComponent<Image>().color = Color.white;
 
             var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
             textGo.transform.SetParent(fieldGo.transform, false);
@@ -43,7 +43,7 @@ namespace Gopet.Runtime.UI
             var txt = textGo.GetComponent<Text>();
             txt.font = _font;
             txt.fontSize = 12;
-            txt.color = UiBuilder.TextMain;
+            txt.color = GuildText;
             txt.supportRichText = false;
 
             _chatInput = fieldGo.AddComponent<InputField>();
@@ -105,7 +105,7 @@ namespace Gopet.Runtime.UI
 
             var label = UiBuilder.MakeText(go.transform, _font, "Msg", 11, true);
             label.text = $"<b>{Gopet.UiLogic.JarIconTokens.Strip(who)}</b>: {text}";
-            label.color = UiBuilder.TextMain;
+            label.color = GuildText;
             label.supportRichText = true;
             _chatMessageCount++;
         }

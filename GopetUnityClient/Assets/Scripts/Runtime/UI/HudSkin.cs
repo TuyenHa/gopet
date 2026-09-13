@@ -15,6 +15,7 @@ namespace Gopet.Runtime.UI
         public const string Root = "Ui/Hud/";
 
         public const string Shop = "shop";
+        public const string Guild = "guild";
         public const string Service = "service";
         public const string Event = "event";
         public const string Close = "close";

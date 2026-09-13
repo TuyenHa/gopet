@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Thanh HUD 3 nút góc trên-phải: <b>Cửa hàng</b>, <b>Dịch vụ</b>, <b>Sự kiện</b>.
+    /// Thanh HUD góc trên-phải: <b>Cửa hàng</b>, <b>Bang hội</b>, <b>Dịch vụ</b>, <b>Sự kiện</b>.
     /// Bám góc màn hình thật trên canvas chung, không co theo letterbox của PixelCanvas.
     ///
     /// <para>Icon load từ <see cref="HudSkin"/>; thiếu file thì <b>lùi về nhãn chữ
@@ -16,10 +16,10 @@ namespace Gopet.Runtime.UI
         /// <summary>
         /// Cạnh nút HUD theo tỉ lệ chiều cao.
         /// </summary>
-        private const float SizeFrac = 0.09f;
+        private const float SizeFrac = 0.075f;
 
         /// <summary>Khoảng cách giữa các nút, theo tỉ lệ chiều cao.</summary>
-        private const float GapFrac = 0.012f;
+        private const float GapFrac = 0.006f;
 
         /// <summary>Khoảng cách của nút ngoài cùng tới mép phải.</summary>
         private const float ReservedRightFrac = 0.012f;
@@ -27,6 +27,7 @@ namespace Gopet.Runtime.UI
         private const float TopMarginFrac = 0.015f;
 
         public event Action ShopClicked;
+        public event Action GuildClicked;
         public event Action ServiceClicked;
         public event Action EventClicked;
 
@@ -44,7 +45,7 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<ShopServiceEventHud>();
 
-            // Xếp phải → trái: Sự kiện, Dịch vụ, Cửa hàng.
+            // Xếp phải → trái: Sự kiện, Dịch vụ, Cửa hàng, Bang hội.
             var right = ReservedRightFrac;
             MakeButton(go.transform, font, HudSkin.Event, "Sự kiện", right,
                 () => view.EventClicked?.Invoke());
@@ -56,6 +57,10 @@ namespace Gopet.Runtime.UI
 
             MakeButton(go.transform, font, HudSkin.Shop, "Cửa hàng", right,
                 () => view.ShopClicked?.Invoke());
+            right += SizeFrac + GapFrac;
+
+            MakeButton(go.transform, font, HudSkin.Guild, "Bang hội", right,
+                () => view.GuildClicked?.Invoke());
 
             return view;
         }

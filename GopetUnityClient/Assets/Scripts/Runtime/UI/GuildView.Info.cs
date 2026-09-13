@@ -16,7 +16,7 @@ namespace Gopet.Runtime.UI
         {
             _infoText = UiBuilder.MakeText(page, _font, "InfoText", 13, false);
             _infoText.alignment = TextAnchor.UpperLeft;
-            _infoText.color = UiBuilder.TextMain;
+            _infoText.color = GuildText;
             _infoText.horizontalOverflow = HorizontalWrapMode.Wrap;
             _infoText.verticalOverflow = VerticalWrapMode.Overflow;
             var r = _infoText.rectTransform;
@@ -69,7 +69,7 @@ namespace Gopet.Runtime.UI
             fr.anchorMax = new Vector2(0.7f, 1f);
             fr.offsetMin = new Vector2(0f, 2f);
             fr.offsetMax = new Vector2(-4f, -2f);
-            fieldGo.GetComponent<Image>().color = UiBuilder.Field;
+            fieldGo.GetComponent<Image>().color = Color.white;
 
             var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
             textGo.transform.SetParent(fieldGo.transform, false);
@@ -77,7 +77,7 @@ namespace Gopet.Runtime.UI
             var txt = textGo.GetComponent<Text>();
             txt.font = _font;
             txt.fontSize = 12;
-            txt.color = UiBuilder.TextMain;
+            txt.color = GuildText;
             txt.supportRichText = false;
 
             _searchField = fieldGo.AddComponent<InputField>();
@@ -91,10 +91,11 @@ namespace Gopet.Runtime.UI
             btnR.offsetMin = new Vector2(0f, 2f);
             btnR.offsetMax = new Vector2(0f, -2f);
             RoundedUiSprite.Apply(btnGo.GetComponent<Image>());
-            btnGo.GetComponent<Image>().color = UiBuilder.ButtonFace;
+            btnGo.GetComponent<Image>().color = GuildRow;
             var btnLabel = UiBuilder.MakeText(btnGo.transform, _font, "Label", 12, true);
             btnLabel.text = "Tìm";
             btnLabel.alignment = TextAnchor.MiddleCenter;
+            btnLabel.color = GuildText;
             btnGo.GetComponent<Button>().onClick.AddListener(() =>
             {
                 var text = _searchField.text;
@@ -142,11 +143,11 @@ namespace Gopet.Runtime.UI
             r.offsetMin = new Vector2(0f, -(top + 40f));
             r.offsetMax = new Vector2(0f, -top);
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
+            go.GetComponent<Image>().color = GuildRow;
 
             var label = UiBuilder.MakeText(go.transform, _font, "Name", 12, false);
             label.text = entry.Name;
-            label.color = UiBuilder.TextMain;
+            label.color = GuildText;
             var lr = label.rectTransform;
             lr.anchorMin = Vector2.zero;
             lr.anchorMax = new Vector2(0.7f, 1f);

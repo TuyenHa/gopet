@@ -1,6 +1,7 @@
 using System.IO;
 using Gopet.Net.Auth;
 using Gopet.Net.Guider;
+using Gopet.Net.Bank;
 using Gopet.Net.Pet;
 using Gopet.Net.Player;
 using Gopet.Runtime.Assets;
@@ -114,7 +115,8 @@ namespace Gopet.Runtime
             var hud = ShopServiceEventHud.Create(canvas.transform, font);
             hud.gameObject.SetActive(false);
             hud.ShopClicked += () => _ui.OpenShopPopup();
-            hud.ServiceClicked += () => _session?.OpenMenu(CharacterMenuPage.Services);
+            hud.GuildClicked += () => _session?.OpenGuildPopup();
+            hud.ServiceClicked += () => _ui.OpenAtmPopup(() => _client.Send(BankPackets.OpenBankMenu()));
             hud.EventClicked += () => _session?.OpenMenu(CharacterMenuPage.Events);
 
             WireFlow(auth);

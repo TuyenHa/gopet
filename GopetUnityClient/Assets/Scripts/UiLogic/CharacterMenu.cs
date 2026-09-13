@@ -82,9 +82,9 @@ namespace Gopet.UiLogic
             new CharacterMenuEntry(CharacterMenuAction.Teleport,       "Bản đồ",         CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Tasks,          "Nhiệm vụ",       CharacterMenuActionKind.Server),
             new CharacterMenuEntry(CharacterMenuAction.AutoAttack,     "Tự đánh quái",   CharacterMenuActionKind.Client),
-            // Ngân hàng (ATM): trigger opcode 44 top-level → server bơm ListOption 3 dòng
-            // qua Guider generic — không cần UI riêng.
-            new CharacterMenuEntry(CharacterMenuAction.Bank,           "Ngân hàng",      CharacterMenuActionKind.Server),
+            // ATM: trigger opcode 44 top-level → server bơm ListOption 3 dòng.
+            // UiRoot sẽ nhúng response vào AtmPopupView khi popup ATM đang mở.
+            new CharacterMenuEntry(CharacterMenuAction.Bank,           "ATM",            CharacterMenuActionKind.Server),
             new CharacterMenuEntry(CharacterMenuAction.ChangePassword, "Đổi mật khẩu",   CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Settings,       "Cài đặt",        CharacterMenuActionKind.Client),
             new CharacterMenuEntry(CharacterMenuAction.Logout,         "Đăng xuất",      CharacterMenuActionKind.Client),

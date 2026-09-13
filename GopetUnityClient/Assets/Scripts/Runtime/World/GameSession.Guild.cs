@@ -6,6 +6,8 @@ namespace Gopet.Runtime.World
 {
     public sealed partial class GameSession
     {
+        public void OpenGuildPopup() => OpenGuildView();
+
         private void OpenGuildView()
         {
             if (_guildView != null) return;

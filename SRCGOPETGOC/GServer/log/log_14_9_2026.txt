@@ -1,0 +1,40 @@
+﻿[Máy chủ 9/14/2026 12:26:02 AM] Trình dọn rác: True
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu vật phẩm từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu quái từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu cường hóa cánh từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu cửa hàng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu boss từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu map từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu trao đổi thưởng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu shop đấu trường từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu exps từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu các dòng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu danh hiệu từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu trùng sinh thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Tải dữ liệu hiệu ứng thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/14/2026 12:26:02 AM] Thời gian bảo trì định kỳ: 9/14/2026 5:00:00 AM
+
+[Máy chủ 9/14/2026 12:26:02 AM] HTTP API chạy KHÔNG xác thực (apiKey rỗng). Chỉ chấp nhận được vì đang bind loopback. Đặt apiKey trong config/server.json trước khi mở ra ngoài.
+
+[Máy chủ 9/14/2026 12:26:02 AM] Cổng game nghe ở 127.0.0.1:19180 (chỉ cục bộ)
+
+[Máy chủ 9/14/2026 12:26:02 AM] Không có đầu vào bàn phím (stdin đã đóng). Ngừng đọc lệnh; máy chủ vẫn chạy bình thường.
+

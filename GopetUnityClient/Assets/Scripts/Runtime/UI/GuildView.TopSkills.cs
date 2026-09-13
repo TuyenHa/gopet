@@ -15,7 +15,7 @@ namespace Gopet.Runtime.UI
             title.text = "Top cống hiến";
             title.fontStyle = FontStyle.Bold;
             title.alignment = TextAnchor.UpperCenter;
-            title.color = UiBuilder.TextMain;
+            title.color = GuildText;
             var tr = title.rectTransform;
             tr.anchorMin = new Vector2(0f, 1f);
             tr.anchorMax = Vector2.one;
@@ -50,11 +50,11 @@ namespace Gopet.Runtime.UI
                 r.offsetMin = new Vector2(0f, -(top + 32f));
                 r.offsetMax = new Vector2(0f, -top);
                 RoundedUiSprite.Apply(go.GetComponent<Image>());
-                go.GetComponent<Image>().color = UiBuilder.ButtonFace;
+                go.GetComponent<Image>().color = GuildRow;
 
                 var rank = UiBuilder.MakeText(go.transform, _font, "Rank", 12, false);
                 rank.text = $"#{i + 1}";
-                rank.color = i < 3 ? TabActive : UiBuilder.TextMuted;
+                rank.color = i < 3 ? TabActive : GuildMutedText;
                 rank.fontStyle = FontStyle.Bold;
                 var rr = rank.rectTransform;
                 rr.anchorMin = Vector2.zero;
@@ -64,7 +64,7 @@ namespace Gopet.Runtime.UI
 
                 var name = UiBuilder.MakeText(go.transform, _font, "Name", 12, false);
                 name.text = m.Name;
-                name.color = UiBuilder.TextMain;
+                name.color = GuildText;
                 var nr = name.rectTransform;
                 nr.anchorMin = new Vector2(0.1f, 0f);
                 nr.anchorMax = new Vector2(0.6f, 1f);
@@ -73,7 +73,7 @@ namespace Gopet.Runtime.UI
 
                 var fund = UiBuilder.MakeText(go.transform, _font, "Fund", 11, false);
                 fund.text = m.FundInfo;
-                fund.color = UiBuilder.TextMuted;
+                fund.color = GuildMutedText;
                 fund.alignment = TextAnchor.MiddleRight;
                 var fr = fund.rectTransform;
                 fr.anchorMin = new Vector2(0.6f, 0f);
@@ -99,7 +99,7 @@ namespace Gopet.Runtime.UI
             bool canEdit = response.Mode == 0;
             var potLabel = UiBuilder.MakeText(_skillsContainer, _font, "Potential", 12, false);
             potLabel.text = $"Điểm tiềm năng bang: {response.PotentialSkill}";
-            potLabel.color = UiBuilder.TextMuted;
+            potLabel.color = GuildMutedText;
             var pr = potLabel.rectTransform;
             pr.anchorMin = new Vector2(0f, 1f);
             pr.anchorMax = Vector2.one;
@@ -130,13 +130,13 @@ namespace Gopet.Runtime.UI
             bool locked = slot.State == -1;
             go.GetComponent<Image>().color = locked
                 ? new Color(0.15f, 0.16f, 0.2f, 1f)
-                : UiBuilder.ButtonFace;
+                : GuildRow;
 
             string stateText = locked ? "Khoá" : slot.State == 0 ? "Thuê skill" : "Đang dùng";
             var header = UiBuilder.MakeText(go.transform, _font, "Header", 13, false);
             header.text = $"Slot {index + 1} — {stateText}";
             header.fontStyle = FontStyle.Bold;
-            header.color = locked ? UiBuilder.TextMuted : UiBuilder.TextMain;
+            header.color = locked ? GuildMutedText : GuildText;
             var hr = header.rectTransform;
             hr.anchorMin = new Vector2(0f, 0.5f);
             hr.anchorMax = new Vector2(0.65f, 1f);
@@ -145,7 +145,7 @@ namespace Gopet.Runtime.UI
 
             var desc = UiBuilder.MakeText(go.transform, _font, "Desc", 11, false);
             desc.text = slot.Desc1 ?? string.Empty;
-            desc.color = UiBuilder.TextMuted;
+            desc.color = GuildMutedText;
             desc.horizontalOverflow = HorizontalWrapMode.Wrap;
             var dr = desc.rectTransform;
             dr.anchorMin = Vector2.zero;

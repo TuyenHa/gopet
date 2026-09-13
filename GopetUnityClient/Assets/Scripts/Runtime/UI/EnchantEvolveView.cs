@@ -1,4 +1,5 @@
 using System;
+using Gopet.Net.Pet;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -128,6 +129,15 @@ namespace Gopet.Runtime.UI
             Confirmed?.Invoke(a, b);
             _errorText.text = "Đã gửi. Đợi server phản hồi…";
             _errorText.color = new Color(0.6f, 0.85f, 0.5f, 1f);
+        }
+
+        public void ApplyServerMaterial(PetEquipMaterialSelection material)
+        {
+            if (material == null) return;
+            var field = material.Slot == 7 ? _fieldA : _fieldB;
+            field.text = material.ItemOrTemplateId.ToString();
+            _errorText.text = $"Đã chọn {material.Name}";
+            _errorText.color = UiBuilder.TextMuted;
         }
 
         private static void SetRect(RectTransform rect, float top, float height)

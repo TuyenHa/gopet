@@ -114,8 +114,8 @@ namespace Gopet.Runtime
             var hud = ShopServiceEventHud.Create(canvas.transform, font);
             hud.gameObject.SetActive(false);
             hud.ShopClicked += () => _ui.OpenShopPopup();
-            hud.ServiceClicked += () => _ui.ShowToast("Dịch vụ: sắp có");
-            hud.EventClicked += () => _ui.ShowToast("Sự kiện: sắp có");
+            hud.ServiceClicked += () => _session?.OpenMenu(CharacterMenuPage.Services);
+            hud.EventClicked += () => _session?.OpenMenu(CharacterMenuPage.Events);
 
             WireFlow(auth);
             _login.Initialize(_flow, rememberAccount ? NewStore() : null, _sound);
@@ -124,6 +124,7 @@ namespace Gopet.Runtime
                 Debug.Log($"[Gopet] Đăng nhập xong: {_flow.Success}. Vào map…");
                 VerticalSplitRevealTransition.Create(transform, _login.CompleteReadyPresentation);
                 _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
+                _ui.MenuInterceptor = _session.TryConsumeCharacterHubMenu;
                 _session.LogoutRequested += LogoutToLogin;
                 // Bật HUD 3 nút góc-phải NGAY sau khi vào map — trước đó ẩn để không
                 // đè lên splash / màn đăng nhập.

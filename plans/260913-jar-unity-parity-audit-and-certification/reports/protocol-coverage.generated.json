@@ -1,0 +1,729 @@
+[
+  {
+    "route": "-36",
+    "name": "CLIENT_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/IO/Session.cs:34 new Message((sbyte)-36)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "3",
+    "name": "SELECT_MENU_ELEMENT|PET_BATTLE_USE_ITEM|CLAN_INFO_MEMBER|LOGIN_SUCCES|SELECT_ITEM_REMOVE_TATOO|GUILD_LIST_MEMBER|GUIDER_LIST_OPTION|PET_UNFOLLOW|LETTER_COMMAND_REQUEST_ADD_FRIEND",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1635 new Message(GopetCMD.LOGIN_SUCCES)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "4",
+    "name": "SEND_YES_NO|PET_BATTLE_USE_SKILL|TATTOO_ENCHANT_SELECT_MATERIAL|LOGIN_FAILED|WING_TYPE_USE|SEND_ANIMATION_CHARACTER|LETTER_COMMAND_REQUEST_ADD_FRIEND_WITH_NAME",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/Player.cs:689 new Message(GopetCMD.LOGIN_FAILED)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "7",
+    "name": "ON_PLAYER_GET_CHANNEL_INFO|TYPE_DIALOG_INPUT|ADMIN_GIVE_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1616 new Message(GopetCMD.ON_PLAYER_GET_CHANNEL_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "9",
+    "name": "ON_PLACE_CHAT|REQUEST_PET_IMG|DONATE_CLAN|GUIDER_TYPE_PAY",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:326 new Message(GopetCMD.ON_PLACE_CHAT)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "10",
+    "name": "PLAYER_DONATE_CLAN|LETTER_COMMAND_LIST_BLOCK_FRIEND|CHAT_GLOBAL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/Player.cs:393 new Message((sbyte)10)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "21",
+    "name": "CREATE_CHAR|GYM|GUILD_PLAYER_CHAT",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1515 new Message(GopetCMD.CREATE_CHAR)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "24",
+    "name": "ON_PLAYER_ENTER_MAP|ON_PLAYER_CHANGE_CHANNEL|GUILD_CLAN_SKILL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:302 new Message(24)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "27",
+    "name": "ON_OTHER_USER_MOVE|GUILD_SHOW_OHTER_PLAYER_CLAN_SKILL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:335 new Message(GopetCMD.ON_OTHER_USER_MOVE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "29",
+    "name": "ON_UPDATE_PLAYER_IN_MAP|USE_EQUIP_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:374 new Message(GopetCMD.ON_UPDATE_PLAYER_IN_MAP)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "30",
+    "name": "ON_PLAYER_EXIT_PLACE|NORMAL_INVENTORY",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:351 new Message(GopetCMD.ON_PLAYER_EXIT_PLACE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "31",
+    "name": "INIT_PLAYER|MAGIC_LEARN_SKILL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:287 new Message(GopetCMD.INIT_PLAYER)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "34",
+    "name": "GAME_OBJECT",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:250 new Message(GopetCMD.GAME_OBJECT)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "42",
+    "name": "MGO_COMMAND|REMOVE_MOB",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1543 new Message(GopetCMD.MGO_COMMAND)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "45",
+    "name": "SERVER_MESSAGE|PET_RECOVERY_HP",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:166 new Message(45)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:182 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:188 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:205 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:211 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:236 new Message(45)",
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:255 new Message(45)",
+      "SRCGOPETGOC/GServer/Server/MenuController.cs:1096 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Server/Player.cs:722 new Message(GopetCMD.SERVER_MESSAGE)",
+      "SRCGOPETGOC/GServer/Server/Player.cs:731 new Message(GopetCMD.SERVER_MESSAGE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "64",
+    "name": "TIME_PLACE|SERVER_LIST",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/Player.cs:1055 new Message(GopetCMD.SERVER_LIST)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "71",
+    "name": "PET_UP_TIER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:152 new Message(71)",
+      "SRCGOPETGOC/GServer/Server/Player.cs:740 new Message(71)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:311 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:358 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:451 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:511 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:905 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:143 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:166 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:188 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:362 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:221 new ListWriterMessage(2, GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Place/Place.cs:169 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:662 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1407 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1466 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1496 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1750 new Message(GopetCMD.PET_SERVICE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2423 new Message(GopetCMD.PET_SERVICE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/3",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SELECT_MENU_ELEMENT|PET_BATTLE_USE_ITEM|CLAN_INFO_MEMBER|LOGIN_SUCCES|SELECT_ITEM_REMOVE_TATOO|GUILD_LIST_MEMBER|GUIDER_LIST_OPTION|PET_UNFOLLOW|LETTER_COMMAND_REQUEST_ADD_FRIEND",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:5044 messagePetService(GopetCMD.PET_UNFOLLOW)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/4",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SEND_YES_NO|PET_BATTLE_USE_SKILL|TATTOO_ENCHANT_SELECT_MATERIAL|LOGIN_FAILED|WING_TYPE_USE|SEND_ANIMATION_CHARACTER|LETTER_COMMAND_REQUEST_ADD_FRIEND_WITH_NAME",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:857 messagePetService(GopetCMD.SEND_ANIMATION_CHARACTER)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/5",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_INVENTORY|NPC_OPTION|SELECT_OPTION|TATTOO_ENCHANT|POPUP_MESSAGE|WING_TYPE_UNEQUIP|SEND_LIST_ANIMATION_CHARACTER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:878 messagePetService(GopetCMD.SEND_LIST_ANIMATION_CHARACTER)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/8",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SEND_LIST_PET_ZONE|SHOW_MENU_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:221 ListWriterMessage -> GopetCMD.SEND_LIST_PET_ZONE"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/9",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ON_PLACE_CHAT|REQUEST_PET_IMG|DONATE_CLAN|GUIDER_TYPE_PAY",
+    "status": "intentionally-ignored",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1466 PET_SERVICE -> GopetCMD.REQUEST_PET_IMG",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1496 PET_SERVICE -> GopetCMD.REQUEST_PET_IMG"
+    ],
+    "note": "Legacy REQUEST_PET_IMG reply. Unity uses top-level COMMAND_IMAGE (96); no Unity request reaches this endpoint."
+  },
+  {
+    "route": "81/10",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PLAYER_DONATE_CLAN|LETTER_COMMAND_LIST_BLOCK_FRIEND|CHAT_GLOBAL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:124 GameController.messagePetService(GopetCMD.CHAT_GLOBAL)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1269 GameController.messagePetService(GopetCMD.CHAT_GLOBAL)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/11",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/MAGIC|GUIDER_IMGDIALOG",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:662 PET_SERVICE -> GopetCMD.MAGIC"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/16",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_BATTLE_STATE|GUILD_TOP_FUND|LETTER_COMMAND_SET_MARK",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:905 PET_SERVICE -> GopetCMD.PET_BATTLE_STATE"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/17",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ON_PET_INTERACT|LETTER_COMMAND_REMOVE_LETTER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:805 messagePetService(GopetCMD.ON_PET_INTERACT)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/18",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/UPDATE_PET_LVL|LETTER_COMMAND_HAS_LETTER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1750 PET_SERVICE -> GopetCMD.UPDATE_PET_LVL"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/19",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/UP_TIEM_NANG",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1858 messagePetService(GopetCMD.UP_TIEM_NANG)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/21",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/CREATE_CHAR|GYM|GUILD_PLAYER_CHAT",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1775 messagePetService(GopetCMD.GYM)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/22",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SEND_LIST_MOB_ZONE|GUILD_ON_PLAYER_CHAT|AUTO_ATTACK_SUPPORT",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:143 PET_SERVICE -> GopetCMD.SEND_LIST_MOB_ZONE",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:166 PET_SERVICE -> GopetCMD.SEND_LIST_MOB_ZONE",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:188 PET_SERVICE -> GopetCMD.SEND_LIST_MOB_ZONE"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/25",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ON_PLAYER_WARPING|MONEY_INFO|GUILD_CLAN_UNLOCK_SKILL",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1674 messagePetService(GopetCMD.MONEY_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/28",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/EQUIP_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1895 messagePetService(GopetCMD.EQUIP_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/29",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ON_UPDATE_PLAYER_IN_MAP|USE_EQUIP_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2390 messagePetService(GopetCMD.USE_EQUIP_ITEM)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/36",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ATTACK_MOB",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:451 PET_SERVICE -> GopetCMD.ATTACK_MOB",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:511 PET_SERVICE -> GopetCMD.ATTACK_MOB"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/37",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_BATTLE",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:311 PET_SERVICE -> GopetCMD.PET_BATTLE",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:358 PET_SERVICE -> GopetCMD.PET_BATTLE"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/39",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/UNEQUIP_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2483 messagePetService(GopetCMD.UNEQUIP_ITEM)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/40",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/MY_PET_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1407 PET_SERVICE -> GopetCMD.MY_PET_INFO"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/47",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SELECT_METERIAL_ENCHANT_PET_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3000 writeSelectItemEnchant(index, iconPath, name, indexElemnt, GopetCMD.SELECT_METERIAL_ENCHANT_PET_INFO) via messagePetService(cmd)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/56",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/REMOVE_ITEM_EQUIP",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2720 messagePetService(GopetCMD.REMOVE_ITEM_EQUIP)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/59",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PLAYER_BATTLE",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:466 GameController.messagePetService(GopetCMD.PLAYER_BATTLE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:483 GameController.messagePetService(GopetCMD.PLAYER_BATTLE)",
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:494 GameController.messagePetService(GopetCMD.PLAYER_BATTLE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/61",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SEND_SKIN",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:759 messagePetService(GopetCMD.SEND_SKIN)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:775 messagePetService(GopetCMD.SEND_SKIN)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/63",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SHOW_BIG_TEXT_EFF",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:685 messagePetService(GopetCMD.SHOW_BIG_TEXT_EFF)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2513 messagePetService(GopetCMD.SHOW_BIG_TEXT_EFF)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/64",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/TIME_PLACE|SERVER_LIST",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/ArenaPlace.cs:126 GopetPlace.messagePetService(GopetCMD.TIME_PLACE)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:849 GopetPlace.messagePetService(GopetCMD.TIME_PLACE)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2505 messagePetService(GopetCMD.TIME_PLACE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/65",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/literal",
+    "status": "server-unused",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:5219 messagePetService(65)"
+    ],
+    "note": "Only emitted by GameController.testMsg65(), whose sole call site is commented out."
+  },
+  {
+    "route": "81/66",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/CHAT_PUBLIC",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:362 PET_SERVICE -> GopetCMD.CHAT_PUBLIC"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/67",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SHOW_UPGRADE_PET",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2698 messagePetService(GopetCMD.SHOW_UPGRADE_PET)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/69",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_UPGRADE_PET_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2816 messagePetService(GopetCMD.PET_UPGRADE_PET_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/70",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/INFO_UP_TIER_PET",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1356 messagePetService(GopetCMD.INFO_UP_TIER_PET)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/71",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_UP_TIER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3524 messagePetService(GopetCMD.PET_UP_TIER)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/72",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PRICE_UPGRADE_PET",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2827 messagePetService(GopetCMD.PRICE_UPGRADE_PET)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/74",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SHOW_GEM_INVENTORY",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4345 messagePetService(GopetCMD.SHOW_GEM_INVENTORY)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/80",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SELECT_GEM_ENCHANT",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3005 writeSelectItemEnchant(index, iconPath, name, indexElemnt - 6, GopetCMD.SELECT_GEM_ENCHANT) via messagePetService(cmd)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/81",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/PET_SERVICE|SELECT_GEM_UP_TIER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3021 messagePetService(GopetCMD.SELECT_GEM_UP_TIER)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/82",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ON_UNQUIP_GEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1979 messagePetService(GopetCMD.ON_UNQUIP_GEM)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/83",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/REMOVE_GEM_ITEM",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4392 messagePetService(GopetCMD.REMOVE_GEM_ITEM)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/84",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SEND_GEM_INFo",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4400 messagePetService(GopetCMD.SEND_GEM_INFo)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/86",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/KIOSK",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2840 messagePetService(GopetCMD.KIOSK)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/89",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/UPDATE_HP_BOSS",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:908 GameController.messagePetService(GopetCMD.UPDATE_HP_BOSS)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/90",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/TATTOO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2304 messagePetService(GopetCMD.TATTOO)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3924 messagePetService(GopetCMD.TATTOO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/91",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/CLAN",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:816 GameController.clanMessage(GopetCMD.GUILD_NAME_IN_PLACE) nested=GopetCMD.GUILD_NAME_IN_PLACE",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:836 GameController.clanMessage(GopetCMD.GUILD_NAME_IN_PLACE) nested=GopetCMD.GUILD_NAME_IN_PLACE",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2521 messagePetService(GopetCMD.CLAN)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2593 clanMessage(GopetCMD.CLAN_INFO) nested=GopetCMD.CLAN_INFO",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2615 clanMessage(GopetCMD.DONATE_CLAN) nested=GopetCMD.DONATE_CLAN",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:2670 clanMessage(GopetCMD.CLAN_INFO_MEMBER) nested=GopetCMD.CLAN_INFO_MEMBER",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4561 clanMessage(GopetCMD.GUILD_LIST) nested=GopetCMD.GUILD_LIST",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4621 clanMessage(GopetCMD.GUILD_TOP_FUND) nested=GopetCMD.GUILD_TOP_FUND",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4754 clanMessage(GopetCMD.GUILD_CHAT) nested=GopetCMD.GUILD_CHAT",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4777 clanMessage(GopetCMD.GUILD_ON_PLAYER_CHAT) nested=GopetCMD.GUILD_ON_PLAYER_CHAT",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4802 clanMessage(GopetCMD.GUILD_CLAN_SKILL) nested=GopetCMD.GUILD_CLAN_SKILL"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/92",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/WING",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:703 messagePetService(GopetCMD.WING)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:724 messagePetService(GopetCMD.WING)",
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:737 messagePetService(GopetCMD.WING)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/94",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/STAR_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1669 messagePetService(GopetCMD.STAR_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/95",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SHOW_EXP",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:5125 messagePetService(GopetCMD.SHOW_EXP)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/96",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/COMMAND_IMAGE|PLAYER_PK|REMOVE_BATTLE_BY_MOB_ID",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Place/GopetPlace.cs:901 GameController.messagePetService(GopetCMD.REMOVE_BATTLE_BY_MOB_ID)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/99",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/SHOW_TATTO_PET_IN_KIOSK|FAST_REMOVE_MOB",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Data/Battle/PetBattle.cs:1700 GameController.messagePetService(GopetCMD.FAST_REMOVE_MOB)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/100",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/CHANGE_PASSWORD|ANIMATION_MENU",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:5137 messagePetService(GopetCMD.ANIMATION_MENU)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:5182 messagePetService(100)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/102",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/ENERGY_INFO",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:1699 messagePetService(GopetCMD.ENERGY_INFO)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "81/103",
+    "name": "PET_SERVICE|SELECT_GEM_UP_TIER/CHECK_SPEED",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/Player.cs:303 GameController.messagePetService(GopetCMD.CHECK_SPEED)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "96",
+    "name": "COMMAND_IMAGE|PLAYER_PK|REMOVE_BATTLE_BY_MOB_ID",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:946 new Message(GopetCMD.COMMAND_IMAGE)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "100",
+    "name": "CHANGE_PASSWORD|ANIMATION_MENU",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/Player.cs:243 new Message(GopetCMD.CHANGE_PASSWORD)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "108",
+    "name": "literal",
+    "status": "server-unused",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Manager/PlayerManager.cs:140 new Message((sbyte)108)",
+      "SRCGOPETGOC/GServer/Place/Place.cs:104 new Message((sbyte)108)",
+      "SRCGOPETGOC/GServer/Place/Place.cs:127 new Message((sbyte)108)",
+      "SRCGOPETGOC/GServer/Place/Place.cs:138 new Message((sbyte)108)",
+      "SRCGOPETGOC/GServer/Place/Place.cs:151 new Message((sbyte)108)"
+    ],
+    "note": "Legacy Place/crossChat writer. GopetPlace overrides active place flows; PlayerManager.crossChat has no external caller."
+  },
+  {
+    "route": "121",
+    "name": "LETTER_COMMAND",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:481 new Message(GopetCMD.LETTER_COMMAND)"
+    ],
+    "note": ""
+  },
+  {
+    "route": "122",
+    "name": "COMMAND_GUIDER",
+    "status": "handled",
+    "evidence": [
+      "SRCGOPETGOC/GServer/Server/GameController.cs:848 new Message(GopetCMD.COMMAND_GUIDER)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:3625 new Message(GopetCMD.COMMAND_GUIDER)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4321 new Message(GopetCMD.COMMAND_GUIDER)",
+      "SRCGOPETGOC/GServer/Server/GameController.cs:4678 new Message(GopetCMD.COMMAND_GUIDER)",
+      "SRCGOPETGOC/GServer/Server/MenuController.cs:766 new Message(GopetCMD.COMMAND_GUIDER)",
+      "SRCGOPETGOC/GServer/Server/MenuController.cs:800 new Message(GopetCMD.COMMAND_GUIDER)"
+    ],
+    "note": ""
+  }
+]

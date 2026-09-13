@@ -2,7 +2,6 @@ using Gopet.Net;
 using Gopet.Net.Auth;
 using Gopet.Net.Guild;
 using Gopet.Net.Map;
-using Gopet.Net.MiniGame;
 using Gopet.Net.Pet;
 using Gopet.Net.Social;
 using Xunit;
@@ -131,21 +130,6 @@ namespace Gopet.Net.Tests
             Assert.Equal((sbyte)7, r.ReadSByte());
             Assert.Equal("old123", r.ReadUtf());
             Assert.Equal("newSecure456", r.ReadUtf());
-        }
-
-        // === P8.7 Mini-game ===
-
-        [Theory]
-        [InlineData(MiniGamePackets.GameCaro)]
-        [InlineData(MiniGamePackets.GameCoTuong)]
-        [InlineData(MiniGamePackets.GameTienLen)]
-        [InlineData(MiniGamePackets.GamePhom)]
-        public void OpenMiniGame_81_2_SbyteType(sbyte gameType)
-        {
-            var (op, r) = Roundtrip(MiniGamePackets.OpenMiniGame(gameType));
-            Assert.Equal(GopetCmd.PET_SERVICE, op);
-            Assert.Equal((sbyte)2, r.ReadSByte());
-            Assert.Equal(gameType, r.ReadSByte());
         }
 
         // === P7.1 fill Pet inventory + P7.3 Destroy ===

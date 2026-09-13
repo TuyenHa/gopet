@@ -92,5 +92,32 @@ namespace Gopet.Net.Tests
                 Assert.Equal(expected, built);
             }
         }
+
+        [Fact]
+        public void MenuPhu_ChiConTacVuGameplay()
+        {
+            var nodes = CharacterMenu.GetNodes(CharacterMenuPage.Main);
+
+            Assert.Equal(3, nodes.Count);
+            Assert.Equal("Nhiệm vụ", nodes[0].Label);
+            Assert.Equal("Bản đồ", nodes[1].Label);
+            Assert.Equal("Hộp thư", nodes[2].Label);
+        }
+
+        [Fact]
+        public void DichVu_ChiChuaTienIchLauDai()
+        {
+            var nodes = CharacterMenu.GetNodes(CharacterMenuPage.Services);
+
+            Assert.Collection(nodes,
+                n => Assert.Equal(CharacterMenuAction.GemInventory, n.Action),
+                n => Assert.Equal(CharacterMenuAction.Bank, n.Action));
+        }
+
+        [Fact]
+        public void SuKien_RongKhiBackendChuaCongBoSuKien()
+        {
+            Assert.Empty(CharacterMenu.GetNodes(CharacterMenuPage.Events));
+        }
     }
 }

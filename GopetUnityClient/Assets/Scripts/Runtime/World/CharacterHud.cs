@@ -1,3 +1,4 @@
+using System;
 using Gopet.Net.Images;
 using Gopet.Runtime.Assets;
 using Gopet.Runtime.UI;
@@ -37,6 +38,8 @@ namespace Gopet.Runtime.World
         private Image _portrait;
         private RemoteAssetCache _assets;
 
+        public event Action Clicked;
+
         public StatBar Hp { get; private set; }
         public StatBar Mp { get; private set; }
         /// <summary>Deprecated — pet EXP chưa có realtime; property giữ để tương thích, không dùng.</summary>
@@ -46,7 +49,7 @@ namespace Gopet.Runtime.World
 
         public static CharacterHud Create(Transform parent, string playerName)
         {
-            var go = new GameObject("Character HUD", typeof(RectTransform), typeof(Image));
+            var go = new GameObject("Character HUD", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
@@ -56,11 +59,13 @@ namespace Gopet.Runtime.World
 
             // Panel nền tối bán trong suốt, viền cong — hợp với style jar.
             var panel = go.GetComponent<Image>();
-            panel.raycastTarget = false;
+            panel.raycastTarget = true;
             RoundedUiSprite.Apply(panel);
             panel.color = new Color(0.08f, 0.11f, 0.16f, 0.72f);
 
             var hud = go.AddComponent<CharacterHud>();
+            go.GetComponent<Button>().transition = Selectable.Transition.None;
+            go.GetComponent<Button>().onClick.AddListener(() => hud.Clicked?.Invoke());
             hud.Build(UiBuilder.BuiltinFont());
             hud.SetName(playerName);
             return hud;

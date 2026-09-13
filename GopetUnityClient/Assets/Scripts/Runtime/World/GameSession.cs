@@ -44,6 +44,7 @@ namespace Gopet.Runtime.World
 
         private readonly GopetClient _client;
         private readonly LoginSuccess _login;
+        private GuiderHandler _guider;
         private MapScene _scene;
         private MapHandler _mapHandler;
         private ChatHandler _chatHandler;
@@ -108,6 +109,7 @@ namespace Gopet.Runtime.World
             RemoteAssetCache assets, GuiderHandler guider, Transform parent = null, WingHandler wings = null)
         {
             var s = new GameSession(client, login);
+            s._guider = guider;
             s._scene = MapScene.Create(parent);
             s._scene.LoadMap(DefaultMapId);
 
@@ -146,6 +148,7 @@ namespace Gopet.Runtime.World
             s._hud.Send = client.Send;
             s._hud.PlaceChatNameProvider = s._scene.TryGetAvatarName;
             s._hud.Character.BindAssets(assets);
+            s._hud.Character.Clicked += s.OpenCharacterHub;
             s.UpdateMapName();
             guider.BossBannerShown += s._hud.Ticker.Show;
             s._worldStatusHandler.BossHpUpdated += s._scene.ApplyBossHp;
@@ -191,7 +194,18 @@ namespace Gopet.Runtime.World
             // Bang: nghe CLAN_INFO để có clanId cho chat SEND.
             s._guildInfoHandler = new GuildInfoHandler();
             s._guildInfoHandler.RegisterOn(client.Router);
+            s._hud.SetGuildAvailable(s._guildInfoHandler.ClanId > 0);
             s._hud.ClanIdProvider = () => s._guildInfoHandler.ClanId;
+            s._hud.GuildHistoryRequested = () =>
+            {
+                if (s._guildInfoHandler.ClanId > 0)
+                    client.Send(GuildPackets.RequestChatHistory());
+            };
+            s._hud.GuildChatRequested = text =>
+            {
+                if (s._guildInfoHandler.ClanId > 0 && s.TryChatCooldown("guild-chat"))
+                    client.Send(GuildPackets.SendChat(s._guildInfoHandler.ClanId, text));
+            };
             s._guildInfoHandler.ClanInfoReceived += info => s.OnGuildClanInfo(info);
             s._guildInfoHandler.GuildListReceived += resp => s._guildView?.ShowGuildList(resp);
             s._guildInfoHandler.MemberListReceived += resp => s._guildView?.ShowMembers(resp);
@@ -199,6 +213,8 @@ namespace Gopet.Runtime.World
             s._guildInfoHandler.TopFundReceived += resp => s._guildView?.ShowTopFund(resp);
             s._guildInfoHandler.ChatHistoryReceived += resp => s._guildView?.ShowChatHistory(resp);
             s._guildInfoHandler.ChatMessageReceived += msg => s._guildView?.AppendChat(msg.Who, msg.Text);
+            s._guildInfoHandler.ChatHistoryReceived += s._hud.ShowGuildChatHistory;
+            s._guildInfoHandler.ChatMessageReceived += s._hud.AppendGuildChat;
             s._guildInfoHandler.SkillInfoReceived += resp => s._guildView?.ShowSkills(resp);
             s._guildNameLayer = new GuildNameLayer(s._scene, s._guildInfoHandler);
             client.Send(GuildPackets.RequestClanInfo());
@@ -329,8 +345,14 @@ namespace Gopet.Runtime.World
 
         private void OpenCharacterMenu()
         {
+            OpenMenu(CharacterMenuPage.Main);
+        }
+
+        /// <summary>Mở trực tiếp một nhóm menu từ HUD ngoài (Dịch vụ/Sự kiện).</summary>
+        public void OpenMenu(CharacterMenuPage page)
+        {
             if (_menuView != null) return;    // đã mở
-            _menuView = CharacterMenuView.Create(_hudParent);
+            _menuView = CharacterMenuView.Create(_hudParent, page);
             _menuView.CloseRequested += CloseCharacterMenu;
             _menuView.ItemSelected += OnCharacterMenuAction;
         }
@@ -370,7 +392,7 @@ namespace Gopet.Runtime.World
                     OpenSettings();
                     break;
                 case CharacterMenuAction.Logout:
-                    LogoutRequested?.Invoke();
+                    ConfirmLogout();
                     break;
                 case CharacterMenuAction.AutoAttack:
                     SetAutoAttack(!_autoAttack.Enabled);
@@ -390,7 +412,7 @@ namespace Gopet.Runtime.World
                     OpenGuildView();
                     break;
                 case CharacterMenuAction.Exit:
-                    Application.Quit();
+                    ConfirmExit();
                     break;
             }
             CloseCharacterMenu();
@@ -398,6 +420,17 @@ namespace Gopet.Runtime.World
 
         private void OnPetEquipInfo(PetEquipInfo info)
         {
+            if (_characterHub != null && _characterHub.TryApplyPetEquip(info))
+            {
+                _hubPetEquipRequestPending = false;
+                _petEquipRequestPending = false;
+                return;
+            }
+            if (_hubPetEquipRequestPending)
+            {
+                _hubPetEquipRequestPending = false;
+                return;
+            }
             // Chỉ mở view mới nếu user vừa bấm menu; nếu không, chỉ update view đang mở
             // (sau equip/unequip server auto-bumps EQUIP_INFO — không mở popup ngoài ý).
             if (_petEquipView == null)

@@ -1,0 +1,15 @@
+{
+  "handled": [],
+  "intentionallyIgnored": [
+    "81/9"
+  ],
+  "serverUnused": [
+    "81/65",
+    "108"
+  ],
+  "notes": {
+    "81/9": "Legacy REQUEST_PET_IMG reply. Unity uses top-level COMMAND_IMAGE (96); no Unity request reaches this endpoint.",
+    "81/65": "Only emitted by GameController.testMsg65(), whose sole call site is commented out.",
+    "108": "Legacy Place/crossChat writer. GopetPlace overrides active place flows; PlayerManager.crossChat has no external caller."
+  }
+}

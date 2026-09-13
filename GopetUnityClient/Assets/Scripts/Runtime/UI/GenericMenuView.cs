@@ -193,6 +193,41 @@ namespace Gopet.Runtime.UI
             Refresh();
         }
 
+        /// <summary>Bật cuộn khi menu được nhúng sẵn trong một pane của popup.</summary>
+        public void EnableEmbeddedScroll(float viewportHeight)
+        {
+            if (_scrollRect != null) return;
+
+            var hitArea = gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+            hitArea.raycastTarget = true;
+
+            var content = new GameObject("Content", typeof(RectTransform));
+            content.transform.SetParent(transform, false);
+            _content = (RectTransform)content.transform;
+            _content.anchorMin = new Vector2(0f, 1f);
+            _content.anchorMax = new Vector2(1f, 1f);
+            _content.pivot = new Vector2(0f, 1f);
+            _content.anchoredPosition = Vector2.zero;
+
+            _rowParent = _content;
+            foreach (var row in _realized.Values) row.transform.SetParent(_rowParent, false);
+            foreach (var row in _pool) if (row != null) row.transform.SetParent(_rowParent, false);
+
+            _scrollRect = gameObject.AddComponent<ScrollRect>();
+            _scrollRect.viewport = (RectTransform)transform;
+            _scrollRect.content = _content;
+            _scrollRect.horizontal = false;
+            _scrollRect.vertical = true;
+            _scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            _scrollRect.scrollSensitivity = MenuItemRow.Height * 0.65f;
+            _scrollRect.onValueChanged.AddListener(_ => OnInteractiveScroll());
+
+            _viewportHeight = viewportHeight;
+            UpdateContentHeight();
+            Refresh();
+        }
+
         public void SetScroll(float y)
         {
             _scrollY = y;

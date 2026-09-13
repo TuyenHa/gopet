@@ -24,6 +24,7 @@ namespace Gopet.Runtime.UI
         private RemoteAssetCache _assets;
         private Font _font;
         private ShopPopupView _shopPopup;
+        public Func<MenuScreen, bool> MenuInterceptor { get; set; }
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
         public object Current => _stack.Top;
@@ -80,6 +81,8 @@ namespace Gopet.Runtime.UI
 
         private void ShowMenu(MenuScreen screen)
         {
+            if (MenuInterceptor != null && MenuInterceptor(screen)) return;
+
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
             // tự bind. Không thì cả hai view chồng nhau và người chơi tưởng bug.
             if (_shopPopup != null && _shopPopup.TryConsumeMenu(screen)) return;

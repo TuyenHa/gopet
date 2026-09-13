@@ -9,9 +9,8 @@ namespace Gopet.Runtime.UI
     /// Nạp chuỗi lấy từ client J2ME cũ (<c>tools/extract-jar-strings</c>), theo
     /// chỉ số, có cache. Cùng vai trò với <see cref="JarSkin"/> nhưng cho văn bản.
     ///
-    /// <para>Mặc định lấy tiếng Việt. EN có sẵn (<see cref="En"/>) nhưng phase này
-    /// chưa dựng công tắc đổi ngôn ngữ — đó là việc của người dùng cuối, không phải
-    /// việc của phase 5.1.</para>
+    /// <para>Mặc định lấy tiếng Việt; người dùng có thể đổi VN/EN trong Settings và
+    /// lựa chọn được lưu bằng <see cref="PlayerPrefs"/>.</para>
     /// </summary>
     public enum Language { Vi, En }
 

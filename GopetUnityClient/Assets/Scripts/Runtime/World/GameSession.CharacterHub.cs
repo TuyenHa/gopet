@@ -1,0 +1,74 @@
+using Gopet.Net.Guider;
+using Gopet.Net.Pet;
+using Gopet.Runtime.Audio;
+using Gopet.Runtime.UI;
+using Gopet.UiLogic;
+using UnityEngine;
+
+namespace Gopet.Runtime.World
+{
+    public sealed partial class GameSession
+    {
+        private CharacterHubPopupView _characterHub;
+        private bool _hubPetEquipRequestPending;
+
+        public bool AutoAttackEnabled => _autoAttack.Enabled;
+
+        private void OpenCharacterHub()
+        {
+            if (_characterHub != null) return;
+            CloseCharacterMenu();
+            _characterHub = CharacterHubPopupView.Create(_hudParent, _guider, _assets,
+                SoundManager.Instance, _autoAttack.Enabled);
+            _characterHub.ActionRequested += ExecuteCharacterHubAction;
+            _characterHub.AutoAttackChanged += SetAutoAttack;
+            _characterHub.PetEquipActionChosen += OnPetEquipAction;
+            _characterHub.PetHiddenStatsRequested += () =>
+                _client.Send(PetEquipPackets.RequestHiddenStats());
+            _characterHub.EmptyPetSlotTapped += _ =>
+                _client.Send(PetEquipPackets.RequestNormalInventory());
+            _characterHub.Closed += CloseCharacterHub;
+            _characterHub.OpenInitial();
+        }
+
+        private void CloseCharacterHub()
+        {
+            if (_characterHub == null) return;
+            Object.Destroy(_characterHub.gameObject);
+            _characterHub = null;
+            _hubPetEquipRequestPending = false;
+        }
+
+        public bool TryConsumeCharacterHubMenu(MenuScreen screen) =>
+            _characterHub != null && _characterHub.TryConsumeMenu(screen);
+
+        private void ExecuteCharacterHubAction(CharacterMenuAction action)
+        {
+            if (CharacterMenu.TryBuildServerMessage(action, out var message))
+            {
+                _client.Send(message);
+                return;
+            }
+
+            switch (action)
+            {
+                case CharacterMenuAction.PetEquipment:
+                    _hubPetEquipRequestPending = true;
+                    _client.Send(PetEquipPackets.RequestEquipInfo(_login.UserId));
+                    break;
+                case CharacterMenuAction.ChangePassword:
+                    OpenChangePassword();
+                    break;
+                case CharacterMenuAction.GuildChat:
+                    OpenGuildView();
+                    break;
+                case CharacterMenuAction.Logout:
+                    ConfirmLogout();
+                    break;
+                case CharacterMenuAction.Exit:
+                    ConfirmExit();
+                    break;
+            }
+        }
+    }
+}

@@ -147,5 +147,20 @@ namespace Gopet.Net.Tests
 
             Assert.Equal("Phiên bản cũ rồi", shown);
         }
+
+        [Fact]
+        public void ChangePasswordRejected_DocThongBaoLoi()
+        {
+            var auth = NewHandler();
+            var router = RouterFor(auth);
+            string shown = null;
+            auth.ErrorDialogShown += text => shown = text;
+
+            using var built = Message.Create(GopetCmd.CHANGE_PASSWORD)
+                .PutUtf("Mật khẩu mới phải có ít nhất 5 ký tự");
+            router.Dispatch(Message.FromWire(built.ToWire(), false));
+
+            Assert.Equal("Mật khẩu mới phải có ít nhất 5 ký tự", shown);
+        }
     }
 }

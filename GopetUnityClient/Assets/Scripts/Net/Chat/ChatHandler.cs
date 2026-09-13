@@ -49,6 +49,7 @@ namespace Gopet.Net.Chat
             router.Register(GopetCmd.ON_PLACE_CHAT, OnChat);
             router.RegisterEnvelope(GopetCmd.PET_SERVICE);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.CHAT_GLOBAL, OnGlobalChat);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.CHAT_PUBLIC, OnPublicChat);
         }
 
         /// <summary>Gửi chat khu vực. Text UTF-8, không giới hạn độ dài phía server nhưng client cắt trước ở tầng UI.</summary>
@@ -80,6 +81,19 @@ namespace Gopet.Net.Chat
                 Text = msg.Reader.ReadUtf()
             };
             msg.Reader.ExpectFullyConsumed("CHAT_GLOBAL");
+            GlobalChatReceived?.Invoke(value);
+        }
+
+        private void OnPublicChat(Message msg)
+        {
+            var type = msg.Reader.ReadSByte();
+            if (type != 1) throw new ProtocolException($"CHAT_PUBLIC type không hỗ trợ: {type}.");
+            var value = new GlobalChat
+            {
+                Sender = msg.Reader.ReadUtf(),
+                Text = msg.Reader.ReadUtf()
+            };
+            msg.Reader.ExpectFullyConsumed("CHAT_PUBLIC");
             GlobalChatReceived?.Invoke(value);
         }
     }

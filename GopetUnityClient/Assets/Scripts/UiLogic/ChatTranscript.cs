@@ -16,6 +16,8 @@ namespace Gopet.UiLogic
 
         public IReadOnlyList<ChatTranscriptEntry> Entries => _entries;
 
+        public void Clear() => _entries.Clear();
+
         public void Add(string sender, string text)
         {
             if (_entries.Count == _capacity) _entries.RemoveAt(0);

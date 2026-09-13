@@ -15,6 +15,7 @@ namespace Gopet.Net.Pet
         public event Action<PetEquipInfo> EquipInfoReceived;
         public event Action<PetEquipDelta> EquipChanged;
         public event Action<PetEquipItem> EquipItemRefreshed;
+        public event Action<PetEquipMaterialSelection> EnchantMaterialSelected;
 
         public void RegisterOn(MessageRouter router)
         {
@@ -29,6 +30,8 @@ namespace Gopet.Net.Pet
                 OnRemoved);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.ON_UNQUIP_GEM,
                 OnItemRefreshed);
+            router.RegisterSub(GopetCmd.PET_SERVICE,
+                GopetCmd.SELECT_METERIAL_ENCHANT_PET_INFO, OnEnchantMaterial);
         }
 
         private void OnEquipInfo(Message message)
@@ -85,6 +88,19 @@ namespace Gopet.Net.Pet
             var item = ReadItem(message.Reader);
             message.Reader.ExpectFullyConsumed("ON_UNQUIP_GEM");
             EquipItemRefreshed?.Invoke(item);
+        }
+
+        private void OnEnchantMaterial(Message message)
+        {
+            var value = new PetEquipMaterialSelection
+            {
+                ItemOrTemplateId = message.Reader.ReadInt(),
+                IconPath = message.Reader.ReadUtf(),
+                Name = message.Reader.ReadUtf(),
+                Slot = message.Reader.ReadInt()
+            };
+            message.Reader.ExpectFullyConsumed("SELECT_METERIAL_ENCHANT_PET_INFO");
+            EnchantMaterialSelected?.Invoke(value);
         }
 
         private static PetEquipItem ReadItem(JavaBinaryReader r)

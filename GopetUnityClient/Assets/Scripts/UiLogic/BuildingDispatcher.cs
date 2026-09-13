@@ -72,40 +72,44 @@ namespace Gopet.UiLogic
         {
             switch (buildingType)
             {
-                // Real-estate (case 0..4): jar cd(2/3/4/5/502) là MENU LOCAL — chưa có client dialog.
-                case 0: return BuildingAction.LocalMenu(LocalMenu.RealEstateNhaHem);
-                case 1: return BuildingAction.LocalMenu(LocalMenu.RealEstateMatTien);
-                case 2: return BuildingAction.LocalMenu(LocalMenu.RealEstateBietThu);
-                case 3: return BuildingAction.LocalMenu(LocalMenu.RealEstateDinhThu);
-                case 4: return BuildingAction.LocalMenu(LocalMenu.RealEstateNha);
+                // JAR tạo các command local tương ứng, nhưng listener dv.java không xử lý chúng.
+                // Đây là label/menu chết của client cũ, không phải flow cần migrate.
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 7:
+                case 10:
+                    return BuildingAction.Noop;
 
-                case 7:  return BuildingAction.LocalMenu(LocalMenu.Garden);
                 case 8:  return BuildingAction.LocalMenu(LocalMenu.TicketRoom);
-                case 10: return BuildingAction.LocalMenu(LocalMenu.Cafe);
                 case 11: return BuildingAction.LocalMenu(LocalMenu.ChangeZone);
                 case 12: return BuildingAction.LocalMenu(LocalMenu.Mailbox);
 
-                // Mini-game bàn cờ: jar cd(602/603/606/607) — scene game chưa có (Phase 8 plan).
-                case 13: return BuildingAction.LocalMenu(LocalMenu.MiniGameCaro);
-                case 14: return BuildingAction.LocalMenu(LocalMenu.MiniGameCoTuong);
-                case 15: return BuildingAction.LocalMenu(LocalMenu.MiniGameTienLen);
-                case 16: return BuildingAction.LocalMenu(LocalMenu.MiniGamePhom);
+                // JAR tạo command local 602/603/606/607 nhưng dv.java không xử lý chúng;
+                // 24 map cũng không đặt type 13-16 và server không có engine tương ứng.
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                    return BuildingAction.Noop;
 
                 // case 17 — Thời trang char: (new en(81)).a(60) → PET_SERVICE 60 = REQUEST_SHOP_SKIN.
                 case 17: return BuildingAction.Send(Message.Create(GopetCmd.PET_SERVICE)
                     .PutSByte(GopetCmd.REQUEST_SHOP_SKIN));
 
-                // case 18-23: jar cd(1003/1004/1005/1006/1009/1008) là MENU LOCAL client-side
-                // (mở KIOSK dialog để chọn item bán/mua). Ở Unity chưa có KIOSK dialog; nhưng
-                // đích cuối cùng đa số là mở shop server tương ứng. Ưu tiên gói REQUEST_SHOP
-                // (PET_SERVICE sub-command — xem GuiderPackets.RequestShop) nơi server đã có
-                // id shop; còn lại giữ LocalMenu.
-                case 18: return BuildingAction.Send(GuiderPackets.RequestShop(ShopHat));      // Nón
-                case 19: return BuildingAction.LocalMenu(LocalMenu.PetShoesKiosk);            // Giày pet — không có SHOP_SHOES; kiosk local
-                case 20: return BuildingAction.LocalMenu(LocalMenu.BeautySalon);              // Mỹ viện — chưa có shopId
-                case 21: return BuildingAction.LocalMenu(LocalMenu.HairSalon);                // Tóc char — chưa có shopId
-                case 22: return BuildingAction.Send(GuiderPackets.RequestShop(ShopFood));     // Vật phẩm/thức ăn battle
-                case 23: return BuildingAction.LocalMenu(LocalMenu.Garage);                   // Gara xe — chưa có shopId
+                // 18/22 là tiện ích Unity mở shop thật; JAR command 1003/1009 là inert.
+                // Giữ như extension có chủ đích, không dùng làm bằng chứng parity.
+                case 18: return BuildingAction.Send(GuiderPackets.RequestShop(ShopHat));
+                case 22: return BuildingAction.Send(GuiderPackets.RequestShop(ShopFood));
+
+                // Các command JAR 1004/1005/1006/1008 cũng không có case trong dv.java.
+                case 19:
+                case 20:
+                case 21:
+                case 23:
+                    return BuildingAction.Noop;
 
                 case 25: return BuildingAction.Send(GuiderPackets.RequestShop(ShopPet));      // Pet shop
 
@@ -151,10 +155,6 @@ namespace Gopet.UiLogic
             Cafe,
             ChangeZone,
             Mailbox,
-            MiniGameCaro,
-            MiniGameCoTuong,
-            MiniGameTienLen,
-            MiniGamePhom,
             PetShoesKiosk,
             BeautySalon,
             HairSalon,

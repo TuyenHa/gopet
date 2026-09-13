@@ -82,6 +82,7 @@ namespace Gopet.Net.Auth
             router.Register(GopetCmd.SERVER_LIST, OnServerList);
             router.Register(GopetCmd.LOGIN_SUCCES, OnLoginSuccess);
             router.Register(GopetCmd.LOGIN_FAILED, OnLoginFailed);
+            router.Register(GopetCmd.CHANGE_PASSWORD, OnChangePasswordRejected);
             router.Register(RedDialog, OnRedDialog);
             router.Register(GopetCmd.CREATE_CHAR, OnCreateChar);
 
@@ -108,6 +109,13 @@ namespace Gopet.Net.Auth
             var reason = m.Reader.ReadUtf();
             m.Reader.ExpectFullyConsumed("LOGIN_FAILED");
             LoginFailed?.Invoke(reason);
+        }
+
+        private void OnChangePasswordRejected(Message m)
+        {
+            var reason = m.Reader.ReadUtf();
+            m.Reader.ExpectFullyConsumed("CHANGE_PASSWORD");
+            ErrorDialogShown?.Invoke(reason);
         }
 
         private void OnRedDialog(Message m)

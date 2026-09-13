@@ -59,7 +59,7 @@ namespace Gopet.UiLogic
     /// Runtime layer nạp danh sách <see cref="Entries"/> vào view, và dùng
     /// <see cref="TryBuildServerMessage"/> để dựng gói khi bấm.
     /// </summary>
-    public static class CharacterMenu
+    public static partial class CharacterMenu
     {
         public static IReadOnlyList<CharacterMenuEntry> Entries { get; } = new[]
         {

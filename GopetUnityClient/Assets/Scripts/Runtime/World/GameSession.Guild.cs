@@ -38,7 +38,10 @@ namespace Gopet.Runtime.World
 
         private void OnGuildClanInfo(GuildClanInfo info)
         {
+            _hud.SetGuildAvailable(info.ClanId > 0);
             _guildView?.ShowGuildInfo(info.ClanId, info.DescriptionLines);
+            if (info.ClanId > 0 && _hud.IsGuildChannel)
+                _client.Send(GuildPackets.RequestChatHistory());
         }
     }
 }

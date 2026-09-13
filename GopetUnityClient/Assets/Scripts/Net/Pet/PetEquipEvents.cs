@@ -57,4 +57,12 @@ namespace Gopet.Net.Pet
         public bool Removed;
         public bool Accepted;
     }
+
+    public sealed class PetEquipMaterialSelection
+    {
+        public int ItemOrTemplateId;
+        public string IconPath;
+        public string Name;
+        public int Slot;
+    }
 }

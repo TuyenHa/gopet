@@ -85,5 +85,33 @@ namespace Gopet.Net.Tests
             Assert.Equal("Admin", received.Sender);
             Assert.Equal("Thông báo", received.Text);
         }
+
+        [Fact]
+        public void PublicChat_DocTypeNguoiGuiVaNoiDung()
+        {
+            var router = new MessageRouter();
+            var handler = new ChatHandler();
+            handler.RegisterOn(router);
+            GlobalChat received = null;
+            handler.GlobalChatReceived += value => received = value;
+
+            using var built = Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.CHAT_PUBLIC).PutSByte(1).PutUtf("Linh thú").PutUtf("Xin chào");
+            router.Dispatch(Message.FromWire(built.ToWire(), false));
+
+            Assert.NotNull(received);
+            Assert.Equal("Linh thú", received.Sender);
+            Assert.Equal("Xin chào", received.Text);
+        }
+
+        [Fact]
+        public void PublicChat_TypeLa_NemProtocolException()
+        {
+            var router = new MessageRouter();
+            new ChatHandler().RegisterOn(router);
+            using var built = Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.CHAT_PUBLIC).PutSByte(2).PutUtf("Tên").PutUtf("Tin");
+            Assert.Throws<ProtocolException>(() => router.Dispatch(Message.FromWire(built.ToWire(), false)));
+        }
     }
 }

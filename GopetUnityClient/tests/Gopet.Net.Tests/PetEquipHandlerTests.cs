@@ -168,5 +168,24 @@ namespace Gopet.Net.Tests
             Assert.True(received.Removed);
             Assert.Equal(91, received.ItemId);
         }
+
+        [Fact]
+        public void EnchantMaterial_DocRouteDongQuaHelperCmd()
+        {
+            var router = new MessageRouter();
+            var handler = new PetEquipHandler();
+            handler.RegisterOn(router);
+            PetEquipMaterialSelection received = null;
+            handler.EnchantMaterialSelected += value => received = value;
+            using var message = Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.SELECT_METERIAL_ENCHANT_PET_INFO)
+                .PutInt(31).PutUtf("items/31.png").PutUtf("Bạc").PutInt(7);
+
+            router.Dispatch(Message.FromWire(message.ToWire(), false));
+
+            Assert.Equal(31, received.ItemOrTemplateId);
+            Assert.Equal("Bạc", received.Name);
+            Assert.Equal(7, received.Slot);
+        }
     }
 }

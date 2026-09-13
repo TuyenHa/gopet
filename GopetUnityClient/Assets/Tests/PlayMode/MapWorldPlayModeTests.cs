@@ -1,14 +1,11 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
-using Gopet.Net.Chat;
 using Gopet.Runtime.World;
-using Gopet.Runtime.UI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Tilemaps;
-using UnityEngine.UI;
 
 namespace Gopet.PlayModeTests
 {
@@ -139,66 +136,5 @@ namespace Gopet.PlayModeTests
             yield return null;
         }
 
-        [UnityTest]
-        public IEnumerator Hud_GuiNoiDungChatTuInput()
-        {
-            Gopet.Net.Message sent = null;
-            var chat = new ChatHandler(message => sent = message);
-            var root = new GameObject("HUD test root");
-            var hud = GameHud.Create(root.transform, chat);
-            hud.SetChatExpanded(true);
-            var input = hud.GetComponentInChildren<InputField>(true);
-            input.text = "xin chào";
-            var send = hud.transform.Find("Place Chat/Chat Body/Send").GetComponent<Button>();
-            send.onClick.Invoke();
-            Assert.IsNotNull(sent);
-            var round = Gopet.Net.Message.FromWire(sent.ToWire(), false);
-            Assert.AreEqual("xin chào", round.Reader.ReadUtf());
-            Object.Destroy(root);
-            yield return null;
-        }
-
-        [UnityTest]
-        public IEnumerator Hud_ChatGonVaNamGiuaPhiaDuoiManHinh()
-        {
-            var root = new GameObject("HUD layout test root");
-            var hud = GameHud.Create(root.transform, new ChatHandler(_ => { }));
-            var chat = hud.transform.Find("Place Chat") as RectTransform;
-
-            Assert.IsNotNull(chat);
-            Assert.AreEqual(new Vector2(0.5f, 0f), chat.anchorMin);
-            Assert.AreEqual(new Vector2(0.5f, 0f), chat.anchorMax);
-            Assert.AreEqual(new Vector2(0.5f, 0f), chat.pivot);
-            Assert.AreEqual(0f, chat.anchoredPosition.x, 0.01f);
-            Assert.That(chat.sizeDelta.x, Is.InRange(420f, 520f));
-            Assert.AreEqual(8f, chat.anchoredPosition.y, 0.01f);
-            Assert.AreEqual(42f, chat.sizeDelta.y, 0.01f);
-            Assert.IsFalse(hud.IsChatExpanded);
-
-            var toggle = chat.Find("Toggle Chat").GetComponent<Button>();
-            toggle.onClick.Invoke();
-            Assert.IsTrue(hud.IsChatExpanded);
-            Assert.AreEqual(194f, chat.sizeDelta.y, 0.01f);
-            Assert.IsTrue(chat.Find("Chat Body").gameObject.activeSelf);
-
-            Object.Destroy(root);
-            yield return null;
-        }
-
-        [UnityTest]
-        public IEnumerator ChatKhuVuc_HienBongBongTrenDauNhanVat()
-        {
-            var avatar = PlayerAvatar.Spawn(null, 7, "Người chơi", 0, 100, 100, 480);
-            ChatBubble.AttachOrUpdate(avatar, "Xin chào");
-
-            var bubble = avatar.GetComponentInChildren<ChatBubble>();
-            Assert.IsNotNull(bubble);
-            Assert.AreEqual("Xin chào", bubble.GetComponentInChildren<TextMesh>().text);
-            Assert.IsNotNull(bubble.GetComponentInChildren<SpriteRenderer>().sprite);
-            Assert.Greater(bubble.transform.localPosition.y, 0f);
-
-            Object.Destroy(avatar.gameObject);
-            yield return null;
-        }
     }
 }

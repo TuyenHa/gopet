@@ -77,6 +77,23 @@ namespace Gopet.Net.Tests
         }
 
         [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(7)]
+        [InlineData(10)]
+        [InlineData(19)]
+        [InlineData(20)]
+        [InlineData(21)]
+        [InlineData(23)]
+        public void Dispatch_CommandJarKhongCoCaseTrongDv_TraNoop(int buildingType)
+        {
+            Assert.Equal(BuildingAction.Kind.Noop, BuildingDispatcher.Dispatch(buildingType).Type);
+        }
+
+        [Theory]
         [InlineData(27)]
         [InlineData(28)]
         [InlineData(29)]

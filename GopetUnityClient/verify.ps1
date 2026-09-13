@@ -43,6 +43,9 @@ Step "1/10  Opcode khop voi server" {
     try {
         node gen-gopet-cmd/index.js --check
         if ($LASTEXITCODE -ne 0) { throw "GopetCmd.cs lech so voi GopetCMD.cs. Chay: npm run gen:cmd" }
+
+        node check-protocol-coverage/index.js
+        if ($LASTEXITCODE -ne 0) { throw "Co server route chua duoc Unity xu ly hoac phan loai" }
     } finally { Pop-Location }
 }
 

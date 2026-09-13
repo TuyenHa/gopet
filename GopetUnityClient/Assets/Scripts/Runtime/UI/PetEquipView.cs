@@ -12,7 +12,7 @@ namespace Gopet.Runtime.UI
     /// Tap slot đầy → <see cref="PetSlotActionsView"/>; tap slot rỗng chỉ log (cần
     /// PET_INVENTORY handler ở phase sau).
     /// </summary>
-    public sealed class PetEquipView : MonoBehaviour
+    public sealed partial class PetEquipView : MonoBehaviour
     {
         private const float PanelWidth = 380f;
         private const float PanelHeight = 380f;
@@ -59,6 +59,7 @@ namespace Gopet.Runtime.UI
         public void ApplyInfo(PetEquipInfo info)
         {
             if (info == null) return;
+            LoadEmbeddedPortrait(info);
             var name = Gopet.UiLogic.JarIconTokens.Strip(info.PetName ?? string.Empty);
             _headerName.text = string.IsNullOrEmpty(name) ? "Pet" : name;
             _headerStats.text = $"Lv {info.Level}   STR {info.Str}  AGI {info.Agi}  INT {info.Int}";

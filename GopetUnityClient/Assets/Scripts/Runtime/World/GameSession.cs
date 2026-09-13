@@ -84,6 +84,7 @@ namespace Gopet.Runtime.World
         private CharacterSkinHandler _characterSkinHandler;
         private CharacterSkinLayer _characterSkinLayer;
         private CharacterWingLayer _characterWingLayer;
+        private WingHandler _wingHandler;
         private KioskHandler _kioskHandler;
         private KioskListingView _kioskDialog;
         private WarpFadeOverlay _warpFade;
@@ -168,7 +169,7 @@ namespace Gopet.Runtime.World
             s._hudParent = CreateHudOverlayCanvas(parent ?? s._scene.transform).transform;
             s._currency = CurrencyBar.Create(s._hudParent, assets);
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
-            s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
+            s._expBuffIndicator = ExpBuffIndicator.Create(s._currency.transform);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
 
             s._menuButton = CharacterMenuButton.Create(s._hudParent);
@@ -269,6 +270,7 @@ namespace Gopet.Runtime.World
                 wings = new WingHandler(client.Send);
                 wings.RegisterOn(client.Router);
             }
+            s._wingHandler = wings;
             s._characterWingLayer = new CharacterWingLayer(s._scene, assets, wings);
 
             // Kiosk owner packet is outside COMMAND_GUIDER. Browsing and pricing still
@@ -335,6 +337,7 @@ namespace Gopet.Runtime.World
             {
                 _movement.ResetForMap(_scene.MapId, evt.X, evt.Y);
             }
+            LoadTaskTracker();
         }
 
         private void SetBattleMode(bool active)
@@ -366,6 +369,12 @@ namespace Gopet.Runtime.World
 
         private void OnCharacterMenuAction(CharacterMenuAction action)
         {
+            if (action == CharacterMenuAction.Tasks)
+            {
+                RequestTasks(true);
+                CloseCharacterMenu();
+                return;
+            }
             if (CharacterMenu.TryBuildServerMessage(action, out var msg))
             {
                 _client.Send(msg);

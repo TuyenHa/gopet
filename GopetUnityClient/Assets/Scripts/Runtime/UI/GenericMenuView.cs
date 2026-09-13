@@ -33,6 +33,7 @@ namespace Gopet.Runtime.UI
         private RectTransform _content;
         private Text _title;
         private ScrollRect _scrollRect;
+        private bool _compactCards;
 
         private float _viewportHeight;
         private float _scrollY;
@@ -60,6 +61,13 @@ namespace Gopet.Runtime.UI
 
         /// <summary>Dòng có <c>closeScreenAfterClick</c> — màn hình này phải đóng sau khi gửi.</summary>
         public event Action<GenericMenuView> CloseRequested;
+
+        /// <summary>Kiểu card gọn cho các danh sách ngoại hình trong Hành trang.</summary>
+        public void SetCompactCards(bool value)
+        {
+            _compactCards = value;
+            foreach (var row in _realized.Values) row.SetCompactCard(value);
+        }
 
         /// <summary>Bấm phải dòng không cho chọn. Có sự kiện để test và để UI báo nhẹ, không im lặng.</summary>
         public event Action<int> BlockedRowTapped;
@@ -268,10 +276,13 @@ namespace Gopet.Runtime.UI
             var row = _pool.Count > 0 ? _pool.Pop() : MenuItemRow.Create(_rowParent, _font);
             if (row.transform.parent != _rowParent) row.transform.SetParent(_rowParent, false);
             row.gameObject.SetActive(true);
-            row.Bind(_screen.Items[index], index, _assets, OnRowClicked);
+            row.Bind(_screen.Items[index], index, _assets, OnRowClicked, _compactCards);
 
             var rect = (RectTransform)row.transform;
-            rect.anchoredPosition = new Vector2(0f, -MenuVirtualizer.OffsetOf(index, MenuItemRow.Height));
+            rect.sizeDelta = new Vector2(_compactCards ? -12f : 0f,
+                _compactCards ? MenuItemRow.Height - 6f : MenuItemRow.Height);
+            rect.anchoredPosition = new Vector2(_compactCards ? 6f : 0f,
+                -MenuVirtualizer.OffsetOf(index, MenuItemRow.Height) - (_compactCards ? 3f : 0f));
 
             _realized[index] = row;
         }

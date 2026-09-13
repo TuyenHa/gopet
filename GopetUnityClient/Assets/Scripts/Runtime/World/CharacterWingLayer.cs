@@ -25,14 +25,14 @@ namespace Gopet.Runtime.World
             {
                 if (string.IsNullOrEmpty(update.FrameImagePath)) _state.Remove(update.UserId);
                 else _state[update.UserId] = update;
-                _scene.ApplyWing(update.UserId, update.FrameImagePath, update.FrameCount, _assets);
+                _scene.ApplyWing(update.UserId, update.FrameImagePath, update.VerticalOffset, _assets);
             }
         }
 
         private void OnAvatarSpawned(PlayerAvatar avatar)
         {
             if (_state.TryGetValue(avatar.UserId, out var update))
-                avatar.ApplyWing(update.FrameImagePath, update.FrameCount, _assets);
+                avatar.ApplyWing(update.FrameImagePath, update.VerticalOffset, _assets);
         }
     }
 }

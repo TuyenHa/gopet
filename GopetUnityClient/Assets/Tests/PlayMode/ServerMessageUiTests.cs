@@ -67,17 +67,13 @@ namespace Gopet.PlayModeTests
         }
 
         [Test]
-        public void RedAndGreenDialog_UseDifferentPanelColors()
+        public void ServerMessages_AreNonBlockingToasts()
         {
             _ui.ShowServerError("Thiếu tiền");
-            var red = ((ChoiceDialogView)_ui.Current).GetComponent<Image>().color;
-            ((ChoiceDialogView)_ui.Current).Choose(0);
-
             _ui.ShowServerSuccess("Thành công");
-            var green = ((ChoiceDialogView)_ui.Current).GetComponent<Image>().color;
 
-            Assert.Greater(red.r, red.g);
-            Assert.Greater(green.g, green.r);
+            Assert.IsNull(_ui.Current);
+            Assert.AreEqual(2, _host.GetComponentsInChildren<ToastView>().Length);
         }
 
         private static string Hex(byte[] bytes)

@@ -124,7 +124,7 @@ namespace Gopet.Runtime
                 Debug.Log($"[Gopet] Đăng nhập xong: {_flow.Success}. Vào map…");
                 VerticalSplitRevealTransition.Create(transform, _login.CompleteReadyPresentation);
                 _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
-                _ui.MenuInterceptor = _session.TryConsumeCharacterHubMenu;
+                _ui.MenuInterceptor = _session.TryConsumeHudMenu;
                 _session.LogoutRequested += LogoutToLogin;
                 // Bật HUD 3 nút góc-phải NGAY sau khi vào map — trước đó ẩn để không
                 // đè lên splash / màn đăng nhập.
@@ -170,7 +170,7 @@ namespace Gopet.Runtime
             auth.DialogShown += _flow.OnDialog;
             auth.ErrorDialogShown += text =>
             {
-                if (_flow.Stage == LoginStage.Ready)
+                if (_ui != null)
                 {
                     _session?.CancelWarpTransition();
                     _ui.ShowServerError(text);
@@ -178,7 +178,7 @@ namespace Gopet.Runtime
             };
             auth.SuccessDialogShown += text =>
             {
-                if (_flow.Stage == LoginStage.Ready) _ui.ShowServerSuccess(text);
+                if (_ui != null) _ui.ShowServerSuccess(text);
             };
             auth.CharacterCreationRequired += _flow.OnCharacterRequired;
         }

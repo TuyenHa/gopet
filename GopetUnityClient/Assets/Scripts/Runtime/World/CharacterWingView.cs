@@ -8,50 +8,81 @@ namespace Gopet.Runtime.World
 {
     public sealed class CharacterWingView : MonoBehaviour
     {
+        private const int FrameCount = 2;
+        private const float CharacterHeight = 74f;
+        private const float TicksPerSecond = 30f;
+        private const int TicksPerFrame = 8;
         private static readonly Dictionary<string, Sprite[]> Cache = new Dictionary<string, Sprite[]>();
-        private SpriteRenderer _renderer;
+        private SpriteRenderer _left;
+        private SpriteRenderer _right;
         private Sprite[] _frames = Array.Empty<Sprite>();
-        private int _frame;
-        private float _nextFrame;
+        private int _frame = -1;
+        private int _phase;
 
-        public static CharacterWingView Create(Transform parent, string path, int frameCount,
+        public static CharacterWingView Create(Transform parent, string path, int verticalOffset,
             RemoteAssetCache assets)
         {
-            var go = new GameObject("Equipped wing", typeof(SpriteRenderer));
+            var go = new GameObject("Equipped wing");
             go.transform.SetParent(parent, false);
             var view = go.AddComponent<CharacterWingView>();
-            view._renderer = go.GetComponent<SpriteRenderer>();
+            view._phase = UnityEngine.Random.Range(0, 1000);
+            view._left = CreateHalf(go.transform, "Left wing", false);
+            view._right = CreateHalf(go.transform, "Right wing", true);
             assets?.Get(path, ImagePackets.TypeIcon, texture =>
             {
                 if (view == null || texture == null) return;
-                view._frames = Slice(path, texture, frameCount);
-                view._renderer.sprite = view._frames[0];
+                view.ApplyTexture(path, texture, verticalOffset);
             });
             return view;
         }
 
-        public void SetFacing(bool left)
-        {
-            if (_renderer != null) _renderer.flipX = left;
-        }
-
         public void SetSortingOrder(int order)
         {
-            if (_renderer != null) _renderer.sortingOrder = order;
+            if (_left != null) _left.sortingOrder = order;
+            if (_right != null) _right.sortingOrder = order;
+        }
+
+        private static SpriteRenderer CreateHalf(Transform parent, string name, bool mirrored)
+        {
+            var child = new GameObject(name, typeof(SpriteRenderer));
+            child.transform.SetParent(parent, false);
+            var renderer = child.GetComponent<SpriteRenderer>();
+            renderer.flipX = mirrored;
+            return renderer;
+        }
+
+        private void ApplyTexture(string path, Texture2D texture, int verticalOffset)
+        {
+            _frames = Slice(path, texture);
+            // ee.java: TOP_LEFT tại playerY - 74 + offset. Đổi sang trục Y của
+            // Unity và sprite có pivot ở đáy => 74 - offset - chiều cao ảnh.
+            var bottomY = CharacterHeight - verticalOffset - texture.height;
+            var halfWidth = texture.width / (float)FrameCount;
+            _left.transform.localPosition = new Vector3(-halfWidth * 0.5f, bottomY, 0f);
+            _right.transform.localPosition = new Vector3(halfWidth * 0.5f, bottomY, 0f);
+            SetFrame(0);
         }
 
         private void Update()
         {
-            if (_frames.Length < 2 || Time.time < _nextFrame) return;
-            _nextFrame = Time.time + 0.2f;
-            _frame = (_frame + 1) % _frames.Length;
-            _renderer.sprite = _frames[_frame];
+            if (_frames.Length < FrameCount) return;
+            // ee.java: (abs(BaseCanvas.ticks + q) >> 3) % 2.
+            var ticks = Mathf.FloorToInt(Time.time * TicksPerSecond) + _phase;
+            SetFrame(Mathf.Abs(ticks) / TicksPerFrame % FrameCount);
         }
 
-        private static Sprite[] Slice(string path, Texture2D texture, int count)
+        private void SetFrame(int frame)
         {
-            count = Mathf.Clamp(count, 1, 64);
-            if (texture.width < count) count = 1;
+            if (_frames.Length == 0 || frame == _frame) return;
+            _frame = frame;
+            _left.sprite = _frames[frame];
+            _right.sprite = _frames[frame];
+        }
+
+        private static Sprite[] Slice(string path, Texture2D texture)
+        {
+            // JAR dùng phép chia nguyên getWidth() >> 1, kể cả khi chiều rộng lẻ.
+            var count = texture.width >= FrameCount ? FrameCount : 1;
             var key = $"{path}|{texture.GetHashCode()}|{count}";
             if (Cache.TryGetValue(key, out var cached)) return cached;
             var width = texture.width / count;

@@ -60,6 +60,7 @@ namespace Gopet.UiLogic
         {
             CharacterMenuNode.Run("Chọn pet", CharacterMenuAction.SelectPet),
             CharacterMenuNode.Run("Trang bị pet", CharacterMenuAction.PetEquipment),
+            CharacterMenuNode.Run("Kho ngọc", CharacterMenuAction.GemInventory),
         };
 
         private static readonly IReadOnlyList<CharacterMenuNode> AdventureNodes = new[]
@@ -84,7 +85,6 @@ namespace Gopet.UiLogic
 
         private static readonly IReadOnlyList<CharacterMenuNode> ServiceNodes = new[]
         {
-            CharacterMenuNode.Run("Kho ngọc", CharacterMenuAction.GemInventory),
             CharacterMenuNode.Run("Ngân hàng", CharacterMenuAction.Bank),
         };
 

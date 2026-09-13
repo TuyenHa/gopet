@@ -44,6 +44,7 @@ namespace Gopet.Runtime.World
         public VirtualJoystick Joystick { get; private set; }
         public CharacterHud Character { get; private set; }
         public NotificationTicker Ticker { get; private set; }
+        public TaskTrackerWidget TaskTracker { get; private set; }
         public bool IsTyping => _chatInput != null && _chatInput.isFocused;
         public bool IsChatExpanded => _chatExpanded;
         public bool IsGuildChannel => _channel != null &&
@@ -69,6 +70,7 @@ namespace Gopet.Runtime.World
             var hud = go.AddComponent<GameHud>();
             hud._chat = chat;
             hud.Character = CharacterHud.Create(go.transform, playerName);
+            hud.TaskTracker = TaskTrackerWidget.Create(hud.Character.transform);
             hud.Joystick = VirtualJoystick.Create(go.transform);
             hud.Ticker = NotificationTicker.Create(go.transform);
             hud.BuildChat(go.transform, UiBuilder.BuiltinFont());

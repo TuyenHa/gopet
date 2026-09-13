@@ -97,7 +97,6 @@ namespace Gopet.Runtime.World
             _moving = moving;
             _skin?.SetFacing(_facingLeft);
             _skin?.SetMoving(moving);
-            _wing?.SetFacing(_facingLeft);
             _commandedMovingUntil = moving ? Time.time + CommandHoldSeconds : 0f;
         }
 
@@ -113,13 +112,12 @@ namespace Gopet.Runtime.World
             _skin.SetMoving(_moving);
         }
 
-        public void ApplyWing(string path, int frameCount, RemoteAssetCache assets)
+        public void ApplyWing(string path, int verticalOffset, RemoteAssetCache assets)
         {
             if (_wing != null) Destroy(_wing.gameObject);
             _wing = null;
             if (string.IsNullOrEmpty(path)) return;
-            _wing = CharacterWingView.Create(transform, path, frameCount, assets);
-            _wing.SetFacing(_facingLeft);
+            _wing = CharacterWingView.Create(transform, path, verticalOffset, assets);
         }
 
         private void SetTarget(int jarX, int jarY)
@@ -154,7 +152,8 @@ namespace Gopet.Runtime.World
             var order = MapPlacement.ActorSortingOrder(_targetJarY);
             _appearance.SetSortingOrder(order);
             _skin?.SetSortingOrder(order + 10);
-            _wing?.SetSortingOrder(order + 1);
+            // JAR vẽ cánh trước avatar; part thấp nhất bắt đầu tại order + 10.
+            _wing?.SetSortingOrder(order + 9);
             _nameLabel?.SetSortingOrder(order + 20);
         }
 

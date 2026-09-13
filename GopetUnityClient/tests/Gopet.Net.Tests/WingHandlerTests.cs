@@ -23,7 +23,7 @@ namespace Gopet.Net.Tests
 
             Assert.Equal(2, received.Length);
             Assert.Equal(7, received[0].UserId);
-            Assert.Equal(4, received[0].FrameCount);
+            Assert.Equal(4, received[0].VerticalOffset);
             Assert.Equal(string.Empty, received[1].FrameImagePath);
         }
 

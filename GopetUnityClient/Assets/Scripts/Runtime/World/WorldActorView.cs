@@ -29,6 +29,19 @@ namespace Gopet.Runtime.World
 
         public int? BossHp { get; private set; }
 
+        /// <summary>Vị trí bong bóng cao hơn tên NPC và đỉnh sprite.</summary>
+        internal float PurposeBubbleOffsetY
+        {
+            get
+            {
+                var height = _renderer != null && _renderer.sprite != null
+                    ? _renderer.sprite.rect.height : 48f;
+                // Nhãn tên nằm ở đỉnh sprite + 4px. Chừa thêm một khoảng nhỏ để
+                // bong bóng sát đầu NPC nhưng không đè lên nhãn tên.
+                return height + 16f;
+            }
+        }
+
         public static WorldActorView CreateNpc(Transform parent, NpcSpawn npc, int mapHeight,
             RemoteAssetCache assets, Action<int> clicked)
         {
@@ -39,6 +52,12 @@ namespace Gopet.Runtime.World
             var view = Create(parent, $"NPC {npc.Id} {npc.Name}", npc.ImagePath, npc.Name,
                 npc.X, npc.Y, mapHeight, npc.FrameCount, assets, () => clicked?.Invoke(npc.Id), npc.Bounds);
             view.EnableIdleBob();
+            var hint = NpcPurposeHints.Get(npc);
+            if (!string.IsNullOrWhiteSpace(hint))
+            {
+                var guide = view.gameObject.AddComponent<NpcPurposeBubble>();
+                guide.Configure(view, hint);
+            }
             return view;
         }
 
@@ -139,9 +158,16 @@ namespace Gopet.Runtime.World
             var height = _renderer?.sprite != null ? _renderer.sprite.bounds.size.y : 48f;
             if (bounds != null && bounds.Length == 4)
             {
-                width = Mathf.Max(12f, bounds[2]);
-                height = Mathf.Max(12f, bounds[3]);
-                collider.offset = new Vector2(bounds[0] + width * 0.5f, bounds[1] + height * 0.5f);
+                // Bounds server thường chỉ là ô chân NPC (-25,-25,50,50). Hợp cả
+                // ô này lẫn toàn thân sprite để người chơi chạm vào đầu/thân NPC
+                // vẫn mở được hội thoại.
+                var left = Mathf.Min(-width * 0.5f, bounds[0]);
+                var right = Mathf.Max(width * 0.5f, bounds[0] + bounds[2]);
+                var bottom = Mathf.Min(0f, bounds[1]);
+                var top = Mathf.Max(height, bounds[1] + bounds[3]);
+                width = Mathf.Max(12f, right - left);
+                height = Mathf.Max(12f, top - bottom);
+                collider.offset = new Vector2((left + right) * 0.5f, (bottom + top) * 0.5f);
             }
             else collider.offset = new Vector2(0f, height * 0.5f);
             collider.size = new Vector2(width, height);

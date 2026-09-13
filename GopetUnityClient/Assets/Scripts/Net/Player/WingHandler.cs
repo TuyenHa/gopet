@@ -6,7 +6,8 @@ namespace Gopet.Net.Player
     {
         public int UserId;
         public string FrameImagePath;
-        public int FrameCount;
+        /// <summary>Độ lệch từ đỉnh khung nhân vật 74 px, đúng với trường ee.d của JAR.</summary>
+        public int VerticalOffset;
     }
 
     /// <summary>Wing inventory actions and WING/3 place synchronization.</summary>
@@ -45,14 +46,12 @@ namespace Gopet.Net.Player
             {
                 var userId = message.Reader.ReadInt();
                 var path = message.Reader.ReadUtf();
-                var frames = message.Reader.ReadSByte();
-                if (!string.IsNullOrEmpty(path) && (frames <= 0 || frames > 64))
-                    throw new ProtocolException($"WING/3 có frameCount không hợp lệ: {frames}.");
+                var verticalOffset = message.Reader.ReadSByte();
                 updates[i] = new WingUpdate
                 {
                     UserId = userId,
                     FrameImagePath = path,
-                    FrameCount = frames
+                    VerticalOffset = verticalOffset
                 };
             }
             message.Reader.ExpectFullyConsumed("WING/3");

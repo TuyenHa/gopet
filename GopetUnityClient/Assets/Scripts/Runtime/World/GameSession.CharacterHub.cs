@@ -1,5 +1,7 @@
 using Gopet.Net.Guider;
+using Gopet.Net.Npc;
 using Gopet.Net.Pet;
+using Gopet.Net.Social;
 using Gopet.Runtime.Audio;
 using Gopet.Runtime.UI;
 using Gopet.UiLogic;
@@ -19,8 +21,9 @@ namespace Gopet.Runtime.World
             if (_characterHub != null) return;
             CloseCharacterMenu();
             _characterHub = CharacterHubPopupView.Create(_hudParent, _guider, _assets,
-                SoundManager.Instance, _autoAttack.Enabled);
+                SoundManager.Instance, _autoAttack.Enabled, _wingHandler);
             _characterHub.ActionRequested += ExecuteCharacterHubAction;
+            _characterHub.FriendAddRequested += name => _client.Send(FriendPackets.AddFriendByName(name));
             _characterHub.AutoAttackChanged += SetAutoAttack;
             _characterHub.PetEquipActionChosen += OnPetEquipAction;
             _characterHub.PetHiddenStatsRequested += () =>
@@ -55,6 +58,15 @@ namespace Gopet.Runtime.World
                 case CharacterMenuAction.PetEquipment:
                     _hubPetEquipRequestPending = true;
                     _client.Send(PetEquipPackets.RequestEquipInfo(_login.UserId));
+                    break;
+                case CharacterMenuAction.PetPotential:
+                    _client.Send(PetProfilePackets.RequestGym());
+                    break;
+                case CharacterMenuAction.PetTattoo:
+                    _client.Send(TattooPackets.RequestScreen());
+                    break;
+                case CharacterMenuAction.PetGymReset:
+                    _guider.SelectNpcOption(-7, LinhThuCityNpcOptions.BacSiTayGym);
                     break;
                 case CharacterMenuAction.ChangePassword:
                     OpenChangePassword();

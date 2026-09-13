@@ -42,10 +42,10 @@ namespace Gopet.Runtime.World
                 avatar.ApplySkin(path, assets);
         }
 
-        public void ApplyWing(int userId, string path, int frameCount, RemoteAssetCache assets)
+        public void ApplyWing(int userId, string path, int verticalOffset, RemoteAssetCache assets)
         {
             if (_avatars.TryGetValue(userId, out var avatar) && avatar != null)
-                avatar.ApplyWing(path, frameCount, assets);
+                avatar.ApplyWing(path, verticalOffset, assets);
         }
 
         /// <summary>Map vừa nạp xong (hoặc đổi map) — camera dùng để recenter.</summary>

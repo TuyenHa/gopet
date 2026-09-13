@@ -1,6 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using Gopet.Net;
 using Gopet.Net.Guider;
+using Gopet.Net.Player;
 using Gopet.Runtime.UI;
 using Gopet.Runtime.World;
 using Gopet.UiLogic;
@@ -67,6 +70,99 @@ namespace Gopet.PlayModeTests
             auto.onClick.Invoke();
             Assert.IsTrue(autoChanged);
 
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TuQuanAo_XacNhanTruocKhiGuiLuaChon()
+        {
+            var root = new GameObject("Character hub wardrobe confirm test");
+            var sent = new List<Message>();
+            var view = CharacterHubPopupView.Create(root.transform, new GuiderHandler(sent.Add), null, null, false);
+            view.OpenInitial();
+            var screen = TestPackets.Screen(803,
+                TestPackets.Item(27, "Ao dai", showDialog: true, closeAfter: true));
+
+            Assert.IsTrue(view.TryConsumeMenu(screen));
+            view.GetComponentInChildren<GenericMenuView>().OnRowClicked(0);
+            Assert.IsEmpty(sent, "Chua dong y thi khong duoc gui packet trang bi.");
+
+            view.GetComponentInChildren<YesNoDialog>().GetComponentsInChildren<Button>()
+                .First(button => button.name.StartsWith("Btn:")).onClick.Invoke();
+            Assert.AreEqual(1, sent.Count);
+            using (var round = Message.FromWire(sent[0].ToWire(), false))
+            {
+                Assert.AreEqual(GopetCmd.COMMAND_GUIDER, round.Id);
+                Assert.AreEqual(GopetCmd.SELECT_MENU_ELEMENT, round.Reader.ReadSByte());
+                Assert.AreEqual(803, round.Reader.ReadInt());
+                Assert.AreEqual(27, round.Reader.ReadInt());
+            }
+
+            foreach (var message in sent) message.Dispose();
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Can_XacNhanVaGuiWingTypeUseTheoJar()
+        {
+            var root = new GameObject("Character hub wing confirm test");
+            var sent = new List<Message>();
+            var wings = new WingHandler(sent.Add);
+            var view = CharacterHubPopupView.Create(root.transform, new GuiderHandler(sent.Add), null, null, false, wings);
+            view.OpenInitial();
+            var screen = TestPackets.Screen(81040,
+                TestPackets.Item(4, "Can thien than", showDialog: true, closeAfter: true));
+
+            Assert.IsTrue(view.TryConsumeMenu(screen));
+            view.GetComponentInChildren<GenericMenuView>().OnRowClicked(0);
+            Assert.IsEmpty(sent, "Chua dong y thi khong duoc gui packet canh.");
+
+            view.GetComponentInChildren<YesNoDialog>().GetComponentsInChildren<Button>()
+                .First(button => button.name.StartsWith("Btn:")).onClick.Invoke();
+            Assert.AreEqual(1, sent.Count);
+            using (var round = Message.FromWire(sent[0].ToWire(), false))
+            {
+                Assert.AreEqual(GopetCmd.PET_SERVICE, round.Id);
+                Assert.AreEqual(GopetCmd.WING, round.Reader.ReadSByte());
+                Assert.AreEqual(GopetCmd.WING_TYPE_USE, round.Reader.ReadSByte());
+                Assert.AreEqual(4, round.Reader.ReadInt());
+            }
+
+            foreach (var message in sent) message.Dispose();
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator RuongDo_MoChiTietVaNutDungGuiLuaChon()
+        {
+            var root = new GameObject("Inventory item details test");
+            var sent = new List<Message>();
+            var view = CharacterHubPopupView.Create(root.transform, new GuiderHandler(sent.Add), null, null, false);
+            view.OpenInitial();
+            var item = TestPackets.Item(2, "Bình exp");
+            item.Description = "Sử dụng x4 exp trong 30 phút";
+            var screen = TestPackets.Screen(81004, item);
+
+            Assert.IsTrue(view.TryConsumeMenu(screen));
+            view.GetComponentInChildren<InventoryGridView>().transform.GetChild(0)
+                .GetComponent<Button>().onClick.Invoke();
+            var popup = view.GetComponentInChildren<InventoryItemPopupView>();
+            Assert.IsNotNull(popup);
+
+            FindButton(view, "Dùng").onClick.Invoke();
+            Assert.AreEqual(1, sent.Count);
+            using (var round = Message.FromWire(sent[0].ToWire(), false))
+            {
+                Assert.AreEqual(GopetCmd.COMMAND_GUIDER, round.Id);
+                Assert.AreEqual(GopetCmd.SELECT_MENU_ELEMENT, round.Reader.ReadSByte());
+                Assert.AreEqual(81004, round.Reader.ReadInt());
+                Assert.AreEqual(2, round.Reader.ReadInt());
+            }
+
+            foreach (var message in sent) message.Dispose();
             Object.DestroyImmediate(root);
             yield return null;
         }

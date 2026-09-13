@@ -1,5 +1,6 @@
 using System.Collections;
 using Gopet.Net.Chat;
+using Gopet.Net.Guider;
 using Gopet.Runtime.World;
 using NUnit.Framework;
 using UnityEngine;
@@ -77,6 +78,29 @@ namespace Gopet.PlayModeTests
             hud.transform.Find("Place Chat/Chat Body/Send").GetComponent<Button>().onClick.Invoke();
             Assert.AreEqual("xin chào bang", sent);
 
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TaskTracker_NamDuoiHpMpVaHienNhiemVuDau()
+        {
+            var root = new GameObject("Task tracker HUD test");
+            var hud = GameHud.Create(root.transform, new ChatHandler(_ => { }));
+            var clicked = false;
+            hud.TaskTracker.Clicked += () => clicked = true;
+            hud.TaskTracker.SetFirstTask(new MenuScreen
+            {
+                Items = new[]
+                {
+                    new MenuItemInfo { Title = "Thu thập gỗ", CanSelect = true }
+                }
+            });
+
+            Assert.AreSame(hud.Character.transform, hud.TaskTracker.transform.parent);
+            StringAssert.Contains("Thu thập gỗ", hud.TaskTracker.GetComponentInChildren<Text>().text);
+            hud.TaskTracker.GetComponent<Button>().onClick.Invoke();
+            Assert.IsTrue(clicked);
             Object.DestroyImmediate(root);
             yield return null;
         }

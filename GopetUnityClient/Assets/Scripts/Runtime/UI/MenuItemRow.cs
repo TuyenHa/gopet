@@ -23,6 +23,10 @@ namespace Gopet.Runtime.UI
         private RawImage _icon;
         private Text _title;
         private Text _description;
+        private Image _attackBadge, _defenseBadge;
+        private Text _attackText, _defenseText;
+        private Image _background;
+        private bool _compactCard;
 
         public int Index { get; private set; }
 
@@ -36,9 +40,9 @@ namespace Gopet.Runtime.UI
             var go = new GameObject("MenuItemRow", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
 
-            go.GetComponent<Image>().color = UiBuilder.Panel;
-
             var row = go.AddComponent<MenuItemRow>();
+            row._background = go.GetComponent<Image>();
+            row._background.color = UiBuilder.Panel;
             row._button = go.GetComponent<Button>();
 
             // Neo trải ngang, ghim mép trên: chiều rộng bám theo vùng chứa, chiều
@@ -57,6 +61,10 @@ namespace Gopet.Runtime.UI
             row._title = MakeText(go.transform, "Title", font, 20);
             row._description = MakeText(go.transform, "Description", font, 14);
             row._description.color = UiBuilder.TextMuted;
+            row._attackBadge = MakeBadge(go.transform, "Attack badge", font, out row._attackText,
+                new Color(0.29f, 0.52f, 0.16f, 1f));
+            row._defenseBadge = MakeBadge(go.transform, "Defense badge", font, out row._defenseText,
+                new Color(0.18f, 0.4f, 0.73f, 1f));
 
             var iconRect = row._icon.rectTransform;
             iconRect.anchorMin = iconRect.anchorMax = new Vector2(0f, 0.5f);
@@ -65,17 +73,22 @@ namespace Gopet.Runtime.UI
 
             PlaceText(row._title.rectTransform, 66f, 30f, -3f);
             PlaceText(row._description.rectTransform, 66f, 24f, -32f);
+            row.PlaceBadges();
+            row.SetCompactCard(false);
 
             return row;
         }
 
-        public void Bind(MenuItemInfo item, int index, RemoteAssetCache assets, Action<int> onClick)
+        public void Bind(MenuItemInfo item, int index, RemoteAssetCache assets, Action<int> onClick,
+            bool compactCard = false)
         {
             Item = item ?? throw new ArgumentNullException(nameof(item));
             Index = index;
 
             _title.text = item.Title;
             _description.text = item.Description;
+            SetCompactCard(compactCard);
+            ApplyCompactStats(item.Description);
 
             // Dòng không cho chọn: mờ đi VÀ tắt nút. Chỉ làm mờ thôi thì vẫn bấm
             // được, và server sẽ im lặng bỏ qua — người chơi tưởng game treo.
@@ -90,6 +103,52 @@ namespace Gopet.Runtime.UI
             }
 
             LoadIcon(item.ImagePath, assets);
+        }
+
+        public void SetCompactCard(bool value)
+        {
+            _compactCard = value;
+            if (_background != null)
+            {
+                if (value)
+                {
+                    RoundedUiSprite.Apply(_background);
+                    _background.color = new Color(0.14f, 0.15f, 0.18f, 0.96f);
+                }
+                else
+                {
+                    _background.sprite = null;
+                    _background.type = Image.Type.Simple;
+                    _background.color = UiBuilder.Panel;
+                }
+            }
+            if (_title != null) _title.fontSize = value ? 17 : 20;
+            if (_description != null) _description.gameObject.SetActive(!value);
+            if (!value)
+            {
+                if (_attackBadge != null) _attackBadge.gameObject.SetActive(false);
+                if (_defenseBadge != null) _defenseBadge.gameObject.SetActive(false);
+            }
+        }
+
+        private void ApplyCompactStats(string description)
+        {
+            if (!_compactCard) return;
+            var parts = (description ?? string.Empty).Split(' ');
+            var attack = FindStat(parts, "atk");
+            var defense = FindStat(parts, "def");
+            if (_attackBadge != null) _attackBadge.gameObject.SetActive(!string.IsNullOrEmpty(attack));
+            if (_defenseBadge != null) _defenseBadge.gameObject.SetActive(!string.IsNullOrEmpty(defense));
+            if (_attackText != null) _attackText.text = attack;
+            if (_defenseText != null) _defenseText.text = defense;
+        }
+
+        private static string FindStat(string[] parts, string stat)
+        {
+            for (var i = 1; i < parts.Length; i++)
+                if (parts[i].IndexOf(stat, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return parts[i - 1] + " " + parts[i];
+            return string.Empty;
         }
 
         private void LoadIcon(string path, RemoteAssetCache assets)
@@ -143,6 +202,30 @@ namespace Gopet.Runtime.UI
             text.fontSize = size;
             text.alignment = TextAnchor.MiddleLeft;
             return text;
+        }
+
+        private static Image MakeBadge(Transform parent, string name, Font font, out Text text, Color color)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+            var image = go.GetComponent<Image>();
+            RoundedUiSprite.Apply(image);
+            image.color = color;
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
+            rect.pivot = new Vector2(0f, 0f);
+            rect.sizeDelta = new Vector2(76f, 17f);
+            text = MakeText(go.transform, "Label", font, 9);
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            UiBuilder.Stretch(text.rectTransform);
+            return image;
+        }
+
+        private void PlaceBadges()
+        {
+            if (_attackBadge != null) _attackBadge.rectTransform.anchoredPosition = new Vector2(66f, 5f);
+            if (_defenseBadge != null) _defenseBadge.rectTransform.anchoredPosition = new Vector2(145f, 5f);
         }
 
         private static void PlaceText(RectTransform rect, float left, float height, float top)

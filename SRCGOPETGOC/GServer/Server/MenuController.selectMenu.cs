@@ -505,6 +505,9 @@ public partial class MenuController
                         p.applyInfo(player);
                     }
                     player.controller.updateSkin();
+                    // Đồng bộ xong skin rồi mới báo thành công. Unity nhận opcode 71
+                    // và hiển thị toast không chặn popup Hành trang.
+                    player.okDialog(player.Language.EquipOK);
                 }
                 break;
             case MENU_WING_INVENTORY:

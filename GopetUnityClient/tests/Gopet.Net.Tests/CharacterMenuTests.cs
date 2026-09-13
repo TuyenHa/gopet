@@ -109,9 +109,14 @@ namespace Gopet.Net.Tests
         {
             var nodes = CharacterMenu.GetNodes(CharacterMenuPage.Services);
 
-            Assert.Collection(nodes,
-                n => Assert.Equal(CharacterMenuAction.GemInventory, n.Action),
-                n => Assert.Equal(CharacterMenuAction.Bank, n.Action));
+            Assert.Collection(nodes, n => Assert.Equal(CharacterMenuAction.Bank, n.Action));
+        }
+
+        [Fact]
+        public void KhoNgoc_ThuocNhomPet()
+        {
+            Assert.Contains(CharacterMenu.GetNodes(CharacterMenuPage.Pet),
+                n => n.Action == CharacterMenuAction.GemInventory);
         }
 
         [Fact]

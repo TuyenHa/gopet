@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Text;
 using Gopet.Runtime.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Gopet.Runtime.World
 {
     /// <summary>Bong bóng chat viền xanh, nền sáng và có đuôi trỏ xuống avatar.</summary>
-    public sealed partial class ChatBubble : MonoBehaviour
+    public sealed partial class ChatBubble : MonoBehaviour, IPointerClickHandler
     {
         public const float LifetimeSeconds = 3f;
         public const float OffsetY = 84f;
@@ -27,21 +28,35 @@ namespace Gopet.Runtime.World
         public static void AttachOrUpdate(PlayerAvatar avatar, string text)
         {
             if (avatar == null) return;
+            AttachOrUpdate(avatar.transform, text, OffsetY, LifetimeSeconds);
+        }
 
-            var existing = avatar.GetComponentInChildren<ChatBubble>();
+        /// <summary>
+        /// Hiển thị một bong bóng trên một đối tượng bất kỳ của map. Ngoài nhân vật,
+        /// NPC cũng dùng cùng thành phần này để lời giới thiệu có đúng kiểu chat
+        /// quen thuộc của game.
+        /// </summary>
+        public static void AttachOrUpdate(Transform anchor, string text, float offsetY, float lifetime,
+            float scale = 1f)
+        {
+            if (anchor == null || string.IsNullOrWhiteSpace(text)) return;
+
+            var existing = anchor.GetComponentInChildren<ChatBubble>();
             if (existing != null)
             {
                 existing.SetText(text);
-                existing._remaining = LifetimeSeconds;
+                existing._remaining = lifetime;
+                existing.transform.localScale = Vector3.one * scale;
                 return;
             }
 
-            var root = new GameObject("ChatBubble");
-            root.transform.SetParent(avatar.transform, false);
-            root.transform.localPosition = new Vector3(0f, OffsetY, 0f);
+            var root = new GameObject("ChatBubble", typeof(BoxCollider2D));
+            root.transform.SetParent(anchor, false);
+            root.transform.localPosition = new Vector3(0f, offsetY, 0f);
+            root.transform.localScale = Vector3.one * scale;
 
             var bubble = root.AddComponent<ChatBubble>();
-            bubble._remaining = LifetimeSeconds;
+            bubble._remaining = lifetime;
             bubble.CreatePanel(root.transform);
             bubble.CreateText(root.transform);
             bubble.SetText(text);
@@ -86,8 +101,21 @@ namespace Gopet.Runtime.World
             var boxWidth = Mathf.Clamp(8f + longestLine * 6f, 26f, 164f);
             var boxHeight = 18 + (lineCount - 1) * 14;
             if (_panel != null) _panel.sprite = BubbleSprite(Mathf.RoundToInt(boxWidth), boxHeight);
+            var clickArea = GetComponent<BoxCollider2D>();
+            if (clickArea != null)
+            {
+                clickArea.size = new Vector2(boxWidth, boxHeight + TailHeight);
+                clickArea.offset = new Vector2(0f, TailHeight * 0.5f);
+            }
             if (_textTransform != null)
                 _textTransform.localPosition = new Vector3(0f, TailHeight * 0.5f, 0f);
+        }
+
+        /// <summary>Bấm vào bong bóng của NPC cũng là bấm vào NPC.</summary>
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            var npc = GetComponentInParent<WorldActorView>();
+            npc?.OnPointerClick(eventData);
         }
 
         private static string Wrap(string text, out int longestLine, out int lineCount)

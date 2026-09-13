@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Gopet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ebe8c7325ffbfd520f7e8e485379917837c669a0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e10b688e35e963c019e50a88202d26448e621db0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Gopet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Gopet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

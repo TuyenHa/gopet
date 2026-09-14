@@ -1,19 +1,18 @@
 using System;
-using System.Collections.Generic;
-using Gopet.Net.Images;
-using Gopet.Net.Map;
-using Gopet.Runtime.Assets;
-using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Gopet.Runtime.World
 {
     /// <summary>NPC hoặc quái nhận động từ server, có ảnh động và nhãn tên.</summary>
-    public sealed class WorldActorView : MonoBehaviour, IPointerClickHandler
+    public sealed partial class WorldActorView : MonoBehaviour, IPointerClickHandler
     {
         private const float NameScale = 0.75f; // cỡ tên NPC/quái, đồng bộ với PlayerAvatar
-        private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
+        // Nút "Nói chuyện" đặt sát NGỰC NPC (~1/2 chiều cao sprite), lệch sang TRÁI khỏi thân —
+        // không đè lên NPC, không đè nhãn tên (nhãn ở trên đầu). Panel 50x14; nửa panel 25px +
+        // nửa thân NPC 24px + đệm 4px = 53px lệch trái.
+        private const float PromptOffsetX = -53f;
+        private const float PromptChestFactor = 0.5f;
         private SpriteRenderer _renderer;
         private Transform _visual;   // node chứa sprite; idle-bob ép scale.y node NÀY, không đụng nhãn tên
         private JarNameLabel _label; // tên bằng bitmap font jar, đồng bộ với PlayerAvatar
@@ -26,6 +25,7 @@ namespace Gopet.Runtime.World
         private bool _bobDown;
         private string _baseLabelText;
         private int _labelOrder;
+        private NpcTalkPrompt _talkPrompt;
 
         public int? BossHp { get; private set; }
 
@@ -42,25 +42,6 @@ namespace Gopet.Runtime.World
             }
         }
 
-        public static WorldActorView CreateNpc(Transform parent, NpcSpawn npc, int mapHeight,
-            RemoteAssetCache assets, Action<int> clicked)
-        {
-            // NPC đứng CỐ ĐỊNH tại (x,y) như jar (class `dg` type 1): KHÔNG đi ngang, KHÔNG
-            // lật hướng (đó là type 2/3), chỉ NHÚN dọc tại chỗ mỗi 400ms (jar toggle `j`
-            // tách sprite ép dọc). Ở đây ép scale.y quanh gốc chân (pivot 0.5,0) nên chân
-            // bám đất y như jar.
-            var view = Create(parent, $"NPC {npc.Id} {npc.Name}", npc.ImagePath, npc.Name,
-                npc.X, npc.Y, mapHeight, npc.FrameCount, assets, () => clicked?.Invoke(npc.Id), npc.Bounds);
-            view.EnableIdleBob();
-            var hint = NpcPurposeHints.Get(npc);
-            if (!string.IsNullOrWhiteSpace(hint))
-            {
-                var guide = view.gameObject.AddComponent<NpcPurposeBubble>();
-                guide.Configure(view, hint);
-            }
-            return view;
-        }
-
         /// <summary>Nhún dọc tại chỗ 400ms/nhịp — mô phỏng `dg` type 1 của jar.</summary>
         public void EnableIdleBob()
         {
@@ -68,61 +49,19 @@ namespace Gopet.Runtime.World
             _bobNext = Time.time + UnityEngine.Random.Range(0f, 0.4f); // lệch pha, NPC không nhún đồng loạt
         }
 
-        public static WorldActorView CreateMob(Transform parent, MobSpawn mob, int mapHeight,
-            RemoteAssetCache assets, Action<int> clicked = null)
+        /// <summary>Hiện/ẩn nút "Nói chuyện" cạnh NPC (xem <see cref="WorldActorLayer"/>,
+        /// nơi quét khoảng cách người chơi để gọi hàm này). Dựng lười — chỉ tạo lần đầu cần hiện.</summary>
+        internal void SetTalkPromptVisible(bool value)
         {
-            // Dấu boss dùng '*' (★ không có trong charset font jar sẽ thành khoảng trắng).
-            var name = mob.IsBoss ? $"* {mob.Name} Lv.{mob.Level}" : $"{mob.Name} Lv.{mob.Level}";
-            return Create(parent, $"Mob {mob.Id} {mob.Name}", mob.ImagePath, name,
-                mob.X, mob.Y + mob.VerticalOffset, mapHeight, mob.FrameCount, assets,
-                () => clicked?.Invoke(mob.Id), null);
-        }
-
-        private static WorldActorView Create(Transform parent, string objectName, string imagePath,
-            string labelText, int jarX, int jarY, int mapHeight, int frameCount,
-            RemoteAssetCache assets, Action clicked, int[] bounds)
-        {
-            var go = new GameObject(objectName, typeof(BoxCollider2D));
-            go.transform.SetParent(parent, false);
-            var (x, y) = MapPlacement.JarToWorld(jarX, jarY, mapHeight);
-            go.transform.localPosition = new Vector3(x, y, 0f);
-            var view = go.AddComponent<WorldActorView>();
-            // Sprite ở node con để idle-bob (ép scale.y) chỉ ảnh hưởng ảnh, không méo nhãn tên.
-            var spriteGo = new GameObject("Sprite", typeof(SpriteRenderer));
-            spriteGo.transform.SetParent(go.transform, false);
-            view._visual = spriteGo.transform;
-            view._renderer = spriteGo.GetComponent<SpriteRenderer>();
-            view._renderer.sortingOrder = MapPlacement.ActorSortingOrder(jarY);
-            view._clicked = clicked;
-            view.MakeLabel(labelText, view._renderer.sortingOrder + 20);
-            view.ConfigureCollider(bounds);
-
-            // Ảnh NPC/quái vốn do jar tải qua mạng (`dg.a` gọi `cp.a(path, 2)`), nhưng
-            // phần lớn đã có sẵn cục bộ (unpack từ asset gốc vào Resources/Jar/Art/Raw/npcs).
-            // Dùng ngay bản cục bộ nếu có — khỏi chờ round-trip server, và không phụ
-            // thuộc server có phục vụ đúng file hay không. Vắng bản cục bộ mới xin mạng.
-            var localTexture = JarActorSprites.LoadLocalTexture(imagePath);
-            if (localTexture != null)
+            if (_talkPrompt == null)
             {
-                view._frames = Frames(imagePath, localTexture, Mathf.Max(1, frameCount));
-                view._frame = 0;
-                view._renderer.sprite = view._frames[0];
-                view.ConfigureCollider(bounds);
-                view.PlaceLabel();
+                if (!value) return;
+                var spriteHeight = _renderer != null && _renderer.sprite != null
+                    ? _renderer.sprite.rect.height : 48f;
+                var offset = new Vector2(PromptOffsetX, spriteHeight * PromptChestFactor);
+                _talkPrompt = NpcTalkPrompt.Attach(transform, offset, () => _clicked?.Invoke());
             }
-            else
-            {
-                assets.Get(imagePath, ImagePackets.TypeNpc, texture =>
-                {
-                    if (view == null || texture == null) return;
-                    view._frames = Frames(imagePath, texture, Mathf.Max(1, frameCount));
-                    view._frame = 0;
-                    view._renderer.sprite = view._frames[0];
-                    view.ConfigureCollider(bounds);
-                    view.PlaceLabel();
-                });
-            }
-            return view;
+            _talkPrompt.SetVisible(value);
         }
 
         private void MakeLabel(string value, int order)
@@ -171,19 +110,6 @@ namespace Gopet.Runtime.World
             }
             else collider.offset = new Vector2(0f, height * 0.5f);
             collider.size = new Vector2(width, height);
-        }
-
-        private static Sprite[] Frames(string path, Texture2D texture, int count)
-        {
-            if (texture.width < count) count = 1;
-            var key = $"{path}|{texture.GetHashCode()}|{count}";
-            if (FrameCache.TryGetValue(key, out var cached) && cached != null) return cached;
-            var width = texture.width / count;
-            var result = new Sprite[count];
-            for (var i = 0; i < count; i++)
-                result[i] = Sprite.Create(texture, new Rect(i * width, 0, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            return FrameCache[key] = result;
         }
 
         private void Update()

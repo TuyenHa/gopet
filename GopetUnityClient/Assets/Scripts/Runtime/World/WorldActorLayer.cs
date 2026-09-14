@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Gopet.Net.Map;
 using Gopet.Runtime.Assets;
+using Gopet.UiLogic;
 using UnityEngine;
 
 namespace Gopet.Runtime.World
@@ -9,12 +10,19 @@ namespace Gopet.Runtime.World
     /// <summary>NPC + quái của map. Tách khỏi <see cref="MapScene"/> để mỗi lớp một việc.</summary>
     public sealed class WorldActorLayer : MonoBehaviour
     {
+        private const float ScanInterval = 0.1f; // 10 lần/giây đủ mượt, không tốn CPU trên 5-10 NPC
+        private const float NpcBodyCenterOffset = 32f; // đẩy điểm proximity từ chân NPC lên tâm thân
+
         private readonly Dictionary<int, WorldActorView> _npcs = new Dictionary<int, WorldActorView>();
         private readonly Dictionary<int, WorldActorView> _mobs = new Dictionary<int, WorldActorView>();
+        private readonly List<NpcPoint> _points = new List<NpcPoint>();
         private MapScene _scene;
         private RemoteAssetCache _assets;
         private Action<int> _talkToNpc;
         private Action<int> _attackMob;
+        private int _promptNpcId = NpcProximity.None;
+        private float _nextScan;
+        private float _nextDebugLog; // TODO(debug): xoá khối log này sau khi xác định xong lý do nút không hiện
 
         public static WorldActorLayer Attach(MapScene scene)
         {
@@ -39,6 +47,7 @@ namespace Gopet.Runtime.World
         {
             ClearActors(_npcs);
             ClearActors(_mobs);
+            _promptNpcId = NpcProximity.None;
         }
 
         private int MapHeight => _scene.Map.Map.HeightPixels;
@@ -46,9 +55,73 @@ namespace Gopet.Runtime.World
         private void OnNpcsReceived(NpcSpawn[] npcs)
         {
             ClearActors(_npcs);
+            _promptNpcId = NpcProximity.None; // NPC cũ đã huỷ, nút cũ (nếu có) không còn đối tượng
             if (_scene.Map == null || _assets == null) return;
             foreach (var npc in npcs)
                 _npcs[npc.Id] = WorldActorView.CreateNpc(_scene.transform, npc, MapHeight, _assets, _talkToNpc);
+        }
+
+        /// <summary>Quét khoảng cách người chơi ↔ NPC map hiện tại, hiện nút "Nói chuyện" trên
+        /// NPC gần nhất trong tầm (throttle <see cref="ScanInterval"/> — không cần mỗi frame).</summary>
+        private void Update()
+        {
+            if (Time.time < _nextScan) return;
+            _nextScan = Time.time + ScanInterval;
+
+            var self = _scene != null ? _scene.Self : null;
+            if (self == null)
+            {
+                SetPrompt(NpcProximity.None);
+                return;
+            }
+
+            _points.Clear();
+            foreach (var pair in _npcs)
+            {
+                if (pair.Value == null) continue;
+                var pos = pair.Value.transform.localPosition;
+                // NPC dựng với pivot ở CHÂN (0.5, 0), nên transform.localPosition = vị trí chân.
+                // NPC cao ~64px, nếu tính khoảng cách chân-chân thì đứng "trên đầu" NPC vẫn xa
+                // 64px so với chân → phải bước quá sát mới trigger. Đẩy điểm tham chiếu lên
+                // tâm thân (chân + 32) để đứng cạnh bất kỳ hướng nào đều cho cùng cảm giác gần.
+                _points.Add(new NpcPoint(pair.Key, pos.x, pos.y + NpcBodyCenterOffset));
+            }
+
+            var selfPos = self.transform.localPosition;
+            // Đẩy Y người chơi lên tâm thân — đối xứng với NPC (xem NpcBodyCenterOffset).
+            // Nếu chỉ đẩy 1 phía, khi 2 người đứng NGANG nhau khoảng cách vẫn đúng (dx thôi),
+            // nhưng khi 1 người đứng "trên đầu" thì lệch. Đẩy cả 2 phía = thân-vs-thân chuẩn.
+            var pickerY = selfPos.y + NpcBodyCenterOffset;
+            var picked = NpcProximity.Pick(selfPos.x, pickerY, _points, _promptNpcId);
+            if (Time.time >= _nextDebugLog)
+            {
+                _nextDebugLog = Time.time + 1f;
+                var sb = new System.Text.StringBuilder();
+                sb.Append($"[TalkPromptDebug] player=({selfPos.x:F0},{pickerY:F0}) npcCount={_points.Count} picked={picked} current={_promptNpcId} show={NpcProximity.ShowRadius}");
+                foreach (var p in _points)
+                {
+                    var dx = selfPos.x - p.X;
+                    var dy = pickerY - p.Y;
+                    var d = Mathf.Sqrt(dx * dx + dy * dy);
+                    sb.Append($" | npc{p.Id}=({p.X:F0},{p.Y:F0}) d={d:F0}");
+                }
+                Debug.Log(sb.ToString());
+            }
+            SetPrompt(picked);
+        }
+
+        private void SetPrompt(int id)
+        {
+            if (id == _promptNpcId) return;
+            Debug.Log($"[TalkPromptDebug] SetPrompt {_promptNpcId} -> {id}");
+            if (_promptNpcId != NpcProximity.None && _npcs.TryGetValue(_promptNpcId, out var previous)
+                && previous != null)
+                previous.SetTalkPromptVisible(false);
+            if (id != NpcProximity.None && _npcs.TryGetValue(id, out var next) && next != null)
+                next.SetTalkPromptVisible(true);
+            else if (id != NpcProximity.None)
+                Debug.LogWarning($"[TalkPromptDebug] picked id {id} khong co trong _npcs (khong tim thay view)");
+            _promptNpcId = id;
         }
 
         private void OnMobsReceived(MobSpawn[] mobs)

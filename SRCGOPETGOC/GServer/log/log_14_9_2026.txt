@@ -38,3 +38,171 @@
 
 [Máy chủ 9/14/2026 12:26:02 AM] Không có đầu vào bàn phím (stdin đã đóng). Ngừng đọc lệnh; máy chủ vẫn chạy bình thường.
 
+[Máy chủ 9/14/2026 12:27:17 AM] Ghi log gói tin: D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\log\packet-dump-server.log
+
+[Máy chủ 9/14/2026 12:27:40 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/14/2026 12:27:40 AM] Bang hội MSG: 14
+
+[Máy chủ 9/14/2026 12:27:40 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/14/2026 12:27:57 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:27:57 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:28:09 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:09 AM] CLIENT REQUEST IMAGE: items/10001.png
+
+[Máy chủ 9/14/2026 12:28:09 AM] Load ASSETS: items/10001.png
+
+[Máy chủ 9/14/2026 12:28:09 AM] CLIENT REQUEST IMAGE: items/10002.png
+
+[Máy chủ 9/14/2026 12:28:09 AM] Load ASSETS: items/10002.png
+
+[Máy chủ 9/14/2026 12:28:09 AM] CLIENT REQUEST IMAGE: items/12001.png
+
+[Máy chủ 9/14/2026 12:28:09 AM] Load ASSETS: items/12001.png
+
+[Máy chủ 9/14/2026 12:28:13 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:13 AM] CLIENT REQUEST IMAGE: items/20001.png
+
+[Máy chủ 9/14/2026 12:28:13 AM] Load ASSETS: items/20001.png
+
+[Máy chủ 9/14/2026 12:28:13 AM] CLIENT REQUEST IMAGE: items/20002.png
+
+[Máy chủ 9/14/2026 12:28:13 AM] Load ASSETS: items/20002.png
+
+[Máy chủ 9/14/2026 12:28:13 AM] CLIENT REQUEST IMAGE: items/22001.png
+
+[Máy chủ 9/14/2026 12:28:13 AM] Load ASSETS: items/22001.png
+
+[Máy chủ 9/14/2026 12:28:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:28:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:28:16 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:16 AM] CLIENT REQUEST IMAGE: items/30001.png
+
+[Máy chủ 9/14/2026 12:28:16 AM] Load ASSETS: items/30001.png
+
+[Máy chủ 9/14/2026 12:28:16 AM] CLIENT REQUEST IMAGE: items/30002.png
+
+[Máy chủ 9/14/2026 12:28:16 AM] Load ASSETS: items/30002.png
+
+[Máy chủ 9/14/2026 12:28:16 AM] CLIENT REQUEST IMAGE: items/32001.png
+
+[Máy chủ 9/14/2026 12:28:16 AM] Load ASSETS: items/32001.png
+
+[Máy chủ 9/14/2026 12:28:19 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:19 AM] CLIENT REQUEST IMAGE: items/100001.png
+
+[Máy chủ 9/14/2026 12:28:19 AM] Load ASSETS: items/100001.png
+
+[Máy chủ 9/14/2026 12:28:19 AM] CLIENT REQUEST IMAGE: items/100002.png
+
+[Máy chủ 9/14/2026 12:28:19 AM] Load ASSETS: items/100002.png
+
+[Máy chủ 9/14/2026 12:28:19 AM] CLIENT REQUEST IMAGE: items/40001.png
+
+[Máy chủ 9/14/2026 12:28:19 AM] Load ASSETS: items/40001.png
+
+[Máy chủ 9/14/2026 12:28:23 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:23 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:23 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:28:37 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:28:37 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:28:53 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:28:53 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:31:25 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/14/2026 12:31:25 AM] CLIENT REQUEST IMAGE: 1 anim_wings/15.png
+
+[Máy chủ 9/14/2026 12:31:25 AM] Load ASSETS: anim_wings/15.png
+
+[Máy chủ 9/14/2026 12:31:25 AM]  MESSAGE SERVICE: 9
+
+[Máy chủ 9/14/2026 12:31:25 AM] CLIENT REQUEST IMAGE: 2 anim_characters/1.png
+
+[Máy chủ 9/14/2026 12:31:25 AM] Load ASSETS: anim_characters/1.png
+
+[Máy chủ 9/14/2026 12:31:32 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:31:32 AM] CLIENT REQUEST IMAGE: items/100001.png
+
+[Máy chủ 9/14/2026 12:31:32 AM] Load ASSETS: items/100001.png
+
+[Máy chủ 9/14/2026 12:31:32 AM] CLIENT REQUEST IMAGE: items/100002.png
+
+[Máy chủ 9/14/2026 12:31:32 AM] Load ASSETS: items/100002.png
+
+[Máy chủ 9/14/2026 12:31:32 AM] CLIENT REQUEST IMAGE: items/40001.png
+
+[Máy chủ 9/14/2026 12:31:32 AM] Load ASSETS: items/40001.png
+
+[Máy chủ 9/14/2026 12:31:49 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:31:49 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:32:10 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:32:10 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:32:31 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/14/2026 12:32:31 AM] onClientSpeedRespose
+
+[Máy chủ 9/14/2026 12:32:58 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/14/2026 12:32:58 AM] Bang hội MSG: 14
+
+[Máy chủ 9/14/2026 12:32:58 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/14/2026 12:33:03 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:06 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:07 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:07 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:08 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:08 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:09 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:10 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:10 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:11 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:11 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:12 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:13 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:14 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:17 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:17 AM]  MESSAGE SERVICE: 2
+
+[Máy chủ 9/14/2026 12:33:38 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/14/2026 12:33:38 AM] Bang hội MSG: 14
+
+[Máy chủ 9/14/2026 12:33:38 AM]  MESSAGE SERVICE: 54
+

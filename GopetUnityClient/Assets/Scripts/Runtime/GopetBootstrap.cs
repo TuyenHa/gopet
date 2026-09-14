@@ -165,22 +165,35 @@ namespace Gopet.Runtime
             _client.Connected += _flow.OnConnected;
             _client.Disconnected += _flow.OnDisconnected;
 
+            // Rớt mạng bất ngờ giữa lúc đang chơi (server đứng, mất kết nối...) đẩy
+            // _flow ra khỏi Ready. GameSession và HUD (shop/dịch vụ/sự kiện/bang hội,
+            // thanh sao-đậu-vàng-lúa...) không tự dọn — nếu để nguyên, chúng đè lên
+            // màn đăng nhập vừa hiện lại. Tải lại scene giống hệt nút "Đăng xuất":
+            // dọn sạch, chỉ còn nền + form đăng nhập.
+            _flow.StageChanged += stage =>
+            {
+                if (stage != LoginStage.Ready && _session != null) LogoutToLogin();
+            };
+
             auth.ClientAccepted += _flow.OnClientAccepted;
             auth.ServerListReceived += _flow.OnServerList;
             auth.LoginSucceeded += _flow.OnLoginSucceeded;
             auth.LoginFailed += _flow.OnLoginRejected;
             auth.DialogShown += _flow.OnDialog;
+            // Còn ở màn đăng nhập/đăng ký thì câu thoại đã hiện dưới ô mật khẩu qua
+            // OnDialog (SetNotice) — bật thêm popup ở đây là hiện trùng hai lần cùng
+            // một câu. Popup chỉ dành cho lúc đã vào game (_session != null).
             auth.ErrorDialogShown += text =>
             {
-                if (_ui != null)
+                if (_ui != null && _session != null)
                 {
-                    _session?.CancelWarpTransition();
+                    _session.CancelWarpTransition();
                     _ui.ShowServerError(text);
                 }
             };
             auth.SuccessDialogShown += text =>
             {
-                if (_ui != null) _ui.ShowServerSuccess(text);
+                if (_ui != null && _session != null) _ui.ShowServerSuccess(text);
             };
             auth.CharacterCreationRequired += _flow.OnCharacterRequired;
         }

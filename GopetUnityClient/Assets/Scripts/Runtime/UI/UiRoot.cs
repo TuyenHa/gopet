@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gopet.Net.Guider;
+using Gopet.Net.Npc;
 using Gopet.Runtime.Assets;
 using Gopet.UiLogic;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace Gopet.Runtime.UI
         private Font _font;
         private ShopPopupView _shopPopup;
         private AtmPopupView _atmPopup;
+        private TranChanTabsView _tranChanTabs;
         public Func<MenuScreen, bool> MenuInterceptor { get; set; }
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
@@ -84,6 +86,8 @@ namespace Gopet.Runtime.UI
         private void ShowMenu(MenuScreen screen)
         {
             if (_atmPopup != null && _atmPopup.TryConsumeMenu(screen)) return;
+
+            if (_tranChanTabs != null && _tranChanTabs.TryConsumeMenu(screen, _assets, _guider)) return;
 
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
@@ -192,6 +196,12 @@ namespace Gopet.Runtime.UI
 
         private void ShowNpcOptions(NpcOptions options)
         {
+            if (options != null && options.NpcId == -1)
+            {
+                ShowTranChanTabs(options);
+                return;
+            }
+
             var labels = new string[options.Options.Length];
             for (var i = 0; i < labels.Length; i++) labels[i] = options.Options[i].Text;
 
@@ -205,6 +215,21 @@ namespace Gopet.Runtime.UI
             view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
+        }
+
+        private void ShowTranChanTabs(NpcOptions options)
+        {
+            if (_tranChanTabs != null) Close(_tranChanTabs);
+
+            var view = TranChanTabsView.Create(transform, _font, options);
+            _tranChanTabs = view;
+            view.TabChosen += optionId => _guider.SelectNpcOption(options.NpcId, optionId);
+            view.ConfirmRequested += ShowConfirm;
+            view.Closed += () => Close(view);
+            Push(view, view.gameObject);
+
+            // Mở popup là tự chọn tab Nhận pet và tải danh sách pet ngay.
+            _guider.SelectNpcOption(options.NpcId, LinhThuCityNpcOptions.TranChanNhanPetMienPhi);
         }
 
         private void ShowConfirm(MenuSelection.ConfirmPrompt prompt, Action onYes)
@@ -245,6 +270,7 @@ namespace Gopet.Runtime.UI
             // vẫn cố gọi TryConsumeMenu trên view đã Destroy.
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
+            if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
         }
 
         private void DestroyView(object screen)

@@ -19,11 +19,17 @@ namespace Gopet.Net
     public static class PacketFramer
     {
         /// <summary>
-        /// Server từ chối gói lớn hơn ngưỡng này (<c>MsgReader.cs</c>:
+        /// Server từ chối gói CLIENT GỬI lên lớn hơn ngưỡng này (<c>MsgReader.cs</c>:
         /// <c>if (Length > 10000) throw new IOException("Dữ liệu quá lớn")</c>).
-        /// Client dùng cùng ngưỡng cho cả hai chiều để bắt lỗi sớm.
         /// </summary>
         public const int MaxPacketSize = 10000;
+
+        /// <summary>
+        /// Chiều server gửi xuống có thể lớn hơn 10 KB, đặc biệt COMMAND_IMAGE chứa
+        /// PNG thô. Giới hạn nhận phải khớp trần ảnh 8 MB của ImageResponse cộng
+        /// phần metadata, nhưng vẫn hữu hạn để chặn frame khai báo vô lý.
+        /// </summary>
+        public const int MaxInboundPacketSize = 8 * 1024 * 1024 + 64 * 1024;
 
         public static void WriteFrame(Stream stream, byte[] payload, bool encrypted)
         {
@@ -62,7 +68,7 @@ namespace Gopet.Net
             if (frameLength == -1) return false;
 
             var payloadLength = frameLength - 1;
-            if (payloadLength < 0 || payloadLength > MaxPacketSize)
+            if (payloadLength < 0 || payloadLength > MaxInboundPacketSize)
             {
                 throw new ProtocolException($"Độ dài gói không hợp lệ: {payloadLength}.");
             }

@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
+using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    /// <summary>Hộp thoại chọn một đoạn text với N nút, dùng chung cho confirm và menu.</summary>
-    public sealed class ChoiceDialogView : MonoBehaviour
+    /// <summary>Hộp thoại chọn một đoạn text với N nút, dùng chung cho confirm và menu.
+    /// Bố cục hình học (ngang ≤3 nút, dọc khi nhiều hơn) tính ở <see cref="ChoiceDialogLayout"/>
+    /// (thuần C#, xem <c>ChoiceDialogView.Layout.cs</c> cho phần áp dụng vào RectTransform).</summary>
+    public sealed partial class ChoiceDialogView : MonoBehaviour
     {
-        private const float PanelWidth = 420f;
-        private const float PanelHeight = 190f;
-        private const float ButtonHeight = 42f;
-        private const float ButtonGap = 12f;
-
         private readonly List<Button> _buttons = new List<Button>();
         private Text _message;
         private Transform _panel;
@@ -38,7 +36,7 @@ namespace Gopet.Runtime.UI
             var panelRect = (RectTransform)panel.transform;
             panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
+            panelRect.sizeDelta = new Vector2(ChoiceDialogLayout.PanelWidth, ChoiceDialogLayout.DefaultPanelHeight);
 
             var panelImage = panel.GetComponent<Image>();
             RoundedUiSprite.Apply(panelImage);
@@ -83,11 +81,15 @@ namespace Gopet.Runtime.UI
             var count = labels.Count;
             while (count > 1 && string.IsNullOrWhiteSpace(labels[count - 1])) count--;
             if (count == 0) count = 1;
+
+            var layout = ChoiceDialogLayout.Compute(count, Screen.height);
+            ApplyLayout(layout);
+
             for (var i = 0; i < count; i++)
             {
                 var label = i < labels.Count ? labels[i] : string.Empty;
                 if (string.IsNullOrWhiteSpace(label)) label = i == 0 ? "OK" : "Huỷ";
-                _buttons.Add(MakeButton(label, i, count));
+                _buttons.Add(MakeButton(label, i, count, layout));
             }
         }
 
@@ -100,22 +102,16 @@ namespace Gopet.Runtime.UI
             Chosen?.Invoke(index);
         }
 
-        private Button MakeButton(string label, int index, int count)
+        private Button MakeButton(string label, int index, int count, ChoiceDialogLayout.Result layout)
         {
             var go = new GameObject($"Button{index}", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(_panel, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            var width = Mathf.Min(170f, (PanelWidth - 48f - ButtonGap * (count - 1)) / count);
-            rect.sizeDelta = new Vector2(width, ButtonHeight);
-            var totalWidth = count * width + (count - 1) * ButtonGap;
-            rect.anchoredPosition = new Vector2(-totalWidth / 2f + width / 2f + index * (width + ButtonGap), 16f);
+            PlaceButton((RectTransform)go.transform, index, count, layout);
 
             var image = go.GetComponent<Image>();
             RoundedUiSprite.Apply(image);
             image.color = index == 0 ? UiBuilder.ButtonFace : new Color(0.86f, 0.88f, 0.92f, 1f);
-            var text = UiBuilder.MakeText(go.transform, _font, "Label", 16, true);
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", layout.FontSize, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = index == 0 ? Color.white : new Color(0.14f, 0.18f, 0.25f, 1f);

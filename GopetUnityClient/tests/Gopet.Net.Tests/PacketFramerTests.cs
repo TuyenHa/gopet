@@ -100,6 +100,31 @@ namespace Gopet.Net.Tests
         }
 
         [Fact]
+        public void AnhLonTuServer_VanDocDuoc()
+        {
+            // Icon Top Pet thực tế khoảng 37 KB. Server chỉ áp trần 10 KB cho
+            // chiều client gửi lên; dùng cùng trần đó cho chiều nhận làm client
+            // tự ngắt kết nối ngay khi COMMAND_IMAGE tới.
+            const int payloadLength = 37079;
+            var frameLength = payloadLength + 1;
+            using var ms = new MemoryStream();
+            ms.WriteByte((byte)(frameLength >> 24));
+            ms.WriteByte((byte)(frameLength >> 16));
+            ms.WriteByte((byte)(frameLength >> 8));
+            ms.WriteByte((byte)frameLength);
+            ms.WriteByte(0); // server gửi plaintext
+            var payload = new byte[payloadLength];
+            payload[0] = unchecked((byte)GopetCmd.COMMAND_IMAGE);
+            ms.Write(payload, 0, payload.Length);
+            ms.Position = 0;
+
+            Assert.True(PacketFramer.TryReadFrame(ms, out var read, out var encrypted));
+            Assert.Equal(payloadLength, read.Length);
+            Assert.Equal(unchecked((byte)GopetCmd.COMMAND_IMAGE), read[0]);
+            Assert.False(encrypted);
+        }
+
+        [Fact]
         public void ThanGoiCutGiuaChung_NemEndOfStream()
         {
             using var ms = new MemoryStream();

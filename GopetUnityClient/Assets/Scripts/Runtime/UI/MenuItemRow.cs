@@ -27,6 +27,7 @@ namespace Gopet.Runtime.UI
         private Text _attackText, _defenseText;
         private Image _background;
         private bool _compactCard;
+        private bool _lightCard;
 
         public int Index { get; private set; }
 
@@ -129,6 +130,19 @@ namespace Gopet.Runtime.UI
                 if (_attackBadge != null) _attackBadge.gameObject.SetActive(false);
                 if (_defenseBadge != null) _defenseBadge.gameObject.SetActive(false);
             }
+        }
+
+        public void SetLightCard(bool value)
+        {
+            _lightCard = value;
+            if (_background == null) return;
+
+            RoundedUiSprite.Apply(_background);
+            _background.color = value
+                ? new Color(0.97f, 0.985f, 1f, 0.92f)
+                : (_compactCard ? new Color(0.14f, 0.15f, 0.18f, 0.96f) : UiBuilder.Panel);
+            if (_title != null) _title.color = value ? new Color(0.16f, 0.22f, 0.34f, 1f) : UiBuilder.TextMain;
+            if (_description != null) _description.color = UiBuilder.TextMuted;
         }
 
         private void ApplyCompactStats(string description)

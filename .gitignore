@@ -5,5 +5,5 @@ SRCGOPETGOC.rar
 tools/freej2me/
 .tmp-build-server*
 .tmp-build-register*
-
+.tmp-pet-ui-compile*
 SRCGOPETGOC/GServer/bin*

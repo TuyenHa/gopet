@@ -34,6 +34,7 @@ namespace Gopet.Runtime.UI
         private Text _title;
         private ScrollRect _scrollRect;
         private bool _compactCards;
+        private bool _lightCards;
 
         private float _viewportHeight;
         private float _scrollY;
@@ -67,6 +68,13 @@ namespace Gopet.Runtime.UI
         {
             _compactCards = value;
             foreach (var row in _realized.Values) row.SetCompactCard(value);
+        }
+
+        /// <summary>Kiểu card nền sáng cho các popup danh sách pet.</summary>
+        public void SetLightCards(bool value)
+        {
+            _lightCards = value;
+            foreach (var row in _realized.Values) row.SetLightCard(value);
         }
 
         /// <summary>Bấm phải dòng không cho chọn. Có sự kiện để test và để UI báo nhẹ, không im lặng.</summary>
@@ -281,6 +289,7 @@ namespace Gopet.Runtime.UI
             if (row.transform.parent != _rowParent) row.transform.SetParent(_rowParent, false);
             row.gameObject.SetActive(true);
             row.Bind(_screen.Items[index], index, _assets, OnRowClicked, _compactCards);
+            row.SetLightCard(_lightCards);
 
             var rect = (RectTransform)row.transform;
             rect.sizeDelta = new Vector2(_compactCards ? -12f : 0f,

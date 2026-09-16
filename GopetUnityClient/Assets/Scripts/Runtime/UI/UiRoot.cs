@@ -27,6 +27,7 @@ namespace Gopet.Runtime.UI
         private ShopPopupView _shopPopup;
         private AtmPopupView _atmPopup;
         private TranChanTabsView _tranChanTabs;
+        private DailyCheckinView _dailyCheckin;
         public Func<MenuScreen, bool> MenuInterceptor { get; set; }
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
@@ -66,6 +67,7 @@ namespace Gopet.Runtime.UI
             _guider.NpcOptionsShown += ShowNpcOptions;
             _guider.PopupShown += ShowPopup;
             _guider.ImageDialogShown += ShowImageDialog;
+            _guider.DailyCheckinShown += OnDailyCheckinState;
 
             _stack.TopChanged += OnTopChanged;
         }
@@ -144,6 +146,24 @@ namespace Gopet.Runtime.UI
             ToastView.Create(transform, _font, text);
         }
 
+        /// <summary>Mở popup điểm danh theo tháng và xin trạng thái từ server.</summary>
+        public void OpenDailyCheckin()
+        {
+            if (_dailyCheckin != null) return;
+
+            _dailyCheckin = DailyCheckinView.Create(transform, _font, _guider, _assets);
+            _dailyCheckin.Closed += () => Close(_dailyCheckin);
+            Push(_dailyCheckin, _dailyCheckin.gameObject);
+
+            // Xin trạng thái ngay khi mở (giống ShowTranChanTabs tự tải list).
+            _guider.RequestDailyCheckin();
+        }
+
+        private void OnDailyCheckinState(DailyCheckinState state)
+        {
+            if (_dailyCheckin != null) _dailyCheckin.Bind(state);
+        }
+
         private void ShowListOption(ListOptionScreen screen)
         {
             if (_atmPopup != null && _atmPopup.TryConsumeListOption(screen)) return;
@@ -190,6 +210,7 @@ namespace Gopet.Runtime.UI
                 _guider.SubmitInput(dialogId, texts);
                 Close(view);
             };
+            view.Closed += () => Close(view);
 
             Push(view, view.gameObject);
         }
@@ -271,6 +292,7 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
+            if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
         }
 
         private void DestroyView(object screen)

@@ -132,5 +132,19 @@ namespace Gopet.Net.Guider
                 .PutSByte(GopetCmd.GUIDER_IMGDIALOG)
                 .PutInt(dialogId);
         }
+
+        /// <summary>Xin trạng thái lịch điểm danh (mở tab). Server đáp TYPE_DAILY_CHECKIN_STATE.</summary>
+        public static Message RequestDailyCheckin()
+        {
+            return Message.Create(GopetCmd.COMMAND_GUIDER)
+                .PutSByte(GopetCmd.TYPE_DAILY_CHECKIN_OPEN);
+        }
+
+        /// <summary>Bấm điểm danh hôm nay.</summary>
+        public static Message DoDailyCheckin()
+        {
+            return Message.Create(GopetCmd.COMMAND_GUIDER)
+                .PutSByte(GopetCmd.TYPE_DAILY_CHECKIN_DO);
+        }
     }
 }

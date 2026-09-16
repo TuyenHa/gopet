@@ -806,6 +806,88 @@ public class GopetManager
         new Tuple<int[][]>(new int[][] { new int[] { GIFT_ITEM, 122, 1, 0 }, new int[] { GIFT_SKIN, 1000012, 0, 0, 0, 7 } }),
     };
 
+    #region Sự kiện điểm danh theo tháng (Monthly Daily Check-in)
+    /// <summary>ID hộp quà bí ẩn mốc tuần 4 (ngày 28).</summary>
+    public const int ID_BOX_CHECKIN_TUAN4 = 240024;
+    /// <summary>ID hộp quà bí ẩn cuối tháng (ngày 29).</summary>
+    public const int ID_BOX_CHECKIN_CUOITHANG = 240025;
+
+    /// <summary>
+    /// Quà điểm danh theo NGÀY dương lịch trong tháng (index 0 = ngày 1 ... index 30 = ngày 31).
+    /// Mỗi ngày là danh sách quà theo format của <see cref="GameController.onReiceiveGift"/>.
+    /// GIFT_ITEM = { type, itemId, count, canTradeFlag }.
+    /// </summary>
+    public static readonly int[][][] DAILY_CHECKIN_GIFTS = new int[][][]
+    {
+        /* 01 */ new int[][] { new int[] { GIFT_ITEM, 198, 3, 0 } },
+        /* 02 */ new int[][] { new int[] { GIFT_ITEM, 191, 5, 0 }, new int[] { GIFT_ITEM, 194, 5, 0 } },
+        /* 03 */ new int[][] { new int[] { GIFT_ITEM, 179, 3, 0 } },
+        /* 04 */ new int[][] { new int[] { GIFT_ITEM, 198, 5, 0 } },
+        /* 05 */ new int[][] { new int[] { GIFT_ITEM, 180, 3, 0 } },
+        /* 06 */ new int[][] { new int[] { GIFT_ITEM, 199, 2, 0 } },
+        /* 07 */ new int[][] { new int[] { GIFT_ITEM, 185, 3, 0 }, new int[] { GIFT_ITEM, 199, 3, 0 } },
+        /* 08 */ new int[][] { new int[] { GIFT_ITEM, 125, 3, 0 } },
+        /* 09 */ new int[][] { new int[] { GIFT_ITEM, 178, 3, 0 } },
+        /* 10 */ new int[][] { new int[] { GIFT_ITEM, 199, 3, 0 } },
+        /* 11 */ new int[][] { new int[] { GIFT_ITEM, 184, 5, 0 } },
+        /* 12 */ new int[][] { new int[] { GIFT_ENERGY, 10 } },
+        /* 13 */ new int[][] { new int[] { GIFT_ITEM, 181, 3, 0 } },
+        /* 14 */ new int[][] { new int[] { GIFT_ITEM, 121, 2, 0 }, new int[] { GIFT_ITEM, 185, 5, 0 } },
+        /* 15 */ new int[][] { new int[] { GIFT_ITEM, 200, 2, 0 } },
+        /* 16 */ new int[][] { new int[] { GIFT_ITEM, 184, 8, 0 } },
+        /* 17 */ new int[][] { new int[] { GIFT_ITEM, 188, 3, 0 } },
+        /* 18 */ new int[][] { new int[] { GIFT_ITEM, 200, 3, 0 } },
+        /* 19 */ new int[][] { new int[] { GIFT_ITEM, 180, 5, 0 } },
+        /* 20 */ new int[][] { new int[] { GIFT_ITEM, 127, 1, 0 } },
+        /* 21 */ new int[][] { new int[] { GIFT_ITEM, 122, 1, 0 }, new int[] { GIFT_COIN, 100 } },
+        /* 22 */ new int[][] { new int[] { GIFT_ITEM, 200, 3, 0 } },
+        /* 23 */ new int[][] { new int[] { GIFT_ITEM, 185, 5, 0 } },
+        /* 24 */ new int[][] { new int[] { GIFT_ITEM, 125, 5, 0 } },
+        /* 25 */ new int[][] { new int[] { GIFT_ITEM, 185, 8, 0 } },
+        /* 26 */ new int[][] { new int[] { GIFT_ITEM, 121, 3, 0 } },
+        /* 27 */ new int[][] { new int[] { GIFT_ENERGY, 15 } },
+        /* 28 */ new int[][] { new int[] { GIFT_ITEM, ID_BOX_CHECKIN_TUAN4, 1, 0 } },
+        /* 29 */ new int[][] { new int[] { GIFT_ITEM, ID_BOX_CHECKIN_CUOITHANG, 1, 0 } },
+        /* 30 */ new int[][] { new int[] { GIFT_ITEM, 122, 2, 0 }, new int[] { GIFT_ITEM, 140, 1, 0 } },
+        /* 31 */ new int[][] { new int[] { GIFT_COIN, 200 } },
+    };
+
+    /// <summary>
+    /// Loot hộp bí ẩn tuần 4. Format GIFT_RANDOM_ITEM = { type, soLanBoc, count, itemId, count, itemId, ... }
+    /// (count TRƯỚC itemId). Bốc đều → tỉ lệ = số cặp lặp / tổng cặp. itemId âm = random nhóm mảnh ghép.
+    /// 20 cặp, jackpot (-125 = pet tier 2) 1/20 = 5%.
+    /// </summary>
+    public static readonly int[][] BOX_CHECKIN_TUAN4_DATA = new int[][]
+    {
+        new int[]
+        {
+            GIFT_RANDOM_ITEM, 1,
+            3, 198, 3, 198, 3, 198, 3, 198, 3, 198, 3, 198, // bình x2 EXP x3  (×6)
+            5, 185, 5, 185, 5, 185, 5, 185, 5, 185,         // kim cương x5     (×5)
+            8, 184, 8, 184, 8, 184, 8, 184,                 // lam ngọc x8      (×4)
+            5, 188, 5, 188, 5, 188,                         // huyết ngọc x5    (×3)
+            3, 121,                                         // mực xăm hiếm x3  (×1)
+            1, -125,                                        // JACKPOT: mảnh pet tier 2 (×1)
+        }
+    };
+
+    /// <summary>
+    /// Loot hộp bí ẩn cuối tháng. Cùng format. 20 cặp, jackpot (-128 = mảnh pet tier 3) 1/20 = 5%.
+    /// </summary>
+    public static readonly int[][] BOX_CHECKIN_CUOITHANG_DATA = new int[][]
+    {
+        new int[]
+        {
+            GIFT_RANDOM_ITEM, 1,
+            8, 185, 8, 185, 8, 185, 8, 185, 8, 185, 8, 185, 8, 185, // kim cương x8            (×7)
+            2, 122, 2, 122, 2, 122, 2, 122, 2, 122,                 // mực xăm cực hiếm x2      (×5)
+            1, 140, 1, 140, 1, 140, 1, 140,                         // thẻ xăm hoà kì lân x1    (×4)
+            1, -131, 1, -131, 1, -131,                              // mảnh cánh tier 2         (×3)
+            1, -128,                                                // JACKPOT: mảnh pet tier 3 (×1)
+        }
+    };
+    #endregion
+
     public static readonly Dictionary<int, PetReincarnation> Reincarnations = new();
     public const int ID_ITEM_CARD_REINCARNATION = 332;
     public const int PRICE_ASSIGNED_PET = 15000;

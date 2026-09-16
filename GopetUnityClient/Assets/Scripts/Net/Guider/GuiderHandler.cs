@@ -44,6 +44,9 @@ namespace Gopet.Net.Guider
 
         public event Action<ImageDialogSpec> ImageDialogShown;
 
+        /// <summary>Server gửi trạng thái lịch điểm danh theo tháng.</summary>
+        public event Action<DailyCheckinState> DailyCheckinShown;
+
         public void RegisterOn(MessageRouter router)
         {
             router.RegisterEnvelope(GopetCmd.COMMAND_GUIDER);
@@ -60,6 +63,8 @@ namespace Gopet.Net.Guider
                 m => InputDialogShown?.Invoke(InputDialogSpec.Parse(m)));
             router.RegisterSub(GopetCmd.COMMAND_GUIDER, GopetCmd.GUIDER_IMGDIALOG,
                 m => ImageDialogShown?.Invoke(ImageDialogSpec.Parse(m)));
+            router.RegisterSub(GopetCmd.COMMAND_GUIDER, GopetCmd.TYPE_DAILY_CHECKIN_STATE,
+                m => DailyCheckinShown?.Invoke(DailyCheckinState.Parse(m)));
 
             router.RegisterEnvelope(GopetCmd.SERVER_MESSAGE);
             router.RegisterSub(GopetCmd.SERVER_MESSAGE, GopetCmd.SEND_YES_NO,
@@ -144,5 +149,11 @@ namespace Gopet.Net.Guider
         /// <see cref="MenuShown"/> — <c>ListId</c> khớp <paramref name="shopId"/>.
         /// </summary>
         public void RequestShop(sbyte shopId) => _send(GuiderPackets.RequestShop(shopId));
+
+        /// <summary>Mở tab điểm danh — server đáp bằng <see cref="DailyCheckinShown"/>.</summary>
+        public void RequestDailyCheckin() => _send(GuiderPackets.RequestDailyCheckin());
+
+        /// <summary>Bấm nút điểm danh — server phát quà rồi gửi lại trạng thái mới.</summary>
+        public void DoDailyCheckin() => _send(GuiderPackets.DoDailyCheckin());
     }
 }

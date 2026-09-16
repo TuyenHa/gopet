@@ -117,7 +117,7 @@ namespace Gopet.Runtime
             hud.ShopClicked += () => _ui.OpenShopPopup();
             hud.GuildClicked += () => _session?.OpenGuildPopup();
             hud.ServiceClicked += () => _ui.OpenAtmPopup(() => _client.Send(BankPackets.OpenBankMenu()));
-            hud.EventClicked += () => _session?.OpenMenu(CharacterMenuPage.Events);
+            hud.EventClicked += () => _ui.OpenDailyCheckin();
 
             WireFlow(auth);
             _login.Initialize(_flow, rememberAccount ? NewStore() : null, _sound);

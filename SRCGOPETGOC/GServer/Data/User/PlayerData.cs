@@ -114,6 +114,17 @@ public class PlayerData
     /// </summary>
     public byte DailyNoelIndex { get; set; } = 0;
     /// <summary>
+    /// Sự kiện điểm danh theo tháng.
+    /// Bitmask 31 bit: bit (ngày-1) bật = đã nhận quà ngày đó trong tháng <see cref="DailyCheckinMonthKey"/>.
+    /// </summary>
+    public int DailyCheckinMask { get; set; } = 0;
+    /// <summary>
+    /// Sự kiện điểm danh theo tháng.
+    /// Khoá tháng gắn với <see cref="DailyCheckinMask"/>, dạng year*100 + month (vd 202609).
+    /// Khác tháng hiện tại → reset mask.
+    /// </summary>
+    public int DailyCheckinMonthKey { get; set; } = 0;
+    /// <summary>
     /// Trường thuộc sự kiện sinh nhật trò chơi
     /// Để ghi tổng số lần ăn bánh chưng
     /// </summary>
@@ -237,7 +248,9 @@ public class PlayerData
                             NumEatCylindricalStickyRice = @NumEatCylindricalStickyRice,
                             NumEatCylindricalStickyRiceCoin = @NumEatCylindricalStickyRiceCoin,
                             IndexMilistoneBirthdayEvent = @IndexMilistoneBirthdayEvent,
-                            NumUseGiftBox2025 = @NumUseGiftBox2025
+                            NumUseGiftBox2025 = @NumUseGiftBox2025,
+                            DailyCheckinMask = @DailyCheckinMask,
+                            DailyCheckinMonthKey = @DailyCheckinMonthKey
                             WHERE ID = @ID", playerData);
     }
     /// <summary>

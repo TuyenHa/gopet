@@ -116,6 +116,10 @@ namespace Gopet.Net
         public const sbyte PET_UP_TIER = 71;
         public const sbyte SELECT_KIOSK_ITEM = 85;
         public const sbyte TYPE_DIALOG_INPUT = 7;
+        // Sự kiện điểm danh theo tháng (sub-command của COMMAND_GUIDER=122). KHỚP server GopetCMD.cs.
+        public const sbyte TYPE_DAILY_CHECKIN_STATE = 40; // server→client: trạng thái tháng
+        public const sbyte TYPE_DAILY_CHECKIN_OPEN = 41;  // client→server: xin trạng thái
+        public const sbyte TYPE_DAILY_CHECKIN_DO = 42;    // client→server: bấm điểm danh
         public const sbyte REMOVE_SELL_ITEM = 87;
         public const sbyte PLAYER_CHALLENGE = 12;
         public const sbyte PLAYER_PK = 96;

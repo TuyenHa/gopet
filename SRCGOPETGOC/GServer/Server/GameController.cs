@@ -1,5 +1,6 @@
 
 using Gopet.App;
+using Gopet.Data.Event.DailyCheckin;
 using Gopet.Battle;
 using Gopet.Data.GopetClan;
 using Gopet.Data.Collections;
@@ -823,6 +824,12 @@ public class GameController
                     player.redDialog(player.Language.IncorrectTyping);
                     e.printStackTrace();
                 }
+                break;
+            case GopetCMD.TYPE_DAILY_CHECKIN_OPEN:
+                SendDailyCheckinState(player);
+                break;
+            case GopetCMD.TYPE_DAILY_CHECKIN_DO:
+                DailyCheckinEvent.Instance.DoCheckin(player);
                 break;
         }
     }
@@ -5297,6 +5304,73 @@ public class GameController
             else player.redDialog(player.Language.DailyNoelMax, GopetManager.NOEL_DAILYS.Length);
         }
         else player.redDialog(player.Language.DailyNoelFail);
+    }
+
+    /// <summary>
+    /// Gửi trạng thái lịch điểm danh tháng cho client (sub-command COMMAND_GUIDER).
+    /// Layout: todayDay(sbyte), receivedMask(int), daysInMonth(sbyte),
+    /// lặp daysInMonth: dayState(sbyte) + rewardLabel(utf) + iconItemId(int).
+    /// </summary>
+    public void SendDailyCheckinState(Player player)
+    {
+        var pd = player.playerData;
+        DateTime now = DateTime.Now;
+        int today = now.Day;
+        int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+        int effMask = DailyCheckinEvent.EffectiveMask(pd, now);
+
+        Message m = new Message(GopetCMD.COMMAND_GUIDER);
+        m.putsbyte(GopetCMD.TYPE_DAILY_CHECKIN_STATE);
+        m.putsbyte((sbyte)today);
+        m.putInt(effMask);
+        m.putsbyte((sbyte)daysInMonth);
+        for (int d = 1; d <= daysInMonth; d++)
+        {
+            int[][] gift = GopetManager.DAILY_CHECKIN_GIFTS[d - 1];
+            m.putsbyte((sbyte)DailyCheckinEvent.GetDayState(effMask, d, today));
+            m.putUTF(BuildDailyCheckinLabel(gift, player));
+            m.putInt(DailyCheckinIconItemId(gift));
+        }
+        m.cleanup();
+        player.session.sendMessage(m);
+    }
+
+    /// <summary>Ghép nhãn hiển thị quà 1 ngày, vd "Kim cương x5 + 100 (ngoc)".</summary>
+    private static string BuildDailyCheckinLabel(int[][] gift, Player player)
+    {
+        JArrayList<string> parts = new();
+        foreach (int[] g in gift)
+        {
+            switch (g[0])
+            {
+                case GopetManager.GIFT_GOLD:
+                    parts.add($"{Utilities.FormatNumber(g[1])} (vang)");
+                    break;
+                case GopetManager.GIFT_COIN:
+                    parts.add($"{Utilities.FormatNumber(g[1])} (ngoc)");
+                    break;
+                case GopetManager.GIFT_ENERGY:
+                    parts.add($"{Utilities.FormatNumber(g[1])} {player.Language.Energy}");
+                    break;
+                case GopetManager.GIFT_ITEM:
+                    parts.add($"{new Item(g[1]).getName(player)} x{g[2]}");
+                    break;
+                default:
+                    parts.add(new Item(g[1]).getName(player));
+                    break;
+            }
+        }
+        return string.Join(" + ", parts);
+    }
+
+    /// <summary>itemId đại diện để client hiện icon: item đầu tiên trong quà; 0 nếu là ngọc/vàng/năng lượng.</summary>
+    private static int DailyCheckinIconItemId(int[][] gift)
+    {
+        foreach (int[] g in gift)
+        {
+            if (g[0] == GopetManager.GIFT_ITEM) return g[1];
+        }
+        return 0;
     }
 
     public bool TryUseCardSkill(int skillId, int indexSlot, out Pet myPet)

@@ -7,11 +7,16 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Hộp thoại nhập liệu (<c>TYPE_DIALOG_INPUT</c>): tiêu đề + N ô nhập có nhãn.
+    /// Hộp thoại nhập liệu (<c>TYPE_DIALOG_INPUT</c>): tiêu đề + N ô nhập có nhãn,
+    /// hai nút Đồng ý / Thôi ở đáy và nút X đóng ở góc phải trên.
     ///
     /// <para>Số ô do server quyết định và câu trả lời phải gửi <b>đúng bấy nhiêu</b>
     /// chuỗi — server dựng <c>InputReader</c> theo số ô nó đã hỏi
     /// (<c>GameController.cs:788-795</c>).</para>
+    ///
+    /// <para>Layout đi theo pattern của <see cref="ChoiceDialogView"/>: backdrop mờ
+    /// phủ kín + panel neo giữa. Trước đây view chỉ dựng ảnh nền mà không neo/không
+    /// đặt kích thước, người chơi bấm vào NPC ra "hình vuông màu xanh" trống rỗng.</para>
     ///
     /// <para><b>Bẫy đã trả giá:</b> bộ gõ tiếng Việt (Telex) nuốt phím trong ô nhập —
     /// gõ <c>test1234</c> ra <c>tét1234</c>. Đã dính khi nhập vào emulator ở P1, và
@@ -20,10 +25,21 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class InputDialogView : MonoBehaviour
     {
+        private const float PanelWidth = 480f;
+        private const float PanelPadding = 20f;
+        private const float TitleHeight = 34f;
+        private const float FieldHeight = 44f;
+        private const float FieldGap = 10f;
+        private const float ButtonRowHeight = 44f;
+        private const float ButtonGap = 12f;
+        private const float LabelWidth = 140f;
+
         private readonly List<InputField> _fields = new List<InputField>();
 
+        private RectTransform _panel;
         private Text _title;
         private Font _font;
+        private bool _decided;
 
         public int DialogId { get; private set; }
 
@@ -32,22 +48,40 @@ namespace Gopet.Runtime.UI
         /// <summary>Người dùng xác nhận. Mảng trả về đúng số ô server đã hỏi.</summary>
         public event Action<int, string[]> Submitted;
 
+        /// <summary>Người dùng bấm Thôi hoặc X. UiRoot đóng view qua sự kiện này.</summary>
+        public event Action Closed;
+
         public static InputDialogView Create(Transform parent, Font font)
         {
-            var go = new GameObject("InputDialogView", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            go.GetComponent<Image>().color = UiBuilder.Panel;
+            var backdrop = new GameObject("InputDialogView", typeof(RectTransform), typeof(Image));
+            backdrop.transform.SetParent(parent, false);
+            UiBuilder.Stretch((RectTransform)backdrop.transform);
+            var backdropImage = backdrop.GetComponent<Image>();
+            backdropImage.color = new Color(0f, 0f, 0f, 0.42f);
+            backdropImage.raycastTarget = true;
 
-            var view = go.AddComponent<InputDialogView>();
+            var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(backdrop.transform, false);
+            var panelRect = (RectTransform)panel.transform;
+            panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.sizeDelta = new Vector2(PanelWidth, ComputePanelHeight(0));
+
+            var panelImage = panel.GetComponent<Image>();
+            panelImage.color = UiBuilder.Panel;
+            var outline = panel.AddComponent<Outline>();
+            outline.effectColor = new Color(0.26f, 0.58f, 0.95f, 1f);
+            outline.effectDistance = new Vector2(2f, 2f);
+
+            var view = backdrop.AddComponent<InputDialogView>();
             view._font = font;
+            view._panel = panelRect;
 
-            var titleGo = new GameObject("Title", typeof(RectTransform), typeof(Text));
-            titleGo.transform.SetParent(go.transform, false);
-            view._title = titleGo.GetComponent<Text>();
-            view._title.font = font;
-            view._title.fontSize = 18;
-            view._title.color = UiBuilder.TextMain;
+            view._title = UiBuilder.MakeText(view._panel, font, "Title", 18, false);
+            view._title.alignment = TextAnchor.MiddleCenter;
+            UiBuilder.PlaceRow((RectTransform)view._title.transform, PanelPadding, TitleHeight, PanelPadding);
 
+            view.BuildCloseButton();
             return view;
         }
 
@@ -56,24 +90,34 @@ namespace Gopet.Runtime.UI
             if (spec == null) throw new ArgumentNullException(nameof(spec));
 
             DialogId = spec.DialogId;
-            _title.text = spec.Title;
+            _title.text = spec.Title ?? string.Empty;
+            _decided = false;
 
             foreach (var field in _fields)
             {
                 if (field != null) Destroy(field.gameObject);
             }
-
             _fields.Clear();
 
-            foreach (var definition in spec.Fields)
+            var fieldCount = spec.Fields != null ? spec.Fields.Length : 0;
+            _panel.sizeDelta = new Vector2(PanelWidth, ComputePanelHeight(fieldCount));
+
+            var y = PanelPadding + TitleHeight + FieldGap;
+            for (var i = 0; i < fieldCount; i++)
             {
-                _fields.Add(MakeField(definition));
+                _fields.Add(MakeField(spec.Fields[i], y));
+                y += FieldHeight + FieldGap;
             }
+
+            BuildActionButtons(y);
         }
 
         /// <summary>Cho test và cho phím Enter gọi thẳng.</summary>
         public void Submit()
         {
+            if (_decided) return;
+            _decided = true;
+
             var texts = new string[_fields.Count];
             for (var i = 0; i < _fields.Count; i++)
             {
@@ -85,21 +129,42 @@ namespace Gopet.Runtime.UI
             Submitted?.Invoke(DialogId, texts);
         }
 
-        private InputField MakeField(InputDialogSpec.Field definition)
+        private static float ComputePanelHeight(int fieldCount)
         {
-            var go = new GameObject($"Field_{definition.Label}", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(transform, false);
-            go.GetComponent<Image>().color = UiBuilder.Field;
+            var content = TitleHeight + FieldGap + fieldCount * (FieldHeight + FieldGap) + ButtonRowHeight;
+            return PanelPadding * 2f + content;
+        }
 
-            var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
-            textGo.transform.SetParent(go.transform, false);
-            var text = textGo.GetComponent<Text>();
-            text.font = _font;
-            text.fontSize = 16;
-            text.supportRichText = false;
+        private InputField MakeField(InputDialogSpec.Field definition, float top)
+        {
+            var row = new GameObject($"Field_{definition.Label}", typeof(RectTransform));
+            row.transform.SetParent(_panel, false);
+            UiBuilder.PlaceRow((RectTransform)row.transform, top, FieldHeight, PanelPadding);
+
+            var label = UiBuilder.MakeText(row.transform, _font, "Label", 15, false);
+            label.text = definition.Label ?? string.Empty;
+            label.alignment = TextAnchor.MiddleLeft;
+            var labelRect = (RectTransform)label.transform;
+            labelRect.anchorMin = new Vector2(0f, 0f);
+            labelRect.anchorMax = new Vector2(0f, 1f);
+            labelRect.pivot = new Vector2(0f, 0.5f);
+            labelRect.sizeDelta = new Vector2(LabelWidth, 0f);
+            labelRect.anchoredPosition = Vector2.zero;
+
+            var box = new GameObject("Box", typeof(RectTransform), typeof(Image));
+            box.transform.SetParent(row.transform, false);
+            var boxRect = (RectTransform)box.transform;
+            boxRect.anchorMin = new Vector2(0f, 0f);
+            boxRect.anchorMax = new Vector2(1f, 1f);
+            boxRect.offsetMin = new Vector2(LabelWidth + 8f, 4f);
+            boxRect.offsetMax = new Vector2(0f, -4f);
+            box.GetComponent<Image>().color = UiBuilder.Field;
+
+            var text = UiBuilder.MakeText(box.transform, _font, "Text", 16, true);
             text.color = UiBuilder.TextMain;
+            text.supportRichText = false;
 
-            var field = go.AddComponent<InputField>();
+            var field = box.AddComponent<InputField>();
             field.textComponent = text;
 
             // Server gửi kiểu ô nhập; khác 0 nghĩa là ô số, để bàn phím mobile mở
@@ -109,6 +174,75 @@ namespace Gopet.Runtime.UI
                 : InputField.ContentType.Standard;
 
             return field;
+        }
+
+        private void BuildActionButtons(float top)
+        {
+            ClearActionButtons();
+
+            var row = new GameObject("Buttons", typeof(RectTransform));
+            row.transform.SetParent(_panel, false);
+            row.tag = "Untagged";
+            UiBuilder.PlaceRow((RectTransform)row.transform, top, ButtonRowHeight, PanelPadding);
+
+            MakeButton(row.transform, "Đồng ý", 0, () => Submit());
+            MakeButton(row.transform, "Thôi", 1, RaiseClosed);
+        }
+
+        private void ClearActionButtons()
+        {
+            var existing = _panel.Find("Buttons");
+            if (existing != null) Destroy(existing.gameObject);
+        }
+
+        private void MakeButton(Transform parent, string label, int index, Action onClick)
+        {
+            var go = new GameObject($"Btn_{label}", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f * index, 0f);
+            rect.anchorMax = new Vector2(0.5f + 0.5f * index, 1f);
+            rect.offsetMin = new Vector2(index == 0 ? 0f : ButtonGap * 0.5f, 0f);
+            rect.offsetMax = new Vector2(index == 0 ? -ButtonGap * 0.5f : 0f, 0f);
+
+            var image = go.GetComponent<Image>();
+            image.color = index == 0
+                ? UiBuilder.ButtonFace
+                : new Color(0.30f, 0.32f, 0.38f, 1f);
+
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", 16, true);
+            text.text = label;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+
+            go.GetComponent<Button>().onClick.AddListener(() => onClick());
+        }
+
+        private void BuildCloseButton()
+        {
+            var go = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(_panel, false);
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-6f, -6f);
+            rect.sizeDelta = new Vector2(28f, 28f);
+
+            go.GetComponent<Image>().color = new Color(0.9f, 0.12f, 0.1f, 1f);
+            var label = UiBuilder.MakeText(go.transform, _font, "Label", 18, true);
+            label.text = "×";
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+
+            go.GetComponent<Button>().onClick.AddListener(RaiseClosed);
+        }
+
+        private void RaiseClosed()
+        {
+            if (_decided) return;
+            _decided = true;
+            Closed?.Invoke();
         }
     }
 }

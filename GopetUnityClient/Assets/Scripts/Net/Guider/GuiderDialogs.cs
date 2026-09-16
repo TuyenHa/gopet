@@ -31,7 +31,11 @@ namespace Gopet.Net.Guider
             result.Options = new Option[count];
             for (var i = 0; i < count; i++)
             {
-                result.Options[i] = new Option { Id = reader.ReadInt(), Text = reader.ReadUtf() };
+                result.Options[i] = new Option
+                {
+                    Id = reader.ReadInt(),
+                    Text = GameTextTags.Substitute(reader.ReadUtf()),
+                };
             }
 
             reader.ExpectFullyConsumed("NPC_OPTION");

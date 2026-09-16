@@ -52,7 +52,13 @@ namespace Gopet.Runtime.Assets
                 cacheRoot ?? Path.Combine(Application.persistentDataPath, "assetcache"),
                 maxCacheBytes);
 
-            _handler = new ImageHandler(client.Send, () => (long)(Time.realtimeSinceStartup * 1000f));
+            // Retry 2 lần khi timeout: rebuild/domain-reload/reconnect thường làm mất
+            // gói ảnh giữa chừng → waiter callback không bao giờ chạy → NPC chỉ còn
+            // label. 3 attempts (0+2) là bù thỏa hiệp cho flake tạm mà không đè server.
+            _handler = new ImageHandler(client.Send, () => (long)(Time.realtimeSinceStartup * 1000f))
+            {
+                MaxRetries = 2,
+            };
             _handler.RegisterOn(router);
             _handler.TimedOut += path => Debug.LogWarning($"[Gopet] Hết hạn chờ ảnh: {path}");
             _handler.WaiterFailed += (path, ex) =>

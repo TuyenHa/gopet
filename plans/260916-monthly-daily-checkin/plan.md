@@ -16,7 +16,7 @@ Thay cơ chế điểm danh Noel (7 mốc streak) bằng **event điểm danh th
 | # | Phase | Trạng thái |
 |---|-------|-----------|
 | 01 | [Server: data quà 31 ngày + 2 hộp bí ẩn + item rows](phase-01-server-data-config.md) | ✅ Xong |
-| 02 | [Server: PlayerData state + DB migration](phase-02-server-state-migration.md) | ✅ Code xong (⚠ chạy migration DB) |
+| 02 | [Server: PlayerData state + DB migration](phase-02-server-state-migration.md) | ✅ Xong (migration đã chạy trên `gopettae_tae2` 2026-09-16) |
 | 03 | [Server: logic điểm danh (calendar + reset tháng)](phase-03-server-checkin-logic.md) | ✅ Xong |
 | 04 | [Server: hộp quà bí ẩn UseItem + loot random](phase-04-server-mystery-box.md) | ✅ Xong |
 | 05 | [Server: packet gửi trạng thái tháng cho client](phase-05-server-packet-protocol.md) | ✅ Xong |
@@ -27,7 +27,8 @@ Thay cơ chế điểm danh Noel (7 mốc streak) bằng **event điểm danh th
 ## Trạng thái build (2026-09-16)
 - Server GServer: build 0 error (build ra temp vì exe đang chạy khoá output).
 - Client Unity: PlayMode compile 0 error; net-test 703/703 pass (thêm 5 test DailyCheckin).
-- **CÒN LẠI TRƯỚC KHI CHẠY THẬT:** chạy migration `backup_sql/migrations/2026-09-16-daily-checkin.sql` lên DB (thêm 2 cột `player` + 2 item hộp). Chưa chạy → save player sẽ lỗi cột thiếu.
+- **Migration DB: ✅ ĐÃ CHẠY (2026-09-16)** lên schema `gopettae_tae2` (không phải `game` như comment trong file .sql). Đã thêm 2 cột `player` (`DailyCheckinMask`, `DailyCheckinMonthKey`) + 2 item hộp (240024, 240025). Xác minh OK.
+- **CÒN LẠI:** không còn blocker DB. Chỉ cần restart server để load data/item mới.
 
 ## Phụ thuộc
 - 02 → 03 (logic cần state). 01 → 03/04 (logic cần data). 03/05 → 06 (client cần packet). 04 độc lập sau 01/02. 08 song song (chỉ cần trước khi test hiển thị icon).

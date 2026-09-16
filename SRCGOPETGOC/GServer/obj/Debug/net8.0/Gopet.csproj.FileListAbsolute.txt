@@ -191071,3 +191071,4 @@ C:\Users\hatuy\AppData\Local\Temp\gserver-checkbuild\Gopet.deps.json
 C:\Users\hatuy\AppData\Local\Temp\gserver-checkbuild\Gopet.runtimeconfig.json
 C:\Users\hatuy\AppData\Local\Temp\gserver-checkbuild\Gopet.dll
 C:\Users\hatuy\AppData\Local\Temp\gserver-checkbuild\Gopet.pdb
+D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\assets\icons\checkin-chest.png

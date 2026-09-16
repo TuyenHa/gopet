@@ -27,7 +27,17 @@ namespace Gopet.Runtime.UI
         private ShopPopupView _shopPopup;
         private AtmPopupView _atmPopup;
         private TranChanTabsView _tranChanTabs;
+        private HeavenNpcTabsView _heavenNpcTabs;
+        private BacSiNpcTabsView _bacSiNpcTabs;
+        private GuildNpcTabsView _guildNpcTabs;
+        private GuildTopPopupView _guildTopPopup;
         private DailyCheckinView _dailyCheckin;
+
+        // NPC "Sứ Giả Thiên Đình" (DB npcId=-25) — popup 2 tab riêng (opt 88 guide, 89 sacrifice).
+        private const int HeavenNpcId = -25;
+        // NPC "Bác Sĩ Xì Tin" (DB npcId=-7) — popup 3 tab (opt 22 revive, 23 daily task, 24 gym).
+        private const int BacSiNpcId = -7;
+        private const int GuildNpcId = -15;
         public Func<MenuScreen, bool> MenuInterceptor { get; set; }
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
@@ -90,6 +100,14 @@ namespace Gopet.Runtime.UI
             if (_atmPopup != null && _atmPopup.TryConsumeMenu(screen)) return;
 
             if (_tranChanTabs != null && _tranChanTabs.TryConsumeMenu(screen, _assets, _guider)) return;
+
+            if (_heavenNpcTabs != null && _heavenNpcTabs.TryConsumeMenu(screen, _assets, _guider)) return;
+
+            if (_bacSiNpcTabs != null && _bacSiNpcTabs.TryConsumeMenu(screen, _assets, _guider)) return;
+
+            if (_guildNpcTabs != null && _guildNpcTabs.TryConsumeMenu(screen, _assets, _guider)) return;
+
+            if (_guildTopPopup != null && _guildTopPopup.TryConsumeMenu(screen, _assets, _guider)) return;
 
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
@@ -223,6 +241,24 @@ namespace Gopet.Runtime.UI
                 return;
             }
 
+            if (options != null && options.NpcId == HeavenNpcId)
+            {
+                ShowHeavenNpcTabs(options);
+                return;
+            }
+
+            if (options != null && options.NpcId == BacSiNpcId)
+            {
+                ShowBacSiNpcTabs(options);
+                return;
+            }
+
+            if (options != null && options.NpcId == GuildNpcId)
+            {
+                ShowGuildNpcTabs(options);
+                return;
+            }
+
             var labels = new string[options.Options.Length];
             for (var i = 0; i < labels.Length; i++) labels[i] = options.Options[i].Text;
 
@@ -251,6 +287,60 @@ namespace Gopet.Runtime.UI
 
             // Mở popup là tự chọn tab Nhận pet và tải danh sách pet ngay.
             _guider.SelectNpcOption(options.NpcId, LinhThuCityNpcOptions.TranChanNhanPetMienPhi);
+        }
+
+        private void ShowHeavenNpcTabs(NpcOptions options)
+        {
+            if (_heavenNpcTabs != null) Close(_heavenNpcTabs);
+
+            var view = HeavenNpcTabsView.Create(transform, _font, options);
+            _heavenNpcTabs = view;
+            // Tab 1 (guide) chỉ hiển thị text hardcode, không cần gọi server.
+            // Tab 2 (hiến tặng) mới gửi SelectNpcOption(89) để lấy danh sách pet.
+            view.TabChosen += optionId => _guider.SelectNpcOption(options.NpcId, optionId);
+            view.ConfirmRequested += ShowConfirm;
+            view.Closed += () => Close(view);
+            Push(view, view.gameObject);
+        }
+
+        private void ShowBacSiNpcTabs(NpcOptions options)
+        {
+            if (_bacSiNpcTabs != null) Close(_bacSiNpcTabs);
+
+            var view = BacSiNpcTabsView.Create(transform, _font, options);
+            _bacSiNpcTabs = view;
+            // Tab hồi sinh: button trong body mới gửi option (không tự động khi đổi tab).
+            // Tab nhiệm vụ hằng ngày / tẩy gym: đổi tab tự gửi để load menu.
+            view.OptionRequested += optionId => _guider.SelectNpcOption(options.NpcId, optionId);
+            view.ConfirmRequested += ShowConfirm;
+            view.Closed += () => Close(view);
+            Push(view, view.gameObject);
+        }
+
+        private void ShowGuildNpcTabs(NpcOptions options)
+        {
+            if (_guildNpcTabs != null) Close(_guildNpcTabs);
+
+            var view = GuildNpcTabsView.Create(transform, _font, options);
+            _guildNpcTabs = view;
+            view.OptionChosen += optionId =>
+            {
+                if (optionId == LinhThuCityNpcOptions.SuGiaTopLvlBangHoi)
+                    ShowGuildTopPopup();
+                _guider.SelectNpcOption(options.NpcId, optionId);
+            };
+            view.Closed += () => Close(view);
+            Push(view, view.gameObject);
+        }
+
+        private void ShowGuildTopPopup()
+        {
+            if (_guildTopPopup != null) Close(_guildTopPopup);
+
+            var view = GuildTopPopupView.Create(transform, _font);
+            _guildTopPopup = view;
+            view.Closed += () => Close(view);
+            Push(view, view.gameObject);
         }
 
         private void ShowConfirm(MenuSelection.ConfirmPrompt prompt, Action onYes)
@@ -292,6 +382,10 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
+            if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
+            if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;
+            if (ReferenceEquals(screen, _guildNpcTabs)) _guildNpcTabs = null;
+            if (ReferenceEquals(screen, _guildTopPopup)) _guildTopPopup = null;
             if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
         }
 

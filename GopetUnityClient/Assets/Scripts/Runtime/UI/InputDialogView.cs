@@ -68,9 +68,11 @@ namespace Gopet.Runtime.UI
             panelRect.sizeDelta = new Vector2(PanelWidth, ComputePanelHeight(0));
 
             var panelImage = panel.GetComponent<Image>();
-            panelImage.color = UiBuilder.Panel;
+            // Đồng bộ popup cửa hàng: nền trắng sáng, bo góc và viền xanh.
+            RoundedUiSprite.Apply(panelImage);
+            panelImage.color = new Color(0.96f, 0.98f, 1f, 1f);
             var outline = panel.AddComponent<Outline>();
-            outline.effectColor = new Color(0.26f, 0.58f, 0.95f, 1f);
+            outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
             outline.effectDistance = new Vector2(2f, 2f);
 
             var view = backdrop.AddComponent<InputDialogView>();
@@ -79,6 +81,7 @@ namespace Gopet.Runtime.UI
 
             view._title = UiBuilder.MakeText(view._panel, font, "Title", 18, false);
             view._title.alignment = TextAnchor.MiddleCenter;
+            view._title.color = new Color(0.14f, 0.18f, 0.25f, 1f);
             UiBuilder.PlaceRow((RectTransform)view._title.transform, PanelPadding, TitleHeight, PanelPadding);
 
             view.BuildCloseButton();
@@ -144,6 +147,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(row.transform, _font, "Label", 15, false);
             label.text = definition.Label ?? string.Empty;
             label.alignment = TextAnchor.MiddleLeft;
+            label.color = new Color(0.14f, 0.18f, 0.25f, 1f);
             var labelRect = (RectTransform)label.transform;
             labelRect.anchorMin = new Vector2(0f, 0f);
             labelRect.anchorMax = new Vector2(0f, 1f);
@@ -158,10 +162,10 @@ namespace Gopet.Runtime.UI
             boxRect.anchorMax = new Vector2(1f, 1f);
             boxRect.offsetMin = new Vector2(LabelWidth + 8f, 4f);
             boxRect.offsetMax = new Vector2(0f, -4f);
-            box.GetComponent<Image>().color = UiBuilder.Field;
+            box.GetComponent<Image>().color = new Color(0.78f, 0.8f, 0.84f, 1f);
 
             var text = UiBuilder.MakeText(box.transform, _font, "Text", 16, true);
-            text.color = UiBuilder.TextMain;
+            text.color = new Color(0.12f, 0.14f, 0.18f, 1f);
             text.supportRichText = false;
 
             var field = box.AddComponent<InputField>();
@@ -209,12 +213,15 @@ namespace Gopet.Runtime.UI
             var image = go.GetComponent<Image>();
             image.color = index == 0
                 ? UiBuilder.ButtonFace
-                : new Color(0.30f, 0.32f, 0.38f, 1f);
+                : new Color(0.86f, 0.88f, 0.92f, 1f);
+            RoundedUiSprite.Apply(image);
 
             var text = UiBuilder.MakeText(go.transform, _font, "Label", 16, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
+            text.color = index == 0
+                ? Color.white
+                : new Color(0.14f, 0.18f, 0.25f, 1f);
 
             go.GetComponent<Button>().onClick.AddListener(() => onClick());
         }
@@ -225,15 +232,28 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(_panel, false);
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-6f, -6f);
-            rect.sizeDelta = new Vector2(28f, 28f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(4f, 4f);
+            rect.sizeDelta = new Vector2(34f, 34f);
 
-            go.GetComponent<Image>().color = new Color(0.9f, 0.12f, 0.1f, 1f);
-            var label = UiBuilder.MakeText(go.transform, _font, "Label", 18, true);
-            label.text = "×";
-            label.alignment = TextAnchor.MiddleCenter;
-            label.color = Color.white;
+            var image = go.GetComponent<Image>();
+            image.preserveAspect = true;
+            var sprite = HudSkin.Get(HudSkin.Close);
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+                image.color = Color.white;
+            }
+            else
+            {
+                RoundedUiSprite.Apply(image);
+                image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
+                var label = UiBuilder.MakeText(go.transform, _font, "Label", 18, true);
+                label.text = "×";
+                label.alignment = TextAnchor.MiddleCenter;
+                label.color = Color.white;
+                label.fontStyle = FontStyle.Bold;
+            }
 
             go.GetComponent<Button>().onClick.AddListener(RaiseClosed);
         }

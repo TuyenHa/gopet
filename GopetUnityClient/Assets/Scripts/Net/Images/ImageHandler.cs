@@ -26,11 +26,17 @@ namespace Gopet.Net.Images
         /// <summary>Hạn chờ mỗi ảnh.</summary>
         public long TimeoutMs = 10000;
 
+        /// <summary>Số lần THỬ LẠI khi timeout trước khi bỏ cuộc (fire TimedOut).
+        /// Mặc định 0 = giữ hành vi cũ (không retry). Đặt >0 để chịu được thất lạc
+        /// tạm thời sau khi rebuild / reconnect (client mất waiter response cũ).</summary>
+        public int MaxRetries;
+
         private sealed class Pending
         {
             public sbyte Type;
             public long DeadlineMs;
             public bool Sent;
+            public int Retries;
             public readonly List<Action<ImageResponse>> Waiters = new List<Action<ImageResponse>>();
         }
 
@@ -109,9 +115,21 @@ namespace Gopet.Net.Images
 
             foreach (var path in expired)
             {
-                _pending.Remove(path);
+                var entry = _pending[path];
                 _inFlight--;
-                TimedOut?.Invoke(path);
+                if (entry.Retries < MaxRetries)
+                {
+                    // Retry: reset Sent + re-queue, giữ nguyên Waiters. PumpQueue
+                    // dưới sẽ bắn lại request (deadline mới đặt lúc gửi).
+                    entry.Retries++;
+                    entry.Sent = false;
+                    _queue.Add(path);
+                }
+                else
+                {
+                    _pending.Remove(path);
+                    TimedOut?.Invoke(path);
+                }
             }
 
             PumpQueue();

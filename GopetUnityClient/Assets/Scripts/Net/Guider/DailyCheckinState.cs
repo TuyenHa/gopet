@@ -7,7 +7,7 @@ namespace Gopet.Net.Guider
     ///
     /// <para>Layout khớp <c>GameController.SendDailyCheckinState</c>:
     /// todayDay(sbyte), receivedMask(int), daysInMonth(sbyte),
-    /// lặp daysInMonth: state(sbyte) + label(utf) + iconItemId(int).</para>
+    /// lặp daysInMonth: state(sbyte) + label(utf) + iconPath(utf, "" nếu không có item).</para>
     /// </summary>
     public sealed class DailyCheckinState
     {
@@ -27,7 +27,7 @@ namespace Gopet.Net.Guider
             public int Day;        // 1-based
             public byte State;
             public string Label;
-            public int IconItemId; // 0 nếu quà không có item (ngọc/vàng/năng lượng)
+            public string IconPath; // "" nếu quà không có item (ngọc/vàng/năng lượng)
         }
 
         public static DailyCheckinState Parse(Message message)
@@ -47,7 +47,7 @@ namespace Gopet.Net.Guider
                     Day = i + 1,
                     State = (byte)r.ReadSByte(),
                     Label = r.ReadUtf(),
-                    IconItemId = r.ReadInt(),
+                    IconPath = r.ReadUtf(),
                 };
             }
             return s;
@@ -64,6 +64,24 @@ namespace Gopet.Net.Guider
                     if (d.Day == TodayDay) return d.State == Claimable;
                 }
                 return false;
+            }
+        }
+
+        /// <summary>Chuỗi ngày điểm danh LIÊN TIẾP tính đến hôm nay (bao gồm hôm nay nếu đã nhận,
+        /// ngược lại lùi 1 và đếm chuỗi trước đó). Ví dụ mask=0b011111, today=6 → 5.</summary>
+        public int Streak
+        {
+            get
+            {
+                if (TodayDay < 1) return 0;
+                int end = ((ReceivedMask >> (TodayDay - 1)) & 1) == 1 ? TodayDay : TodayDay - 1;
+                int s = 0;
+                for (int d = end; d >= 1; d--)
+                {
+                    if (((ReceivedMask >> (d - 1)) & 1) == 0) break;
+                    s++;
+                }
+                return s;
             }
         }
     }

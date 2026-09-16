@@ -5309,7 +5309,7 @@ public class GameController
     /// <summary>
     /// Gửi trạng thái lịch điểm danh tháng cho client (sub-command COMMAND_GUIDER).
     /// Layout: todayDay(sbyte), receivedMask(int), daysInMonth(sbyte),
-    /// lặp daysInMonth: dayState(sbyte) + rewardLabel(utf) + iconItemId(int).
+    /// lặp daysInMonth: dayState(sbyte) + rewardLabel(utf) + iconPath(utf, "" nếu không có item).
     /// </summary>
     public void SendDailyCheckinState(Player player)
     {
@@ -5329,7 +5329,7 @@ public class GameController
             int[][] gift = GopetManager.DAILY_CHECKIN_GIFTS[d - 1];
             m.putsbyte((sbyte)DailyCheckinEvent.GetDayState(effMask, d, today));
             m.putUTF(BuildDailyCheckinLabel(gift, player));
-            m.putInt(DailyCheckinIconItemId(gift));
+            m.putUTF(DailyCheckinIconPath(gift));
         }
         m.cleanup();
         player.session.sendMessage(m);
@@ -5363,14 +5363,25 @@ public class GameController
         return string.Join(" + ", parts);
     }
 
-    /// <summary>itemId đại diện để client hiện icon: item đầu tiên trong quà; 0 nếu là ngọc/vàng/năng lượng.</summary>
-    private static int DailyCheckinIconItemId(int[][] gift)
+    /// <summary>Icon path để client hiển thị. Ưu tiên item đầu tiên trong quà (lấy từ
+    /// DB qua <c>Item.getTemp().getIconPath()</c>), nếu không có item thì dùng icon
+    /// fallback cho ngọc/vàng/năng lượng (asset gameMisc có sẵn) — tránh ô trống.</summary>
+    private static string DailyCheckinIconPath(int[][] gift)
     {
         foreach (int[] g in gift)
         {
-            if (g[0] == GopetManager.GIFT_ITEM) return g[1];
+            if (g[0] == GopetManager.GIFT_ITEM) return new Item(g[1]).getTemp().getIconPath();
         }
-        return 0;
+        foreach (int[] g in gift)
+        {
+            switch (g[0])
+            {
+                case GopetManager.GIFT_ENERGY: return "gameMisc/tiemnang.png";
+                case GopetManager.GIFT_COIN: return "gameMisc/quanlyngoc0.png";
+                case GopetManager.GIFT_GOLD: return "gameMisc/quanlyngoc0.png";
+            }
+        }
+        return "";
     }
 
     public bool TryUseCardSkill(int skillId, int indexSlot, out Pet myPet)

@@ -54,6 +54,59 @@ namespace Gopet.Net.Tests
         }
 
         [Fact]
+        public void Retry_KhiTimeout_GuiLaiVaChiFireTimedOutSauKhiHetSoLan()
+        {
+            // MaxRetries=2 → tổng 3 lần gửi. Sau 3 lần đều im, TimedOut mới fire 1 lần.
+            var handler = new ImageHandler(_sent.Add, () => _now)
+            {
+                MaxInFlight = 4, TimeoutMs = 1000, MaxRetries = 2,
+            };
+            var timedOut = 0;
+            handler.TimedOut += _ => timedOut++;
+
+            handler.Request("a.png", 2, _ => { });
+            Assert.Equal(1, _sent.Count);           // gửi lần 1
+
+            _now = 1500;
+            handler.Tick();                          // hết hạn lần 1 → retry
+            Assert.Equal(2, _sent.Count);
+            Assert.Equal(0, timedOut);
+
+            _now = 3000;
+            handler.Tick();                          // hết hạn lần 2 → retry
+            Assert.Equal(3, _sent.Count);
+            Assert.Equal(0, timedOut);
+
+            _now = 4500;
+            handler.Tick();                          // hết hạn lần 3 → BỎ CUỘC
+            Assert.Equal(3, _sent.Count);
+            Assert.Equal(1, timedOut);
+            Assert.Equal(0, handler.InFlightCount);
+        }
+
+        [Fact]
+        public void Retry_ResponseVeGiuaChung_HuyRetryVaNotifyWaiter()
+        {
+            var handler = new ImageHandler(_sent.Add, () => _now)
+            {
+                TimeoutMs = 1000, MaxRetries = 2,
+            };
+            var router = new MessageRouter();
+            handler.RegisterOn(router);
+
+            var delivered = 0;
+            handler.Request("a.png", 2, _ => delivered++);
+
+            _now = 1500;
+            handler.Tick();                          // retry lần 1
+            Assert.Equal(2, _sent.Count);
+
+            router.Dispatch(Response("a.png"));      // gói lần retry về
+            Assert.Equal(1, delivered);
+            Assert.Equal(0, handler.InFlightCount);
+        }
+
+        [Fact]
         public void SoGoiDangBay_KhongBaoGioAm()
         {
             var handler = new ImageHandler(_sent.Add, () => _now) { TimeoutMs = 1000 };

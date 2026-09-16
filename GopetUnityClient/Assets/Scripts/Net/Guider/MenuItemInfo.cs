@@ -50,19 +50,21 @@ namespace Gopet.Net.Guider
 
         public static MenuItemInfo Parse(JavaBinaryReader reader)
         {
+            // Substitute (sao)/(saoden) tags → ★/☆ ở lớp parse để mọi consumer
+            // (dialog xác nhận, menu row, popup pet) đều nhận text sạch. DRY.
             var item = new MenuItemInfo
             {
                 ItemId = reader.ReadInt(),
                 ImagePath = reader.ReadUtf(),
-                Title = reader.ReadUtf(),
-                Description = reader.ReadUtf(),
+                Title = GameTextTags.Substitute(reader.ReadUtf()),
+                Description = GameTextTags.Substitute(reader.ReadUtf()),
                 CanSelect = reader.ReadSByte() == 1,
                 ShowDialog = reader.ReadBool()
             };
 
             if (item.ShowDialog)
             {
-                item.DialogText = reader.ReadUtf();
+                item.DialogText = GameTextTags.Substitute(reader.ReadUtf());
                 item.LeftCommandText = reader.ReadUtf();
                 item.RightCommandText = reader.ReadUtf();
             }

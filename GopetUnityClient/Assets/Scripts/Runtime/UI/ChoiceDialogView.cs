@@ -124,13 +124,15 @@ namespace Gopet.Runtime.UI
 
         private void BuildCloseButton()
         {
+            // Style khớp ShopPopupView.BuildCloseButton: chờm ra ngoài góc trên-phải,
+            // pivot ở TÂM để nút nằm nửa trong nửa ngoài rìa popup.
             var go = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(_panel, false);
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-8f, -8f);
-            rect.sizeDelta = new Vector2(32f, 32f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(4f, 4f);
+            rect.sizeDelta = new Vector2(34f, 34f);
 
             var image = go.GetComponent<Image>();
             var sprite = HudSkin.Get(HudSkin.Close);

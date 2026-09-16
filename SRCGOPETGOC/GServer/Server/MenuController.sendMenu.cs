@@ -497,9 +497,11 @@ public partial class MenuController
             case MENU_DELETE_TIEM_NANG:
                 {
                     JArrayList<MenuItemInfo> menuItemInfos = new();
+                    // Icon "tiềm năng" (gameMisc/tiemnang.png) khớp chủ đề tẩy tiềm năng —
+                    // trước để "" khiến client hiện ô xám trống.
                     foreach (String option in player.controller.gym_options)
                     {
-                        MenuItemInfo menuItemInfo = new MenuItemInfo(Utilities.Format(player.Language.Remove + " %s", option), string.Format(player.Language.DeleteTiemNangTitle, option, PriceDeleteTiemNang), "", true);
+                        MenuItemInfo menuItemInfo = new MenuItemInfo(Utilities.Format(player.Language.Remove + " %s", option), string.Format(player.Language.DeleteTiemNangTitle, option, PriceDeleteTiemNang), "gameMisc/tiemnang.png", true);
                         menuItemInfo.setShowDialog(true);
                         menuItemInfo.setDialogText(string.Format(player.Language.DoYouWantSelectItem, Utilities.Format(player.Language.Remove + " %s", option)));
                         menuItemInfo.setLeftCmdText(CMD_CENTER_OK);

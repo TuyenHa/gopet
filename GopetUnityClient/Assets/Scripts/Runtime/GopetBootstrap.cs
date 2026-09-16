@@ -115,7 +115,6 @@ namespace Gopet.Runtime
             var hud = ShopServiceEventHud.Create(canvas.transform, font);
             hud.gameObject.SetActive(false);
             hud.ShopClicked += () => _ui.OpenShopPopup();
-            hud.GuildClicked += () => _session?.OpenGuildPopup();
             hud.ServiceClicked += () => _ui.OpenAtmPopup(() => _client.Send(BankPackets.OpenBankMenu()));
             hud.EventClicked += () => _ui.OpenDailyCheckin();
 

@@ -3,6 +3,7 @@ using Gopet.Net.Chat;
 using Gopet.Net.Map;
 using Gopet.Runtime.Assets;
 using Gopet.UiLogic;
+using Gopet.Runtime.UI;
 using UnityEngine;
 
 namespace Gopet.Runtime.World
@@ -53,6 +54,9 @@ namespace Gopet.Runtime.World
         /// <summary>Self spawn ở đúng vị trí server (opcode 29).</summary>
         public event System.Action<PlayerEnterMap> SelfSpawned;
         public event System.Action<JarMapEntity> PortalSelected;
+
+        /// <summary>Màn chuyển map — dựng khi chọn cổng, gỡ khi map mới nạp xong.</summary>
+        private MapLoadingOverlay _loading;
         public event System.Action<JarMapEntity> BuildingSelected;
         /// <summary>Bấm avatar player (kể cả self). GameSession quyết định mở menu gì.</summary>
         public event System.Action<PlayerAvatar> AvatarTapped;
@@ -93,6 +97,7 @@ namespace Gopet.Runtime.World
             _map.BuildingSelected += OnBuildingSelected;
             _mapId = mapId;
             Debug.Log($"[Gopet] Map {mapId} nạp xong: {_map.Map.WidthTiles}×{_map.Map.HeightTiles} ô");
+            HideLoading();
             MapLoaded?.Invoke();
         }
 
@@ -156,8 +161,22 @@ namespace Gopet.Runtime.World
             }
         }
 
-        private void OnPortalSelected(JarMapEntity entity) => PortalSelected?.Invoke(entity);
+        private void OnPortalSelected(JarMapEntity entity)
+        {
+            // Che màn NGAY khi chọn cổng, không đợi server trả lời: quãng chờ round-trip mới
+            // là lúc cần che, map mới dựng xong thì chỉ mất một frame.
+            if (_loading == null) _loading = MapLoadingOverlay.Create(transform.parent);
+            PortalSelected?.Invoke(entity);
+        }
         private void OnBuildingSelected(JarMapEntity entity) => BuildingSelected?.Invoke(entity);
+
+        private void HideLoading()
+        {
+            if (_loading == null) return;
+            // KHÔNG huỷ thẳng: màn tự gỡ sau khi đã hiện đủ lâu — xem MinVisibleSeconds.
+            _loading.RequestClose();
+            _loading = null;
+        }
 
         private void OnMapUpdated(MapUpdate evt)
         {

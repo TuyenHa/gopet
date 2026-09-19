@@ -1,19 +1,48 @@
-using System.Collections.Generic;
+using Gopet.Runtime.UI;
 using UnityEngine;
 
 namespace Gopet.Runtime.World
 {
     /// <summary>
-    /// Nhãn tên vẽ bằng bitmap font jar (<see cref="JarFont"/>). Glyph xếp trái→phải, canh giữa.
-    /// Theo bản jar: chữ TRẮNG + viền ĐEN 1px (4 hướng). Dùng chung cho người chơi lẫn NPC/quái.
+    /// Nhãn tên trong world-space: chữ TRẮNG in đậm, canh giữa theo trục X, đáy chữ nằm đúng
+    /// gốc toạ độ. Dùng chung cho người chơi, pet, NPC/quái, cổng map, nhà, bang hội.
+    ///
+    /// <para><b>Dùng font TTF của HUD</b> (<see cref="UiBuilder.BuiltinFont"/>) thay cho bitmap
+    /// font jar. Bảng glyph của jar (<see cref="JarFont"/>) thiếu phần lớn CHỮ HOA có dấu — nó
+    /// chỉ có <c>Đ Ă Á Â</c> — nên tên nào chứa chữ hoa có dấu khác đều rơi về ô trắng.</para>
+    ///
+    /// <para><c>TextMesh</c> chứ không phải canvas world-space: mỗi canvas là một batch riêng,
+    /// mà map đông NPC thì số nhãn lên tới hàng chục.</para>
     /// </summary>
     public sealed class JarNameLabel : MonoBehaviour
     {
-        private static readonly Vector2[] OutlineOffsets =
-            { new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f) };
+        /// <summary>Chiều cao chữ, world unit — CHỈNH Ở ĐÂY là đổi cỡ mọi nhãn tên: người chơi,
+        /// pet, NPC/quái, cổng map, nhà, bang hội.
+        ///
+        /// <para>Không còn buộc vào chiều cao glyph bitmap jar (13) nữa. Mọi bố cục quanh nhãn
+        /// (nút "Vào" của cổng) đọc thẳng hằng này nên tự giãn theo.</para></summary>
+        public const float Height = 22f;
 
-        private readonly List<SpriteRenderer> _fill = new List<SpriteRenderer>();
-        private readonly List<SpriteRenderer> _outline = new List<SpriteRenderer>();
+        /// <summary>Bề rộng TRUNG BÌNH một ký tự, world unit. Chỉ để ƯỚC LƯỢNG hộp bao —
+        /// bề rộng thật của chữ TTF không đọc được trước khi mesh dựng xong, mà hộp chạm thì
+        /// chỉ cần xấp xỉ. Tỉ lệ 0.51 lấy từ bề rộng trung bình của bảng glyph jar cũ
+        /// (6.6 trên chiều cao 13); nhân theo <see cref="Height"/> để chỉnh cỡ chữ là hộp
+        /// chạm giãn theo, không phải sửa hai chỗ.</summary>
+        private const float AvgCharWidth = Height * 0.51f;
+
+        /// <summary><c>fontSize</c> chỉ đổi độ nét atlas, <c>characterSize</c> mới quyết định cỡ
+        /// chữ thật trong world-space. Mốc quy đổi lấy từ <c>ChatBubble</c>/<c>NpcTalkPrompt</c>:
+        /// characterSize 2 ≈ 18 unit, 1.3 ≈ 12 ⇒ cao ≈ characterSize × 9.</summary>
+        private const int FontSize = 32;
+
+        private const float UnitsPerCharSize = 9f;
+
+        private TextMesh _mesh;
+        private MeshRenderer _renderer;
+
+        /// <summary>Bề rộng ước lượng của nhãn, world unit — xem <see cref="AvgCharWidth"/>.</summary>
+        public static float EstimateWidth(string text) =>
+            string.IsNullOrEmpty(text) ? 0f : text.Length * AvgCharWidth;
 
         public static JarNameLabel Create(Transform parent, Vector3 localPos, float scale, string text)
         {
@@ -22,52 +51,41 @@ namespace Gopet.Runtime.World
             go.transform.localPosition = localPos;
             go.transform.localScale = Vector3.one * scale;
             var label = go.AddComponent<JarNameLabel>();
+            label.Build();
             label.SetText(text);
             return label;
         }
 
         public void SetText(string text)
         {
-            Clear();
-            if (string.IsNullOrEmpty(text)) return;
-
-            var x = -JarFont.Width(text) * 0.5f; // canh giữa: bắt đầu ở nửa bề rộng bên trái
-            foreach (var c in text)
-            {
-                var sprite = JarFont.Glyph(c);
-                if (sprite != null)
-                {
-                    foreach (var off in OutlineOffsets) // viền đen trước (nằm dưới)
-                        _outline.Add(AddGlyph(sprite, x + off.x, off.y, Color.black));
-                    _fill.Add(AddGlyph(sprite, x, 0f, Color.white)); // chữ trắng đè lên
-                }
-                x += JarFont.Width(c);
-            }
-        }
-
-        private SpriteRenderer AddGlyph(Sprite sprite, float x, float y, Color color)
-        {
-            var child = new GameObject("g", typeof(SpriteRenderer));
-            child.transform.SetParent(transform, false);
-            child.transform.localPosition = new Vector3(x, y, 0f);
-            var renderer = child.GetComponent<SpriteRenderer>();
-            renderer.sprite = sprite;
-            renderer.color = color;
-            return renderer;
+            if (_mesh != null) _mesh.text = text ?? string.Empty;
         }
 
         public void SetSortingOrder(int order)
         {
-            foreach (var r in _outline) if (r != null) r.sortingOrder = order;      // viền dưới
-            foreach (var r in _fill) if (r != null) r.sortingOrder = order + 1;     // chữ trắng trên
+            if (_renderer != null) _renderer.sortingOrder = order;
         }
 
-        private void Clear()
+        private void Build()
         {
-            foreach (var r in _outline) if (r != null) Destroy(r.gameObject);
-            foreach (var r in _fill) if (r != null) Destroy(r.gameObject);
-            _outline.Clear();
-            _fill.Clear();
+            var go = new GameObject("t", typeof(TextMesh));
+            go.transform.SetParent(transform, false);
+
+            _mesh = go.GetComponent<TextMesh>();
+            _mesh.font = UiBuilder.BuiltinFont();
+            _mesh.fontSize = FontSize;
+            _mesh.characterSize = Height / UnitsPerCharSize;
+            // In ĐẬM thay cho viền đen: nét dày tự nó đã tách chữ khỏi nền, mà chỉ tốn một
+            // mesh thay vì năm (bản trước vẽ thêm 4 bản đen lệch 4 hướng làm viền).
+            _mesh.fontStyle = FontStyle.Bold;
+            // Đáy chữ ở gốc toạ độ, canh giữa ngang — đúng như glyph bitmap cũ (pivot đáy-trái,
+            // vẽ từ -Width/2). Đổi sang MiddleCenter sẽ đẩy mọi nhãn tụt xuống nửa dòng.
+            _mesh.anchor = TextAnchor.LowerCenter;
+            _mesh.alignment = TextAlignment.Center;
+            _mesh.color = Color.white;
+
+            _renderer = go.GetComponent<MeshRenderer>();
+            _renderer.sharedMaterial = _mesh.font.material;
         }
     }
 }

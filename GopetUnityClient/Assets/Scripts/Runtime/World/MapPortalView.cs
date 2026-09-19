@@ -5,11 +5,23 @@ using UnityEngine.EventSystems;
 
 namespace Gopet.Runtime.World
 {
-    /// <summary>Cổng có tên trong đuôi map; bấm để gửi opcode 25.</summary>
+    /// <summary>Cổng có tên trong đuôi map. Đi vào chỗ mũi tên là TỰ sang map; bấm vào mũi
+    /// tên hoặc chữ cũng được, cả hai đều gửi opcode 25.
+    ///
+    /// <para>Trước đây phải bấm nút "Vào" hiện lên khi đứng gần. Bỏ nút vì thao tác thừa:
+    /// người chơi đã đi tới tận nơi rồi thì ý định đã rõ.</para></summary>
     public sealed class MapPortalView : MonoBehaviour, IPointerClickHandler
     {
-        // Khớp NameScale của PlayerAvatar — cùng cỡ chữ với tên nhân vật/NPC.
-        private const float LabelScale = 0.75f;
+        /// <summary>Nhỏ hơn tên nhân vật/NPC có chủ ý. Nhãn càng rộng thì phép kẹp biên
+        /// (<see cref="ClampLocalXToMapWidth"/>) càng đẩy nó xa mũi tên: cổng "Đường lên núi"
+        /// map 11 có mũi tên cách mép trái 11px, chữ rộng 109px bị đẩy lệch 48px. Thu nhỏ là
+        /// cách trực tiếp nhất kéo tên về gần mũi tên.</summary>
+        private const float LabelScale = 0.62f;
+
+        /// <summary>Nhãn không được lệch khỏi mũi tên quá ngần này. Phép kẹp biên map một mình
+        /// có thể đẩy nhãn đi rất xa (cổng sát mép map), làm tên trông như của nơi khác. Ưu tiên
+        /// BÁM mũi tên: quá ngưỡng thì chấp nhận vài pixel chữ bị mép map cắt.</summary>
+        private const float MaxArrowOffset = 26f;
 
         /// <summary>
         /// Khoảng dịch chữ LÊN trên tâm arrow (px). Nhãn căn giữa arrow theo cả X và Y
@@ -43,22 +55,12 @@ namespace Gopet.Runtime.World
         /// bị clamp theo map nên phần chữ tràn ra ngoài bị viewport cắt mất, không thấy
         /// full "Đường lên núi". Kẹp lại để cả chữ luôn nằm trong map.
         /// </summary>
-        private const float LabelEdgeMargin = 4f;
+        private const float LabelEdgeMargin = 2f;
 
-        /// <summary>
-        /// Khoảng cách (px) từ CẠNH GẦN NHẤT của hộp nhãn tên map — không phải tâm — mà
-        /// player phải đứng trong để nút "Vào" hiện lên. ~1 ô (TileSize=24).
-        ///
-        /// <para><b>Vì sao đo tới HỘP CHỮ, không tới tâm chữ:</b> chữ tên map dài (vd
-        /// "Đường lên núi" ~60 px), nếu đo tới tâm thì đứng trên/dưới chữ thấy gần hơn
-        /// hẳn 2 đầu chữ trái/phải — cảm nhận không đều. Đo tới cạnh gần nhất → bán kính
-        /// 25px đều nhau ở CẢ 4 PHÍA (trên, dưới, trái, phải hộp chữ), người chơi đi từ
-        /// bất kỳ hướng nào cũng thấy nút hiện lên ở cùng khoảng cách.</para>
-        /// </summary>
-        private const float EnterRadius = 25f;
-
-        /// <summary>Khoảng cách (px) từ nhãn lên nút "Vào", để 2 thứ không đè nhau.</summary>
-        private const float ButtonAboveLabel = 6f;
+        /// <summary>Nới thêm quanh vùng chạm để tính "đã rời đi". Phải rời hẳn ra rồi mới
+        /// được kích hoạt lần nữa: không có nó thì vừa sang map mới, nếu điểm hồi sinh nằm
+        /// trong vùng cổng về, người chơi bị đẩy ngược lại ngay lập tức.</summary>
+        private const float RearmPadding = 10f;
 
         /// <summary>
         /// Tâm arrow trong tọa độ LOCAL (Unity Y-up, gốc = portal position). Fallback khi
@@ -103,10 +105,12 @@ namespace Gopet.Runtime.World
         private static float ClampLocalXToMapWidth(JarMapEntity entity, JarMapLayout map, float localX)
         {
             if (map == null) return localX;
-            var halfTextWidth = JarFont.Width(entity.Name) * 0.5f * LabelScale;
+            var halfTextWidth = JarNameLabel.EstimateWidth(entity.Name) * 0.5f * LabelScale;
             var min = LabelEdgeMargin + halfTextWidth - entity.X;
             var max = map.WidthPixels - LabelEdgeMargin - halfTextWidth - entity.X;
-            return max < min ? (min + max) * 0.5f : Mathf.Clamp(localX, min, max);
+            var clamped = max < min ? (min + max) * 0.5f : Mathf.Clamp(localX, min, max);
+            // Kẹp lần hai theo mũi tên: thà chữ bị mép cắt vài pixel còn hơn tên trôi đi xa.
+            return Mathf.Clamp(clamped, localX - MaxArrowOffset, localX + MaxArrowOffset);
         }
 
         private static JarMapObject FindArrow(JarMapEntity entity, JarMapLayout map)
@@ -129,14 +133,15 @@ namespace Gopet.Runtime.World
         }
 
         private JarMapEntity _entity;
-        private PortalEnterButton _enterButton;
         private Transform _selfTransform;
-        /// <summary>
-        /// Hộp bao nhãn tên map trong world coords — mốc để đo <see cref="EnterRadius"/>
-        /// tới CẠNH GẦN NHẤT. Set một lần trong <see cref="Create"/>; nhãn không di chuyển.
-        /// </summary>
-        private Vector2 _labelWorldMin;
-        private Vector2 _labelWorldMax;
+
+        /// <summary>Vùng chạm của cổng trong world coords — bước vào là sang map.</summary>
+        private Vector2 _zoneMin, _zoneMax;
+
+        /// <summary>Đã rời xa cổng lần nào chưa. Xem <see cref="RearmRadius"/>.</summary>
+        private bool _armed;
+
+        private bool _entered;
         public event Action<JarMapEntity> Selected;
 
         /// <summary>MapRenderer gọi khi self spawn/đổi map, để portal tự theo dõi khoảng cách.</summary>
@@ -144,13 +149,23 @@ namespace Gopet.Runtime.World
 
         private void Update()
         {
-            if (_enterButton == null || _selfTransform == null) return;
+            if (_entered || _selfTransform == null) return;
             Vector2 p = _selfTransform.position;
-            // Khoảng cách² từ p tới hộp [min, max]: mỗi trục kẹp về khoảng, rồi lấy hiệu.
-            // Nếu p nằm trong hộp trên trục nào thì hiệu = 0 trên trục đó.
-            var dx = Mathf.Max(0f, Mathf.Max(_labelWorldMin.x - p.x, p.x - _labelWorldMax.x));
-            var dy = Mathf.Max(0f, Mathf.Max(_labelWorldMin.y - p.y, p.y - _labelWorldMax.y));
-            _enterButton.SetVisible(dx * dx + dy * dy <= EnterRadius * EnterRadius);
+            var inside = p.x >= _zoneMin.x && p.x <= _zoneMax.x
+                         && p.y >= _zoneMin.y && p.y <= _zoneMax.y;
+
+            if (!_armed)
+            {
+                _armed = p.x < _zoneMin.x - RearmPadding || p.x > _zoneMax.x + RearmPadding
+                         || p.y < _zoneMin.y - RearmPadding || p.y > _zoneMax.y + RearmPadding;
+                return;
+            }
+
+            if (!inside) return;
+            // Chốt một lần: Selected dẫn tới đổi map, mà cho tới lúc map mới dựng xong thì
+            // Update vẫn chạy — không chốt thì bắn hàng loạt gói chuyển map.
+            _entered = true;
+            Selected?.Invoke(_entity);
         }
 
         public static MapPortalView Create(Transform parent, JarMapEntity entity, JarMapLayout map, int mapHeight)
@@ -173,22 +188,28 @@ namespace Gopet.Runtime.World
             // với portal position (map 11 đo được: dx 4-34, dy 3-17). Nhãn cần dịch CẢ
             // 2 TRỤC để căn giữa arrow, không chỉ Y. Xem <see cref="LabelLocalOffset"/>.
             var (labelX, labelY) = LabelLocalOffset(entity, map);
+            var (ax, ay) = ArrowLocalOffset(entity, map);
 
             // Bấm vào CHỮ tên map (không chỉ mũi tên) cũng phải sang map được — gộp
             // vùng bấm arrow + vùng bấm nhãn thành 1 collider bao trọn cả hai.
-            var halfTextWidth = JarFont.Width(entity.Name) * 0.5f * LabelScale;
-            var labelH = JarFont.Height * LabelScale;
+            var halfTextWidth = JarNameLabel.EstimateWidth(entity.Name) * 0.5f * LabelScale;
+            var labelH = JarNameLabel.Height * LabelScale;
             var xMin = Mathf.Min(-w * 0.5f, labelX - halfTextWidth);
             var xMax = Mathf.Max(w * 0.5f, labelX + halfTextWidth);
             var yMin = Mathf.Min(0f, labelY);
             var yMax = Mathf.Max(h, labelY + labelH);
 
-            // Cache HỘP NHÃN world coords để Update() đo tới cạnh gần nhất (xem
-            // <see cref="EnterRadius"/>). Nhãn canh giữa quanh (labelX, labelY):
-            //   local X ∈ [labelX - halfW, labelX + halfW], local Y ∈ [labelY, labelY + H]
-            // TransformPoint để cộng đúng cả tịnh tiến của parent (MapRenderer).
-            view._labelWorldMin = go.transform.TransformPoint(labelX - halfTextWidth, labelY, 0f);
-            view._labelWorldMax = go.transform.TransformPoint(labelX + halfTextWidth, labelY + labelH, 0f);
+            // Vùng chạm lấy THẲNG từ dữ liệu map, không tự chế: jar dựng nó bằng
+            // `new gy(raw[1], raw[2], raw[3], raw[4])` — offset + kích thước neo vào cổng.
+            // Trước đây tôi dùng bán kính quanh mũi tên DÒ ĐƯỢC; vùng đó nhỏ và lệch so với
+            // vùng thật (cổng "Đường lên núi" thật là 32×50) nên đi từ dưới lên là lọt ra ngoài.
+            // Jar Y hướng XUỐNG còn Unity hướng LÊN nên trục Y đảo dấu.
+            var zx = raw != null && raw.Length > 1 ? (sbyte)raw[1] : -w * 0.5f;
+            var zy = raw != null && raw.Length > 2 ? (sbyte)raw[2] : 0f;
+            var zoneA = go.transform.TransformPoint(zx, -zy - h, 0f);
+            var zoneB = go.transform.TransformPoint(zx + w, -zy, 0f);
+            view._zoneMin = Vector2.Min(zoneA, zoneB);
+            view._zoneMax = Vector2.Max(zoneA, zoneB);
 
             var collider = go.GetComponent<BoxCollider2D>();
             collider.size = new Vector2(xMax - xMin, yMax - yMin);
@@ -198,30 +219,7 @@ namespace Gopet.Runtime.World
                 LabelScale, entity.Name);
             label.SetSortingOrder(29000);
 
-            // Nút "Vào" — ẩn mặc định, MapPortalView.Update() bật lên khi self đứng gần
-            // (xem EnterRadius). Bấm nút phát CÙNG sự kiện Selected với bấm mũi tên/nhãn.
-            // Sprite pivot ở TÂM: đặt y = top-of-label + gap + halfHeight để đáy nút cách
-            // đỉnh chữ đúng ButtonAboveLabel. Kẹp x theo bề rộng nút để không tràn biên map.
-            var (buttonWidth, buttonHeight) = PortalEnterButton.DisplaySize(PortalEnterButton.LoadSprite());
-            var buttonY = labelY + JarFont.Height * LabelScale + ButtonAboveLabel + buttonHeight * 0.5f;
-            var buttonX = ClampButtonLocalX(entity, map, labelX, buttonWidth);
-            view._enterButton = PortalEnterButton.Create(go.transform, new Vector3(buttonX, buttonY, 0f),
-                () => view.Selected?.Invoke(entity));
             return view;
-        }
-
-        /// <summary>
-        /// Kẹp X của nút "Vào" để toàn bộ nút (rộng <paramref name="buttonWidth"/>) nằm
-        /// trong [<see cref="LabelEdgeMargin"/>, map.WidthPixels - <see cref="LabelEdgeMargin"/>].
-        /// Nút rộng hơn chữ tên nên có thể tràn biên ngay cả khi chữ đã được kẹp.
-        /// </summary>
-        private static float ClampButtonLocalX(JarMapEntity entity, JarMapLayout map, float defaultX, float buttonWidth)
-        {
-            if (map == null) return defaultX;
-            var half = buttonWidth * 0.5f;
-            var min = LabelEdgeMargin + half - entity.X;
-            var max = map.WidthPixels - LabelEdgeMargin - half - entity.X;
-            return max < min ? (min + max) * 0.5f : Mathf.Clamp(defaultX, min, max);
         }
 
         public void OnPointerClick(PointerEventData eventData) => Selected?.Invoke(_entity);

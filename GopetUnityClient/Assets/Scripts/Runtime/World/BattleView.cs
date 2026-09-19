@@ -118,7 +118,8 @@ namespace Gopet.Runtime.World
         {
             // `_result != null` phải có: server gửi gói kết quả TRƯỚC sendMyPetInfo()
             // (PetBattle.cs:959-967), bỏ qua nó thì snapshot đến sau bật lại nút của trận đã đóng.
-            var canAct = _result == null && _turn.CanAct && (_animator == null || _animator.Idle);
+            var canAct = _result == null && !InOpening && _turn.CanAct
+                         && (_animator == null || _animator.Idle);
             _actionBar?.SetActionsInteractable(canAct);
             _skillPopup?.RefreshState(_left.Mp, !canAct);
             // Nút tròn luôn bấm được để xem kỹ năng; từng dòng mới khoá theo lượt.
@@ -131,6 +132,7 @@ namespace Gopet.Runtime.World
             // Update() vẫn chạy mỗi frame và sẽ NRE vĩnh viễn ở _turn, kéo theo Ticked
             // chết nên BattleCoordinator.CheckStalled không bao giờ đóng được overlay.
             _turn = new BattleTurnState(_start.LocalPet.ActorId, _start.LocalStarts);
+            BeginOpening();
 
             var bg = new GameObject("Nền", typeof(RectTransform), typeof(Image));
             bg.transform.SetParent(transform, false);
@@ -178,6 +180,7 @@ namespace Gopet.Runtime.World
             }
             // Áp snapshot HP/MP ở frame SAU khi nhận, và chỉ khi hàng đợi đã cạn — xem
             // SyncLocalVitals để biết vì sao không áp ngay.
+            if (TickOpening()) RefreshLocks();
             if (_pendingVitals != null && (_animator == null || _animator.Idle)) ApplyPendingVitals();
             if (_result != null && Time.unscaledTime - _resultShownAt >= ResultAutoCloseSeconds)
             {

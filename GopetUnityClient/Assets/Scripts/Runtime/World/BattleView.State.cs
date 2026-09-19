@@ -9,6 +9,29 @@ namespace Gopet.Runtime.World
     /// Tách khỏi phần dựng UI để giữ mỗi file dưới ngưỡng 200 dòng.</summary>
     public sealed partial class BattleView
     {
+        /// <summary>Nhịp mở trận: khoá mọi nút chừng này giây sau khi màn đấu dựng xong, để
+        /// ảnh pet kịp tải và người chơi kịp nhìn thấy đối thủ trước khi đòn đầu nổ.
+        ///
+        /// <para>PHẢI khớp <c>PetBattle.OpeningDelayMs</c> bên server (1500ms). Server mới là
+        /// bên thật sự chặn; khoá ở client chỉ để nút không bấm được trong lúc chờ, tránh bấm
+        /// rồi tưởng treo.</para></summary>
+        private const float OpeningSeconds = 1.5f;
+
+        private float _openUntil;
+        private bool _openingDone;
+
+        private bool InOpening => !_openingDone;
+
+        private void BeginOpening() => _openUntil = Time.unscaledTime + OpeningSeconds;
+
+        /// <returns>true đúng MỘT lần, ở frame nhịp mở trận vừa hết — để người gọi mở khoá nút.</returns>
+        private bool TickOpening()
+        {
+            if (_openingDone || Time.unscaledTime < _openUntil) return false;
+            _openingDone = true;
+            return true;
+        }
+
         private void OnBuff(BattleBuffState state)
         {
             if (state == null || state.BattleId != BattleId) return;

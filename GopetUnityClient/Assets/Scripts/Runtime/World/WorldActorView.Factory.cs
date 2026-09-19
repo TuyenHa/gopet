@@ -21,7 +21,10 @@ namespace Gopet.Runtime.World
             // lật hướng (đó là type 2/3), chỉ NHÚN dọc tại chỗ mỗi 400ms (jar toggle `j`
             // tách sprite ép dọc). Ở đây ép scale.y quanh gốc chân (pivot 0.5,0) nên chân
             // bám đất y như jar.
-            var view = Create(parent, $"NPC {npc.Id} {npc.Name}", npc.ImagePath, npc.Name,
+            // Tên NPC trong DB là HOA TOÀN BỘ vì font bitmap jar thiếu chữ hoa có dấu —
+            // xem NpcDisplayNames. Tên object giữ nguyên bản gốc cho dễ tra trong Hierarchy.
+            var view = Create(parent, $"NPC {npc.Id} {npc.Name}", npc.ImagePath,
+                NpcDisplayNames.Prettify(npc.Name),
                 npc.X, npc.Y, mapHeight, npc.FrameCount, assets, () => clicked?.Invoke(npc.Id), npc.Bounds);
             view.EnableIdleBob();
             var hint = NpcPurposeHints.Get(npc);

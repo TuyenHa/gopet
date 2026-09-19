@@ -228,6 +228,49 @@ namespace Gopet.Net.Tests
             Assert.Equal(GopetCmd.PET_BATTLE_SURRENDER, r.ReadSByte());
         }
 
+        [Fact]
+        public void MobBattle_DocDuPetHoc30KyNang()
+        {
+            var (handler, router) = NewHandler(77);
+            BattleStart received = null;
+            handler.BattleStarted += value => received = value;
+            using var packet = Message.Create(GopetCmd.ATTACK_MOB)
+                .PutInt(2500).PutInt(15000).PutInt(77);
+            WriteOwnedManySkills(packet, 30);
+            packet.PutInt(9001);
+            WritePassive(packet, 22, "pets/mob.png", "Sói", 350, 1, 400, 1, false);
+            Dispatch(router, packet);
+
+            Assert.Equal(30, received.LocalPet.Skills.Length);
+            Assert.Equal(130, received.LocalPet.Skills[29].Id);
+        }
+
+        [Fact]
+        public void MobBattle_QuaTranKyNangThiNem()
+        {
+            var (_, router) = NewHandler(77);
+            using var packet = Message.Create(GopetCmd.ATTACK_MOB)
+                .PutInt(2500).PutInt(15000).PutInt(77);
+            WriteOwnedManySkills(packet, 65);
+            // Gói vẫn ĐỦ phần quái: nếu cắt ngắn ở đây thì reader hết dữ liệu cũng ném
+            // ProtocolException, test sẽ xanh cả khi trần bị nới hoặc gỡ hẳn.
+            packet.PutInt(9001);
+            WritePassive(packet, 22, "pets/mob.png", "Sói", 350, 1, 400, 1, false);
+
+            var ex = Assert.Throws<ProtocolException>(() => Dispatch(router, packet));
+            Assert.Contains("kỹ năng", ex.Message);
+        }
+
+        /// <summary>Pet của ta với <paramref name="count"/> kỹ năng, id đánh số từ 101.</summary>
+        private static void WriteOwnedManySkills(Message m, int count)
+        {
+            m.PutInt(11).PutUtf("pets/me.png").PutSByte(4).PutShort(-2).PutUtf("Mèo").PutInt(3);
+            for (var i = 0; i < 5; i++) m.PutInt(i + 1);
+            m.PutInt(420).PutInt(9000).PutInt(500).PutInt(9000).PutSByte((sbyte)count);
+            for (var i = 0; i < count; i++)
+                m.PutInt(101 + i).PutUtf($"Kỹ năng {i}").PutUtf("Mô tả").PutInt(10 + i);
+        }
+
         private static void WriteOwned(Message m, int template, string image, string name,
             int hp, int mp, int maxHp, int maxMp)
         {

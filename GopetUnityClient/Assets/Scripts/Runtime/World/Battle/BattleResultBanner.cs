@@ -9,18 +9,23 @@ namespace Gopet.Runtime.World.Battle
     /// thay cho popup có nút "Tiếp tục" trước đây. Phần thưởng không nằm ở đây nữa —
     /// nó bay thành số trên đầu pet, giống jar gốc (<c>e.java:57-63</c>).
     ///
-    /// <para>Ảnh sinh bằng <c>tools/image-gen</c>, đã cắt sát nội dung nên
-    /// <c>preserveAspect</c> là đủ để không méo chữ.</para></summary>
+    /// <para><b>Vẽ bằng CHỮ</b>, cùng font với HUD (<see cref="UiBuilder.BuiltinFont"/>), chứ
+    /// không phải ảnh dựng sẵn nữa. Ảnh sinh bằng AI hay sai dấu tiếng Việt — bản cũ từng ra
+    /// "CHIẾN THẤNG" vì model vẽ dấu mũ thay cho dấu breve.</para></summary>
     public static class BattleResultBanner
     {
         /// <summary>0 = nằm ngang. Muốn nghiêng lại thì đặt góc: âm là chúi sang phải, dương
         /// là hếch lên phải (Unity quay ngược chiều kim đồng hồ với Z dương).</summary>
         private const float TiltDegrees = 0f;
 
-        private const float WidthRatio = 0.48f;   // bề ngang so với canvas
+        private const float WidthRatio = 0.72f;   // bề ngang khung chữ so với canvas
+
+        /// <summary>Cỡ chữ so với chiều cao canvas. Theo canvas chứ không số pixel cứng:
+        /// canvas co giãn theo màn hình nên số cứng sẽ bé tí ở máy lớn.</summary>
+        private const float FontRatio = 0.115f;
         private const float PopSeconds = 0.35f;   // bật ra lúc xuất hiện
-        private const float HoldSeconds = 2.5f;   // đứng yên, đọc được thoải mái
-        private const float FadeSeconds = 2f;     // mờ dần rồi biến mất
+        private const float HoldSeconds = 1.5f;   // đứng yên, đủ đọc
+        private const float FadeSeconds = 1f;     // mờ dần rồi biến mất
 
         /// <summary>Tổng thời gian băng chữ sống. <see cref="BattleView"/> dùng đúng hằng này
         /// làm mốc tự đóng về map — để hai chỗ không lệch nhau khiến chữ bị cắt giữa chừng
@@ -31,31 +36,30 @@ namespace Gopet.Runtime.World.Battle
             bool isParticipant)
         {
             var won = result.WinnerId == localActorId;
-            var go = new GameObject("Băng kết quả", typeof(RectTransform), typeof(Image));
+            var go = new GameObject("Băng kết quả", typeof(RectTransform));
             go.transform.SetParent(parent, false);
 
-            var image = go.GetComponent<Image>();
-            image.sprite = BattleSkin.Load(won ? "Battle/banner-victory" : "Battle/banner-defeat");
-            image.preserveAspect = true;
-            image.raycastTarget = false;
-
+            var canvasHeight = parent is RectTransform pr && pr.rect.height > 1f ? pr.rect.height : 540f;
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = SizeFor(image.sprite, parent);
+            rect.sizeDelta = SizeFor(parent, canvasHeight);
             rect.localRotation = Quaternion.Euler(0f, 0f, TiltDegrees);
 
-            // Không có ảnh (thiếu asset) thì rơi về chữ thường, đừng để màn hình trống trơn.
-            if (image.sprite == null)
-            {
-                image.color = new Color(0f, 0f, 0f, 0f);
-                var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Nhãn", 40, false);
-                UiBuilder.Stretch(label.rectTransform);
-                label.alignment = TextAnchor.MiddleCenter;
-                label.fontStyle = FontStyle.Bold;
-                label.text = won ? "CHIẾN THẮNG" : isParticipant ? "THUA CUỘC" : "KẾT THÚC";
-                label.color = won ? new Color(1f, 0.82f, 0.2f) : new Color(0.75f, 0.82f, 0.9f);
-            }
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Nhãn",
+                Mathf.RoundToInt(canvasHeight * FontRatio), false);
+            UiBuilder.Stretch(label.rectTransform);
+            label.alignment = TextAnchor.MiddleCenter;
+            label.fontStyle = FontStyle.Bold;
+            label.raycastTarget = false;
+            label.text = won ? "CHIẾN THẮNG" : isParticipant ? "THUA CUỘC" : "KẾT THÚC";
+            label.color = won ? new Color(1f, 0.82f, 0.2f) : new Color(0.75f, 0.82f, 0.9f);
+
+            // Viền TRẮNG quanh chữ để đọc được trên mọi nền map.
+            var outline = label.gameObject.AddComponent<Outline>();
+            outline.effectColor = Color.white;
+            outline.effectDistance = new Vector2(2f, -2f);
+            outline.useGraphicAlpha = true;
 
             var group = go.AddComponent<CanvasGroup>();
             group.blocksRaycasts = false;
@@ -63,12 +67,10 @@ namespace Gopet.Runtime.World.Battle
             return go;
         }
 
-        private static Vector2 SizeFor(Sprite sprite, Transform parent)
+        private static Vector2 SizeFor(Transform parent, float canvasHeight)
         {
             var canvasWidth = parent is RectTransform pr && pr.rect.width > 1f ? pr.rect.width : 960f;
-            var width = canvasWidth * WidthRatio;
-            if (sprite == null || sprite.rect.width <= 0f) return new Vector2(width, width * 0.22f);
-            return new Vector2(width, width * sprite.rect.height / sprite.rect.width);
+            return new Vector2(canvasWidth * WidthRatio, canvasHeight * FontRatio * 1.6f);
         }
 
         /// <summary>Vòng đời băng chữ: bật ra → đứng yên → mờ dần. Dùng thời gian unscaled

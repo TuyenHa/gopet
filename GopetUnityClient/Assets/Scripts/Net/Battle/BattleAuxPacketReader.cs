@@ -7,7 +7,7 @@ namespace Gopet.Net.Battle
     {
         private const int MaxActors = 2;
         private const int MaxBuffEntries = 32;
-        private const int MaxSkills = 16;
+        private const int MaxSkills = 64;
 
         public static BattleBuffState ReadBuffState(JavaBinaryReader r)
         {

@@ -31,6 +31,16 @@ namespace Gopet.Battle
         private long timeCheckplayer = 0;
         private Mutex mutex = new Mutex();
         private DateTime MobAttackTime = DateTime.Now;
+
+        /// <summary>Nhịp mở trận: từ lúc dựng PetBattle tới lúc được phép đánh. Client cần
+        /// chừng đó thời gian để dựng xong màn đấu (ảnh pet tải từ server, hoạt cảnh vào trận);
+        /// đòn đầu nổ khi màn hình còn đang mở dở thì người chơi không kịp thấy gì.
+        ///
+        /// <para>Client khoá nút đúng khoảng này — xem <c>BattleView.OpeningSeconds</c>. Hai
+        /// bên phải khớp nhau, lệch thì hoặc nút mở sớm rồi bấm không ăn, hoặc mở muộn.</para></summary>
+        private const long OpeningDelayMs = 1500L;
+
+        private readonly long openUntil = Utilities.CurrentTimeMillis + OpeningDelayMs;
         private bool IsMobFighted = false;
         private ConcurrentQueue<BattleAction> actions = new ConcurrentQueue<BattleAction>();
         private ushort NumAttackMob = 0;
@@ -661,6 +671,12 @@ namespace Gopet.Battle
             try
             {
                 if (hasWinner())
+                {
+                    return;
+                }
+                // Chưa qua nhịp mở trận thì KHÔNG ai đánh: chặn ở đây là chặn cả đòn quái,
+                // cả việc tự đẩy lượt, lẫn hàng đợi thao tác của người chơi — xem OpeningDelayMs.
+                if (Utilities.CurrentTimeMillis < openUntil)
                 {
                     return;
                 }
@@ -1934,6 +1950,11 @@ namespace Gopet.Battle
             target.session.sendMessage(m);
         }
 
+        /// <summary>Trần số kỹ năng gửi kèm một actor. Phải khớp
+        /// <c>BattleAuxPacketReader.MaxSkills</c> bên Unity, nếu không client sẽ ném
+        /// ProtocolException khi pet học nhiều hơn trần của nó.</summary>
+        private const int MAX_SKILLS_PER_ACTOR = 64;
+
         private static void WriteActorStats(Message m, int actorId, Pet pet)
         {
             m.putInt(actorId);
@@ -1941,7 +1962,7 @@ namespace Gopet.Battle
             m.putInt(pet.getAtk());
             m.putInt(pet.getDef());
             m.putShort((short)Math.Clamp(Utilities.round(pet.CritPercent * 10), 0, 1000));
-            sbyte count = (sbyte)Math.Min(pet.skill.Length, 16);
+            sbyte count = (sbyte)Math.Min(pet.skill.Length, MAX_SKILLS_PER_ACTOR);
             m.putsbyte(count);
             for (int i = 0; i < count; i++)
             {
@@ -1962,7 +1983,7 @@ namespace Gopet.Battle
             m.putInt(mob.getDef());
             m.putShort((short)Math.Clamp(Utilities.round(mob.CritPercent * 10), 0, 1000));
             var skills = mob.Skills;
-            sbyte count = (sbyte)Math.Min(skills.Length, 16);
+            sbyte count = (sbyte)Math.Min(skills.Length, MAX_SKILLS_PER_ACTOR);
             m.putsbyte(count);
             foreach (var ms in skills)
             {

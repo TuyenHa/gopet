@@ -9,3 +9,5 @@ tools/freej2me/
 SRCGOPETGOC/GServer/bin*
 SRCGOPETGOC/GServer/obj*
 .tmp-build-attackboss-star*
+SRCGOPETGOC/GServer/*.log
+

@@ -1,51 +1,68 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Battle;
+using Gopet.Net.Player;
 using Gopet.Runtime.Audio;
 using Gopet.Runtime.Assets;
 using Gopet.Runtime.UI;
+using Gopet.Runtime.World.Battle;
+using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.World
 {
-    /// <summary>Sân đấu phủ lên map giống JAR: map vẫn thấy, điều khiển battle nằm phía dưới.</summary>
     public sealed class BattleView : MonoBehaviour
     {
         private BattleHandler _handler;
         private BattleStart _start;
         private BattlePetCard _left, _right;
-        private Text _timer;
-        private GameObject _actions, _skillMenu, _result;
-        private readonly List<Button> _buttons = new List<Button>();
-        private readonly List<Button> _skillButtons = new List<Button>();
-        private float _turnEndsAt, _unlockAt;
+        private BattleHudPanel _hudLeft, _hudRight;
+        private BattleSkillPanel _skillLeft, _skillRight;
+        private BattleActionBar _actionBar;
+        private BattleTopBar _topBar;
+        private BattleVsIndicator _vsIndicator;
+        private GameObject _result;
+        private readonly SkillCooldownTracker _cooldowns = new SkillCooldownTracker();
+        private bool _surrendered;
 
         public int BattleId => _start.BattleId;
         public bool IsParticipant => _start.IsParticipant;
+        public int OpponentActorId => _start.Opponent.ActorId;
+        public int TurnDurationMs => _start.TurnDurationMs;
         public event Action Closed;
+        public event Action Ticked;
 
         public static BattleView Create(Transform parent, BattleStart start, BattleHandler handler,
-            RemoteAssetCache assets)
+            RemoteAssetCache assets, PlayerStats playerStats = null)
         {
             var go = new GameObject("Pet Battle", typeof(RectTransform), typeof(Canvas),
                 typeof(CanvasScaler), typeof(GraphicRaycaster));
             go.transform.SetParent(parent, false);
-            var canvas = go.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 40;
+            var canvas = go.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 40;
             var scaler = go.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(960f, 540f); scaler.matchWidthOrHeight = 1f;
             var view = go.AddComponent<BattleView>();
             view._handler = handler; view._start = start;
-            view.Build(assets, UiBuilder.BuiltinFont());
+            view.Build(assets, UiBuilder.BuiltinFont(), playerStats);
+            handler.BuffStateReceived += view.OnBuff;
+            handler.StatsReceived += view.OnStats;
             return view;
+        }
+
+        private void OnDestroy()
+        {
+            if (_handler == null) return;
+            _handler.BuffStateReceived -= OnBuff;
+            _handler.StatsReceived -= OnStats;
         }
 
         public void Apply(BattleTurn turn)
         {
             if (turn.BattleId != BattleId) return;
-            SetTimer(turn.RemainingMs);
+            _vsIndicator?.SetTurn(turn.ActorId == _start.LocalPet.ActorId);
+            _cooldowns.OnTurnAdvanced(turn.ActorId, _start.LocalPet.ActorId);
             Card(turn.ActorId)?.Apply(0, turn.MainMpDelta);
             foreach (var effect in turn.Effects)
             {
@@ -53,144 +70,116 @@ namespace Gopet.Runtime.World
                 if (target == null) continue;
                 target.Apply(effect.HpDelta, effect.MpDelta);
                 BattleEffectView.Play(transform, target.EffectAnchor, effect.SkillId);
-                if (effect.SkillId == 1)
-                {
-                    BattleFloatText.CreateMiss(target.transform);
-                    SoundManager.Instance?.PlayEffect("s_attack_miss");
-                }
-                else if (effect.SkillId == 2)
-                {
-                    SoundManager.Instance?.PlayEffect("s_attack_crit");
-                }
-                else if (effect.HpDelta < 0)
-                {
-                    SoundManager.Instance?.PlayEffect("s_hit");
-                }
+                PlayHitSound(effect, target.transform);
             }
-            UnlockActions();
+            RefreshHuds();
+            _actionBar?.Unlock();
+            _skillLeft?.RefreshState(_left.Mp);
         }
 
         public void ShowResult(BattleResult result)
         {
             if (result.BattleId != BattleId || _result != null) return;
-            _actions.SetActive(false); _skillMenu.SetActive(false);
-            _result = new GameObject("Kết quả", typeof(RectTransform), typeof(Image));
-            _result.transform.SetParent(transform, false);
-            var rect = (RectTransform)_result.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(460f, 230f);
-            _result.GetComponent<Image>().color = new Color(0.02f, 0.14f, 0.23f, 0.97f);
-            var title = UiBuilder.MakeText(_result.transform, UiBuilder.BuiltinFont(), "Tiêu đề", 28, false);
-            UiBuilder.PlaceRow(title.rectTransform, 15f, 45f, 15f); title.alignment = TextAnchor.MiddleCenter;
-            title.text = result.WinnerId == _start.LocalPet.ActorId ? "THẮNG CUỘC" :
-                IsParticipant ? "THUA CUỘC" : "KẾT THÚC";
-            var body = UiBuilder.MakeText(_result.transform, UiBuilder.BuiltinFont(), "Thưởng", 18, false);
-            UiBuilder.PlaceRow(body.rectTransform, 70f, 90f, 20f); body.alignment = TextAnchor.UpperCenter;
-            body.text = $"Ngọc: {result.Coin}    EXP: {result.Experience}\n{string.Join("\n", result.Messages)}";
-            MakeButton(_result.transform, "Tiếp tục", null, new Vector2(0.5f, 0f),
-                new Vector2(0f, 16f), new Vector2(170f, 48f)).onClick.AddListener(() => Closed?.Invoke());
+            if (_actionBar != null) _actionBar.gameObject.SetActive(false);
+            _result = BattleResultPanel.Create(transform, result,
+                _start.LocalPet.ActorId, IsParticipant, () => Closed?.Invoke());
         }
 
-        private void Build(RemoteAssetCache assets, Font font)
+        private void Build(RemoteAssetCache assets, Font font, PlayerStats playerStats)
         {
-            var shade = new GameObject("Nền mờ", typeof(RectTransform), typeof(Image));
-            shade.transform.SetParent(transform, false); UiBuilder.Stretch((RectTransform)shade.transform);
-            shade.GetComponent<Image>().color = new Color(0f, 0.08f, 0.13f, 0.28f);
-            shade.GetComponent<Image>().raycastTarget = false;
-            _left = BattlePetCard.Create(transform, _start.LocalPet, true, assets, font);
-            _right = BattlePetCard.Create(transform, _start.Opponent, false, assets, font);
-            _timer = UiBuilder.MakeText(transform, font, "Thời gian lượt", 20, false);
-            UiBuilder.PlaceRow(_timer.rectTransform, 8f, 36f, 350f); _timer.alignment = TextAnchor.MiddleCenter;
-            SetTimer(_start.RemainingMs);
-            BuildActions(font);
-            BuildSkills(font);
-            if (!_start.IsParticipant) _actions.SetActive(false);
+            var bg = new GameObject("Nền", typeof(RectTransform), typeof(Image));
+            bg.transform.SetParent(transform, false);
+            UiBuilder.Stretch((RectTransform)bg.transform);
+            var bgImg = bg.GetComponent<Image>();
+            bgImg.sprite = BattleSkin.Load("Battle/bg-forest");
+            bgImg.color = bgImg.sprite == null ? new Color(0f, 0.08f, 0.13f, 0.92f) : Color.white;
+            bgImg.type = Image.Type.Simple;
+            bgImg.raycastTarget = false;
+
+            _topBar = BattleTopBar.Create(transform, font, _start.Kind, playerStats);
+            _topBar.BackClicked += OnBackClicked;
+            _hudLeft = BattleHudPanel.Create(transform, _start.LocalPet, true, font, assets);
+            _hudRight = BattleHudPanel.Create(transform, _start.Opponent, false, font, assets);
+            _left = BattlePetCard.Create(transform, _start.LocalPet, true, assets);
+            _right = BattlePetCard.Create(transform, _start.Opponent, false, assets);
+
+            _vsIndicator = BattleVsIndicator.Create(transform, font);
+            _vsIndicator.SetTurn(_start.LocalStarts);
+
+            _skillLeft = BattleSkillPanel.Create(transform, _start.LocalPet.Skills, true, font, _cooldowns);
+            _skillLeft.SkillUsed += OnSkillUsed;
+            _skillLeft.RefreshState(_start.LocalPet.Mp);
+            _skillRight = BattleSkillPanel.Create(transform, _start.Opponent.Skills, false, font);
+
+            _actionBar = BattleActionBar.Create(transform, font, _start.IsParticipant);
+            _actionBar.AttackClicked += OnAttack;
+            _actionBar.PotionClicked += OnPotion;
+            _actionBar.SurrenderClicked += OnSurrenderClicked;
         }
 
-        private void BuildActions(Font font)
+        private void OnBuff(BattleBuffState state)
         {
-            _actions = new GameObject("Hành động", typeof(RectTransform), typeof(Image));
-            _actions.transform.SetParent(transform, false);
-            var rect = (RectTransform)_actions.transform;
-            rect.anchorMin = new Vector2(0.5f, 0f); rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f); rect.anchoredPosition = new Vector2(0f, 12f);
-            rect.sizeDelta = new Vector2(510f, 72f);
-            _actions.GetComponent<Image>().color = new Color(0.02f, 0.14f, 0.23f, 0.93f);
-            AddAction("Đánh", "attack", -170f, () =>
+            if (state == null || state.BattleId != BattleId) return;
+            foreach (var a in state.Actors) Hud(a.ActorId)?.UpdateBuffs(a);
+        }
+
+        private void OnStats(BattleStatsState state)
+        {
+            if (state == null || state.BattleId != BattleId) return;
+            foreach (var a in state.Actors)
             {
-                SoundManager.Instance?.PlayEffect("s_attack");
-                _handler.SendNormalAttack(); LockActions();
-            });
-            AddAction("Kỹ năng", "skill", 0f, () => _skillMenu.SetActive(!_skillMenu.activeSelf));
-            AddAction("Vật phẩm", "potion", 170f, () => { _handler.SendUseItem(); LockActions(); });
+                Hud(a.ActorId)?.UpdateStats(a);
+                if (a.ActorId == _hudRight.ActorId) _skillRight?.UpdateMpCosts(a.Skills);
+            }
         }
 
-        private void AddAction(string label, string icon, float x, UnityEngine.Events.UnityAction action)
+        private BattleHudPanel Hud(int actorId) =>
+            actorId == _hudLeft.ActorId ? _hudLeft : actorId == _hudRight.ActorId ? _hudRight : null;
+
+        private void RefreshHuds()
         {
-            var button = MakeButton(_actions.transform, label, icon, new Vector2(0.5f, 0.5f),
-                new Vector2(x, 0f), new Vector2(150f, 52f));
-            button.onClick.AddListener(() => SoundManager.Instance?.PlayEffect("s_button_ingame"));
-            button.onClick.AddListener(action); _buttons.Add(button);
+            _hudLeft.UpdateVitals(_left.Hp, _left.Mp, _left.MaxHp, _left.MaxMp);
+            _hudRight.UpdateVitals(_right.Hp, _right.Mp, _right.MaxHp, _right.MaxMp);
         }
 
-        private void BuildSkills(Font font)
+        private void OnAttack() { _handler.SendNormalAttack(); _actionBar.Lock(); }
+        private void OnPotion() { _handler.SendUseItem(); _actionBar.Lock(); }
+
+        private void OnSkillUsed(int skillId)
         {
-            _skillMenu = new GameObject("Danh sách kỹ năng", typeof(RectTransform), typeof(Image));
-            _skillMenu.transform.SetParent(transform, false);
-            var rect = (RectTransform)_skillMenu.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f); rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = new Vector2(0f, 90f);
-            rect.sizeDelta = new Vector2(520f, Mathf.Max(58f, _start.LocalPet.Skills.Length * 48f + 12f));
-            _skillMenu.GetComponent<Image>().color = new Color(0.03f, 0.12f, 0.2f, 0.97f);
-            for (var i = 0; i < _start.LocalPet.Skills.Length; i++) AddSkill(_start.LocalPet.Skills[i], i);
-            _skillMenu.SetActive(false);
+            SoundManager.Instance?.PlayEffect("s_button_ingame");
+            _handler.SendSkill(skillId); _cooldowns.MarkUsed(skillId);
+            _actionBar.Lock(); _skillLeft?.RefreshState(_left.Mp);
         }
 
-        private void AddSkill(BattleSkill skill, int index)
+        private void OnSurrenderClicked()
         {
-            var button = MakeButton(_skillMenu.transform, $"{skill.Name}   MP {skill.MpCost}", null,
-                new Vector2(0.5f, 1f), new Vector2(0f, -8f - index * 48f), new Vector2(490f, 42f));
-            button.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
-            button.interactable = skill.MpCost <= _start.LocalPet.Mp;
-            _skillButtons.Add(button);
-            button.onClick.AddListener(() =>
+            if (_surrendered) return;
+            var d = YesNoDialog.Create(transform, "Bạn chắc chắn muốn xin thua?", "Xin thua", "Huỷ");
+            d.Confirmed += () => { _surrendered = true; _handler.SendSurrender(); _actionBar.LockSurrender(); Destroy(d.gameObject); };
+            d.Cancelled += () => Destroy(d.gameObject);
+        }
+
+        private void OnBackClicked()
+        {
+            if (_result != null) { Closed?.Invoke(); return; }
+            OnSurrenderClicked();
+        }
+
+        private BattlePetCard Card(int actorId) =>
+            _left.ActorId == actorId ? _left : _right.ActorId == actorId ? _right : null;
+
+        private static void PlayHitSound(BattleEffect effect, Transform target)
+        {
+            if (effect.SkillId == 1)
             {
-                SoundManager.Instance?.PlayEffect("s_button_ingame");
-                _handler.SendSkill(skill.Id); _skillMenu.SetActive(false); LockActions();
-            });
+                BattleFloatText.CreateMiss(target);
+                SoundManager.Instance?.PlayEffect("s_attack_miss");
+            }
+            else if (effect.SkillId == 2) SoundManager.Instance?.PlayEffect("s_attack_crit");
+            else if (effect.HpDelta < 0) SoundManager.Instance?.PlayEffect("s_hit");
         }
 
-        private static Button MakeButton(Transform parent, string label, string icon, Vector2 anchor,
-            Vector2 position, Vector2 size)
-        {
-            var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform; rect.anchorMin = rect.anchorMax = anchor;
-            rect.anchoredPosition = position; rect.sizeDelta = size;
-            var image = go.GetComponent<Image>(); image.color = UiBuilder.ButtonFace;
-            if (icon != null) image.sprite = JarSkin.Raw($"pet/battle/{icon}");
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Nhãn", 17, true);
-            text.text = label; text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white; text.fontStyle = FontStyle.Bold;
-            return go.GetComponent<Button>();
-        }
-
-        private BattlePetCard Card(int actorId) => _left.ActorId == actorId ? _left :
-            _right.ActorId == actorId ? _right : null;
-        private void SetTimer(int ms) { _turnEndsAt = Time.unscaledTime + Mathf.Max(0, ms) / 1000f; }
-        private void LockActions() { foreach (var b in _buttons) b.interactable = false; _unlockAt = Time.unscaledTime + 3.5f; }
-        private void UnlockActions()
-        {
-            foreach (var b in _buttons) b.interactable = true;
-            for (var i = 0; i < _skillButtons.Count; i++)
-                _skillButtons[i].interactable = _start.LocalPet.Skills[i].MpCost <= _left.Mp;
-            _unlockAt = 0f;
-        }
-
-        private void Update()
-        {
-            if (_timer != null) _timer.text = $"Lượt: {Mathf.CeilToInt(Mathf.Max(0f, _turnEndsAt - Time.unscaledTime))}s";
-            if (_unlockAt > 0f && Time.unscaledTime >= _unlockAt) UnlockActions();
-        }
+        private void Update() => Ticked?.Invoke();
     }
 }

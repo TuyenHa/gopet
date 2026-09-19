@@ -435,7 +435,7 @@ public class GopetPlace : Place
                             }
                             if (player.playerData.star - 1 >= 0)
                             {
-                                player.playerData.star--;
+                                player.MineStar(1);
                                 player.controller.getTaskCalculator().onAttackBoss((Boss)mob);
                             }
                             else

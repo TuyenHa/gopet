@@ -1,5 +1,6 @@
 
 using Gopet.Battle;
+using Gopet.Manager;
 using Gopet.Util;
 using System.Drawing;
 
@@ -157,6 +158,16 @@ namespace Gopet.Data.Mob
             this.mobLvInfo = mobLvInfo;
         }
 
+
+        public MobSkill[] Skills
+        {
+            get
+            {
+                if (GopetManager.MOB_SKILL_HASH_MAP.ContainsKey(petIdTemplate))
+                    return GopetManager.MOB_SKILL_HASH_MAP.get(petIdTemplate);
+                return Array.Empty<MobSkill>();
+            }
+        }
 
         public string getName(Player player)
         {

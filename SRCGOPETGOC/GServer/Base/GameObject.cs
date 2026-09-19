@@ -145,20 +145,29 @@ public class GameObject
         return Utilities.NextFloatPer() > HitRate(B);
     }
 
+    // Giữ nguyên chia nguyên gốc (4/100=0). Không sửa cân bằng trong plan này.
+    public virtual float CritPercent
+    {
+        get
+        {
+            switch (Template.nclass)
+            {
+                case GopetManager.Archer:
+                case GopetManager.Fighter:
+                    return (getStr() + getAgi() * 2) / 4000 + (4 / 100);
+                case GopetManager.Demon:
+                case GopetManager.Assassin:
+                    return (getInt() + getAgi() * 2) / 4000 + (4 / 100);
+                case GopetManager.Angel:
+                case GopetManager.Wizard:
+                    return (getAgi() * 2) / 2200 + (4 / 100);
+            }
+            return 0f;
+        }
+    }
+
     public virtual bool isCrit()
     {
-        switch (Template.nclass)
-        {
-            case GopetManager.Archer:
-            case GopetManager.Fighter:
-                return Utilities.NextFloatPer() < (getStr() + getAgi() * 2) / 4000 + (4 / 100);
-            case GopetManager.Demon:
-            case GopetManager.Assassin:
-                return Utilities.NextFloatPer() < (getInt() + getAgi() * 2) / 4000 + (4 / 100);
-            case GopetManager.Angel:
-            case GopetManager.Wizard:
-                return Utilities.NextFloatPer() < (getAgi() * 2) / 2200 + (4 / 100);
-        }
-        return false;
+        return Utilities.NextFloatPer() < CritPercent;
     }
 }

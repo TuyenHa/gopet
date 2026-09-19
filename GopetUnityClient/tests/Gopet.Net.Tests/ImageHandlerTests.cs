@@ -161,21 +161,25 @@ namespace Gopet.Net.Tests
         }
 
         [Fact]
-        public void HetHan_KhongGoiCallbackNua()
+        public void HetHan_GoiWaiterVoiSyntheticFail_GoiMuonBiBoQua()
         {
+            // Đổi hợp đồng 2026-09-17 (plan 260917-1916 phase-01): trước đây timeout
+            // silently drop waiter → RemoteAssetCache đọng ở placeholder → NPC vô hình.
+            // Giờ waiter nhận response Png=null → downstream swap sang FailedTexture.
+            // Gói muộn tới sau vẫn bị bỏ (path đã xoá khỏi _pending).
             var handler = new ImageHandler(_sent.Add, () => _now) { TimeoutMs = 5000 };
             var router = RouterFor(handler);
 
-            var delivered = 0;
-            handler.Request("cham.png", 2, _ => delivered++);
+            var responses = new List<ImageResponse>();
+            handler.Request("cham.png", 2, r => responses.Add(r));
 
             _now = 6000;
             handler.Tick();
 
-            // Gói tới muộn sau khi đã bỏ cuộc: bỏ qua, không gọi callback đã hết hạn.
             router.Dispatch(Response("cham.png"));
 
-            Assert.Equal(0, delivered);
+            Assert.Single(responses);
+            Assert.Null(responses[0].Png);
         }
     }
 }

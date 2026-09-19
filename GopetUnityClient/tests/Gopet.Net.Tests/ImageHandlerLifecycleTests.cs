@@ -85,6 +85,31 @@ namespace Gopet.Net.Tests
         }
 
         [Fact]
+        public void HetRetry_WaiterVanNhanResponseVoiPngNull()
+        {
+            // Bug lịch sử: hết retry → _pending.Remove() xoá Waiters → callback từ
+            // RemoteAssetCache.Get không bao giờ chạy → NPC đọng ở placeholder 1×1
+            // trong suốt → chỉ thấy tên. Giờ ImageHandler bắn synthetic response
+            // (Png=null) trước khi TimedOut để downstream biết fail vĩnh viễn.
+            var handler = new ImageHandler(_sent.Add, () => _now)
+            {
+                TimeoutMs = 1000, MaxRetries = 1,
+            };
+            ImageResponse received = null;
+            var timedOut = 0;
+            handler.TimedOut += _ => timedOut++;
+            handler.Request("mgo.png", 2, r => received = r);
+
+            _now = 1500; handler.Tick();             // retry lần 1
+            _now = 3000; handler.Tick();             // hết retry → notify + TimedOut
+
+            Assert.NotNull(received);
+            Assert.Equal("mgo.png", received.Path);
+            Assert.Null(received.Png);
+            Assert.Equal(1, timedOut);
+        }
+
+        [Fact]
         public void Retry_ResponseVeGiuaChung_HuyRetryVaNotifyWaiter()
         {
             var handler = new ImageHandler(_sent.Add, () => _now)

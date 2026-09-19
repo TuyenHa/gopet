@@ -155,21 +155,20 @@ namespace Gopet.Runtime.World
             s._worldStatusHandler.BossHpUpdated += s._scene.ApplyBossHp;
             s._worldStatusHandler.PlaceTimeUpdated += s._hud.ShowPlaceTime;
             s._worldStatusHandler.BigTextShown += s._hud.ShowBigText;
-            s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
-                s._battleHandler, s.SetBattleMode);
-            s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");
-
-            // Stats & tiền tệ nhân vật — MONEY_INFO/STAR_INFO/ENERGY_INFO của PET_SERVICE.
-            // Char KHÔNG có HP/MP/Level; đó là stat pet (xem CharacterHud comment).
             s._statsHandler = new PlayerStatsHandler();
             s._statsHandler.RegisterOn(client.Router);
+            s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
+                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler);
+            s._mapHandler.MapUpdated += _ => s._battle?.OnPlaceChanged();
+            s.RestoreAutoRecoveryOnLogin();
+            s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");
             // Canvas overlay riêng cho HUD phụ + popup. ScreenSpaceOverlay + sortOrder 35
             // để ngồi trên GameHud (30) nhưng dưới BattleView (thường 40+). Nếu attach
             // trực tiếp vào world transform sẽ KHÔNG hiện — UI cần Canvas parent.
             s._hudParent = CreateHudOverlayCanvas(parent ?? s._scene.transform).transform;
             s._currency = CurrencyBar.Create(s._hudParent, assets);
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
-            s._expBuffIndicator = ExpBuffIndicator.Create(s._currency.transform);
+            s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
 
             s._menuButton = CharacterMenuButton.Create(s._hudParent);
@@ -329,9 +328,7 @@ namespace Gopet.Runtime.World
                 _movement = MovementController.Attach(_scene, _mapHandler, _camera, _hud,
                     mapId: _scene.MapId, userId: evt.UserId,
                     initialJarX: evt.X, initialJarY: evt.Y);
-                _hud?.Ticker?.Show(
-                    "Chào mừng bạn đến với Gopet! Đi đánh quái để nhận EXP và vật phẩm.   " +
-                    "Chơi game quá 180 phút liên tục sẽ ảnh hưởng đến sức khỏe — nhớ nghỉ ngơi nhé!");
+                _hud?.Ticker?.Show("Chào mừng đến với Gopet! Đánh quái nhận EXP và vật phẩm.");
             }
             else
             {

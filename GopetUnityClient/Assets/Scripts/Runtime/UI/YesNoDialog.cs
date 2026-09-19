@@ -99,7 +99,7 @@ namespace Gopet.Runtime.UI
             t.text = label;
             t.fontStyle = FontStyle.Bold;
             t.alignment = TextAnchor.MiddleCenter;
-            t.color = Color.white;
+            t.color = Color.black;
             go.GetComponent<Button>().onClick.AddListener(() => onClick());
         }
     }

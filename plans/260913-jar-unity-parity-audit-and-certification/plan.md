@@ -7,6 +7,7 @@ status: in_progress
 priority: P0
 created: "2026-09-13T00:00:00+07:00"
 createdBy: codex
+blockedBy: [260917-1812-pvp-arena-battle-parity]
 ---
 
 # Audit và chứng nhận parity JAR → Unity
@@ -53,7 +54,7 @@ Trạng thái dưới đây được chấm theo bằng chứng: **Hoàn thành*
 | Pet item | Rương, 5 slot trang bị, equip/unequip/remove | Hoàn thành về code | Delta handler + snapshot refresh; cần live với item fixture |
 | Gem/tattoo | Kho gem, gắn/tháo, enchant/tier, tattoo tạo/xóa/enchant | Hoàn thành về code | Parser/packet/UI tests; tattoo cần live account đủ material |
 | Pet upgrade | Đổi tên, cường hóa/tiến hóa/up tier | Hoàn thành về code | `PetUpgradeHandler/View`; cần live economy/result validation |
-| Battle | PvE/PvP turn, attack/skill/item/result/effect/float text | Hoàn thành về code | Battle handler/view/tests; PvP invitation cần live hai client |
+| Battle | PvE/PvP turn, attack/skill/item/result/effect/float text | **Một phần — có lỗi chặn** | Audit 2026-09-17: trận đấu trường (coinBet=0) không nhận gói kết thúc, FAST_REMOVE chỉ khớp một bên, không xem được trận người khác, thiếu UI buff/cooldown. Xem [260917-1812-pvp-arena-battle-parity](../260917-1812-pvp-arena-battle-parity/plan.md) |
 | Battle | Auto attack chu kỳ 4 giây | Hoàn thành | `AutoAttackLoop`, settings/menu và unit tests |
 | Shop/economy | Shop server, pet/skin/weapon/armour/hat/food, ATM | Hoàn thành chủ yếu server-driven | Shop popup + generic ATM menu; cần mua/bán live |
 | Ký gửi | Nhận danh sách kiosk và UI listing | Hoàn thành về code | `KioskHandler`, `KioskListingView`; thao tác giao dịch cần live |

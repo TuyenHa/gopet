@@ -35,6 +35,7 @@ namespace Gopet.Runtime.Assets
         private readonly GopetClient _client;
         private readonly MessageRouter _router;
         private Texture2D _placeholder;
+        private Texture2D _failed;
 
         private struct PendingDecode
         {
@@ -52,12 +53,15 @@ namespace Gopet.Runtime.Assets
                 cacheRoot ?? Path.Combine(Application.persistentDataPath, "assetcache"),
                 maxCacheBytes);
 
-            // Retry 2 lần khi timeout: rebuild/domain-reload/reconnect thường làm mất
-            // gói ảnh giữa chừng → waiter callback không bao giờ chạy → NPC chỉ còn
-            // label. 3 attempts (0+2) là bù thỏa hiệp cho flake tạm mà không đè server.
+            // Retry 3 lần khi timeout (4 attempts × 15s = 60s tổng). Bumped từ 2 vì
+            // rebuild/domain-reload/reconnect + server latency spikes làm 3 attempts
+            // vẫn miss trong ca thực tế ở Linh Thú thành. Hết retry vẫn có bảo hiểm:
+            // ImageHandler bắn synthetic response cho waiters → Materialize swap sang
+            // FailedTexture visible thay vì đọng Placeholder 1×1 vô hình.
             _handler = new ImageHandler(client.Send, () => (long)(Time.realtimeSinceStartup * 1000f))
             {
-                MaxRetries = 2,
+                MaxRetries = 3,
+                TimeoutMs = 15000,
             };
             _handler.RegisterOn(router);
             _handler.TimedOut += path => Debug.LogWarning($"[Gopet] Hết hạn chờ ảnh: {path}");
@@ -74,6 +78,11 @@ namespace Gopet.Runtime.Assets
 
         /// <summary>Ảnh dùng tạm trong lúc chờ tải, để UI không phải xử lý null.</summary>
         public Texture2D Placeholder => _placeholder != null ? _placeholder : _placeholder = TextureFactory.Placeholder();
+
+        /// <summary>Ảnh báo "tải fail vĩnh viễn" — visible (24×32 magenta) để user thấy
+        /// NPC có mặt nhưng ảnh không lấy được. Trước đây fail cũng chỉ hiện Placeholder
+        /// 1×1 nên trông y như chưa tải xong → vô hình.</summary>
+        public Texture2D FailedTexture => _failed != null ? _failed : _failed = TextureFactory.Failed();
 
         public int MemoryCount => _memory.Count;
 
@@ -129,10 +138,21 @@ namespace Gopet.Runtime.Assets
 
         private void Materialize(ImageResponse response, Action<Texture2D> onReady)
         {
+            // Png == null là synthetic response ImageHandler bắn sau khi retry hết.
+            // Trước đây Materialize chỉ log warning + return → onReady không chạy →
+            // sprite đọng Placeholder 1×1 → NPC vô hình. Giờ swap sang FailedTexture.
+            if (response.Png == null || response.Png.Length == 0)
+            {
+                Debug.LogWarning($"[Gopet] Ảnh không tải được: {response.Path}");
+                onReady(FailedTexture);
+                return;
+            }
+
             var texture = TextureFactory.Decode(response.Png);
             if (texture == null)
             {
                 Debug.LogWarning($"[Gopet] PNG hỏng: {response.Path}");
+                onReady(FailedTexture);
                 return;
             }
 
@@ -181,6 +201,12 @@ namespace Gopet.Runtime.Assets
             {
                 UnityEngine.Object.Destroy(_placeholder);
                 _placeholder = null;
+            }
+
+            if (_failed != null)
+            {
+                UnityEngine.Object.Destroy(_failed);
+                _failed = null;
             }
         }
     }

@@ -46,4 +46,45 @@ namespace Gopet.Net.Battle
         public int BattleId, WinnerId, Coin, Experience;
         public string[] Messages = Array.Empty<string>();
     }
+
+    /// <summary>Một buff/debuff đang hiệu lực trên 1 pet.</summary>
+    public sealed class BattleBuffEntry
+    {
+        public int TypeId;
+        public int Value;
+        public int TurnsLeft;
+    }
+
+    public sealed class BattleActorBuffs
+    {
+        public int ActorId;
+        public BattleBuffEntry[] Entries = Array.Empty<BattleBuffEntry>();
+    }
+
+    /// <summary>Payload PET_BATTLE_BUFF — server chỉ gửi cho client >= 1.5.0.</summary>
+    public sealed class BattleBuffState
+    {
+        public int BattleId;
+        public BattleActorBuffs[] Actors = Array.Empty<BattleActorBuffs>();
+    }
+
+    public sealed class BattleSkillCost
+    {
+        public int SkillId;
+        public int MpCost;
+    }
+
+    public sealed class BattleActorStats
+    {
+        public int ActorId, Level, Atk, Def;
+        public short CritPermille;
+        public BattleSkillCost[] Skills = Array.Empty<BattleSkillCost>();
+    }
+
+    /// <summary>Payload PET_BATTLE_STATS — HUD chỉ số trận (level, ATK, DEF, crit, skill MP).</summary>
+    public sealed class BattleStatsState
+    {
+        public int BattleId;
+        public BattleActorStats[] Actors = Array.Empty<BattleActorStats>();
+    }
 }

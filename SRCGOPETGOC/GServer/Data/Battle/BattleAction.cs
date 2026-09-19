@@ -10,6 +10,8 @@ namespace Gopet.Data.Battle
     {
         public bool IsNormalAttack { get; set; } = false;
 
+        public bool IsSurrender { get; set; } = false;
+
         public int SkillId { get; set; } = 0;
 
         public Player Player { get; set; }

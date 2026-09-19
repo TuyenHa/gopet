@@ -12,6 +12,8 @@ namespace Gopet.Runtime.World
         private readonly AutoAttackLoop _autoAttack = new AutoAttackLoop();
         private SettingsView _settingsView;
         private YesNoDialog _sessionConfirm;
+        private const string AutoRecoveryPrefKey = "gopet.auto_recovery";
+        private bool _autoRecovery;
 
         public event Action LogoutRequested;
 
@@ -28,13 +30,31 @@ namespace Gopet.Runtime.World
             ShowToast($"Tự đánh quái: {(enabled ? "Bật" : "Tắt")}");
         }
 
+        /// <summary>Bật/tắt PET_RECOVERY_HP (opcode 45). Lưu PlayerPrefs như các toggle khác
+        /// để nhớ giữa các phiên; server không tự nhớ trạng thái này.</summary>
+        internal void SetAutoRecovery(bool enabled)
+        {
+            _autoRecovery = enabled;
+            try { PlayerPrefs.SetInt(AutoRecoveryPrefKey, enabled ? 1 : 0); PlayerPrefs.Save(); }
+            catch { /* PlayerPrefs có thể fail trong build đặc biệt — không chặn UX */ }
+            _battleHandler?.SetAutoRecovery(enabled);
+            ShowToast($"Tự hồi HP: {(enabled ? "Bật" : "Tắt")}");
+        }
+
+        internal void RestoreAutoRecoveryOnLogin()
+        {
+            try { _autoRecovery = PlayerPrefs.GetInt(AutoRecoveryPrefKey, 0) == 1; } catch { _autoRecovery = false; }
+            if (_autoRecovery) _battleHandler?.SetAutoRecovery(true);
+        }
+
         private void OpenSettings()
         {
             if (_settingsView != null) return;
             _settingsView = SettingsView.Create(_hudParent, SoundManager.Instance,
-                _autoAttack.Enabled);
+                _autoAttack.Enabled, _autoRecovery);
             _settingsView.CloseRequested += CloseSettings;
             _settingsView.AutoAttackChanged += SetAutoAttack;
+            _settingsView.AutoRecoveryChanged += SetAutoRecovery;
         }
 
         private void CloseSettings()

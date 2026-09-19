@@ -36,6 +36,15 @@ public class GopetCMD
     public const sbyte SEND_YES_NO = 4;
     public const sbyte ATTACK_MOB = 36;
     public const sbyte PET_BATTLE = 37;
+    /// <summary>PET_SERVICE sub — snapshot buff/debuff của cả 2 pet trong trận sau mỗi lượt.
+    /// Chỉ gửi cho client &gt;= <c>VERSION_150</c> để jar cũ không nhận opcode lạ.
+    /// Xem plans/260917-1812-pvp-arena-battle-parity/phase-04.</summary>
+    public const sbyte PET_BATTLE_BUFF = 38;
+    /// <summary>PET_SERVICE sub — chỉ số HUD trận (level, ATK, DEF, crit, skill MP).
+    /// Gửi khi mở trận và khi observer nhận snapshot. Gate <c>VERSION_150</c>.</summary>
+    public const sbyte PET_BATTLE_STATS = 43;
+    /// <summary>PET_BATTLE sub — client xin thua. Không payload. Gate <c>VERSION_150</c>.</summary>
+    public const sbyte PET_BATTLE_SURRENDER = 5;
     public const sbyte PET_BATTLE_STATE = 16;
     public const sbyte PET_RECOVERY_HP = 45;
     public const sbyte PET_BATTLE_USE_ITEM = 3;

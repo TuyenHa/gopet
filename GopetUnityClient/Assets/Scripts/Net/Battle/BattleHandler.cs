@@ -5,7 +5,6 @@ namespace Gopet.Net.Battle
     /// <summary>Giao thức PET_SERVICE của trận đấu; damage luôn do server quyết định.</summary>
     public sealed class BattleHandler
     {
-        private const int MaxSkills = 64;
         private const int MaxEffects = 128;
         private readonly Action<Message> _send;
         private readonly int _localUserId;
@@ -15,6 +14,8 @@ namespace Gopet.Net.Battle
         public event Action<BattleResult> BattleEnded;
         public event Action<int> BattleRemoved;
         public event Action<int> PetLevelUpdated;
+        public event Action<BattleBuffState> BuffStateReceived;
+        public event Action<BattleStatsState> StatsReceived;
 
         public BattleHandler(Action<Message> send = null, int localUserId = -1)
         {
@@ -32,6 +33,20 @@ namespace Gopet.Net.Battle
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_STATE, OnResult);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.FAST_REMOVE_MOB, OnFastRemove);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.UPDATE_PET_LVL, OnPetLevel);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_BUFF, OnBuffState);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_STATS, OnStats);
+        }
+
+        private void OnBuffState(Message msg)
+        {
+            var state = BattleAuxPacketReader.ReadBuffState(msg.Reader);
+            BuffStateReceived?.Invoke(state);
+        }
+
+        private void OnStats(Message msg)
+        {
+            var state = BattleAuxPacketReader.ReadStatsState(msg.Reader);
+            StatsReceived?.Invoke(state);
         }
 
         public void SendAttackMob(int mobId) => Send(GopetCmd.ATTACK_MOB, m => m.PutInt(mobId));
@@ -40,6 +55,8 @@ namespace Gopet.Net.Battle
             m => m.PutSByte(GopetCmd.PET_BATTLE_USE_SKILL).PutInt(skillId));
         public void SendUseItem() => Send(GopetCmd.PET_BATTLE,
             m => m.PutSByte(GopetCmd.PET_BATTLE_USE_ITEM).PutInt(0));
+        public void SendSurrender() => Send(GopetCmd.PET_BATTLE,
+            m => m.PutSByte(GopetCmd.PET_BATTLE_SURRENDER));
         public void SetAutoRecovery(bool enabled) => Send(GopetCmd.PET_RECOVERY_HP,
             m => m.PutSByte(enabled ? 1 : 0));
 
@@ -55,9 +72,9 @@ namespace Gopet.Net.Battle
             var start = Header(r, BattleKind.Mob);
             var ownerId = r.ReadInt();
             start.BattleId = ownerId;
-            start.LocalPet = ReadOwnedPet(r, ownerId);
+            start.LocalPet = BattleAuxPacketReader.ReadOwnedPet(r, ownerId);
             var mobId = r.ReadInt();
-            start.Opponent = ReadPassivePet(r, mobId);
+            start.Opponent = BattleAuxPacketReader.ReadPassivePet(r, mobId);
             start.IsParticipant = ownerId == _localUserId;
             r.ExpectFullyConsumed("ATTACK_MOB");
             BattleStarted?.Invoke(start);
@@ -70,10 +87,10 @@ namespace Gopet.Net.Battle
             var ownerId = r.ReadInt();
             start.BattleId = ownerId;
             start.LocalStarts = r.ReadSByte() == 1;
-            start.LocalPet = ReadOwnedPet(r, ownerId);
+            start.LocalPet = BattleAuxPacketReader.ReadOwnedPet(r, ownerId);
             var opponentId = r.ReadInt();
-            start.Opponent = ReadPassivePet(r, opponentId);
-            if (r.Remaining == 1) r.ReadBool(); // start thật có cờ cũ; snapshot observer có thể thiếu
+            start.Opponent = BattleAuxPacketReader.ReadPassivePet(r, opponentId);
+            if (r.Remaining == 1) r.ReadBool();
             start.IsParticipant = ownerId == _localUserId || opponentId == _localUserId;
             r.ExpectFullyConsumed("PLAYER_BATTLE");
             BattleStarted?.Invoke(start);
@@ -83,50 +100,6 @@ namespace Gopet.Net.Battle
         {
             Kind = kind, RemainingMs = r.ReadInt(), TurnDurationMs = r.ReadInt()
         };
-
-        private static BattlePet ReadOwnedPet(JavaBinaryReader r, int actorId)
-        {
-            var pet = ReadVisual(r, actorId);
-            pet.Level = r.ReadInt();
-            for (var i = 0; i < 5; i++) r.ReadInt(); // STR, AGI, INT và 2 field client cũ
-            ReadVitals(r, pet);
-            pet.Skills = ReadSkills(r, true);
-            return pet;
-        }
-
-        private static BattlePet ReadPassivePet(JavaBinaryReader r, int actorId)
-        {
-            var pet = ReadVisual(r, actorId);
-            pet.Level = r.ReadInt();
-            ReadVitals(r, pet);
-            pet.Skills = ReadSkills(r, false);
-            return pet;
-        }
-
-        private static BattlePet ReadVisual(JavaBinaryReader r, int actorId) => new BattlePet
-        {
-            ActorId = actorId, TemplateId = r.ReadInt(), ImagePath = r.ReadUtf(),
-            FrameCount = r.ReadSByte(), VerticalOffset = r.ReadShort(), Name = r.ReadUtf()
-        };
-
-        private static void ReadVitals(JavaBinaryReader r, BattlePet pet)
-        {
-            pet.Hp = r.ReadInt(); pet.Mp = r.ReadInt();
-            pet.MaxHp = r.ReadInt(); pet.MaxMp = r.ReadInt();
-        }
-
-        private static BattleSkill[] ReadSkills(JavaBinaryReader r, bool detailed)
-        {
-            var count = Count(r.ReadSByte(), MaxSkills, "kỹ năng");
-            var result = new BattleSkill[count];
-            for (var i = 0; i < count; i++)
-            {
-                var skill = new BattleSkill { Id = r.ReadInt(), Name = r.ReadUtf() };
-                if (detailed) { skill.Description = r.ReadUtf(); skill.MpCost = r.ReadInt(); }
-                result[i] = skill;
-            }
-            return result;
-        }
 
         private void OnTurn(Message message)
         {
@@ -181,7 +154,6 @@ namespace Gopet.Net.Battle
 
         private void OnFastRemove(Message message)
         {
-            // Tên opcode gây hiểu nhầm: server gửi userId của chủ trận, cũng chính là BattleId.
             var battleId = message.Reader.ReadInt();
             message.Reader.ExpectFullyConsumed("FAST_REMOVE_MOB");
             BattleRemoved?.Invoke(battleId);

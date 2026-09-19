@@ -7,3 +7,5 @@ tools/freej2me/
 .tmp-build-register*
 .tmp-pet-ui-compile*
 SRCGOPETGOC/GServer/bin*
+SRCGOPETGOC/GServer/obj*
+.tmp-build-attackboss-star*

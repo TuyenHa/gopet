@@ -1,0 +1,118 @@
+﻿[Máy chủ 9/18/2026 12:27:47 AM] Trình dọn rác: True
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu vật phẩm từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu quái từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu cường hóa cánh từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu cửa hàng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu boss từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu map từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu trao đổi thưởng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu shop đấu trường từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu exps từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu các dòng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu kỹ năng quái từ cơ sở dữ liệu OK (78 dòng)
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu danh hiệu từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu trùng sinh thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Tải dữ liệu hiệu ứng thú cưng từ cơ sở dữ liệu OK
+
+[Máy chủ 9/18/2026 12:27:48 AM] Thời gian bảo trì định kỳ: 9/18/2026 5:00:00 AM
+
+[Máy chủ 9/18/2026 12:27:50 AM] HTTP API chạy KHÔNG xác thực (apiKey rỗng). Chỉ chấp nhận được vì đang bind loopback. Đặt apiKey trong config/server.json trước khi mở ra ngoài.
+
+[Máy chủ 9/18/2026 12:27:51 AM] Cổng game nghe ở 127.0.0.1:19180 (chỉ cục bộ)
+
+[Máy chủ 9/18/2026 12:28:44 AM] Ghi log gói tin: D:\game\SRCGOPETGOC\GServer\bin\Debug\net8.0\log\packet-dump-server.log
+
+[Máy chủ 9/18/2026 12:28:50 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/18/2026 12:28:50 AM] Bang hội MSG: 14
+
+[Máy chủ 9/18/2026 12:28:50 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/18/2026 12:29:14 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/18/2026 12:29:14 AM] onClientSpeedRespose
+
+[Máy chủ 9/18/2026 12:29:17 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:29:25 AM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/18/2026 12:31:24 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/18/2026 12:31:24 AM] Bang hội MSG: 14
+
+[Máy chủ 9/18/2026 12:31:24 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/18/2026 12:31:36 AM]  MESSAGE SERVICE: 30
+
+[Máy chủ 9/18/2026 12:31:49 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:54 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/18/2026 12:31:54 AM] onClientSpeedRespose
+
+[Máy chủ 9/18/2026 12:31:54 AM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/18/2026 12:31:57 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:58 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:58 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:59 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:59 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:31:59 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:32:00 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:32:17 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/18/2026 12:32:17 AM] onClientSpeedRespose
+
+[Máy chủ 9/18/2026 12:41:33 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/18/2026 12:41:33 AM] Bang hội MSG: 14
+
+[Máy chủ 9/18/2026 12:41:33 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/18/2026 12:41:43 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:41:47 AM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/18/2026 12:41:57 AM]  MESSAGE SERVICE: 103
+
+[Máy chủ 9/18/2026 12:41:57 AM] onClientSpeedRespose
+
+[Máy chủ 9/18/2026 12:41:59 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:42:09 AM]  MESSAGE SERVICE: 37
+
+[Máy chủ 9/18/2026 12:43:46 AM]  MESSAGE SERVICE: 91
+
+[Máy chủ 9/18/2026 12:43:46 AM] Bang hội MSG: 14
+
+[Máy chủ 9/18/2026 12:43:46 AM]  MESSAGE SERVICE: 54
+
+[Máy chủ 9/18/2026 12:43:59 AM]  MESSAGE SERVICE: 36
+
+[Máy chủ 9/18/2026 12:44:01 AM]  MESSAGE SERVICE: 37
+

@@ -41,8 +41,23 @@ namespace Gopet.Runtime
         /// </summary>
         private static void EnsureEventSystem()
         {
-            if (EventSystem.current != null) return;
-            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            var eventSystem = EventSystem.current;
+            if (eventSystem == null)
+            {
+                eventSystem = new GameObject("EventSystem", typeof(EventSystem))
+                    .GetComponent<EventSystem>();
+            }
+
+            // A scene or an imported package may already provide an EventSystem with
+            // StandaloneInputModule. The project uses the new Input System, so keeping
+            // that module silently makes uGUI controls (including the movement joystick)
+            // ignore touch and mouse input.
+            var legacy = eventSystem.GetComponent<StandaloneInputModule>();
+            if (legacy != null) legacy.enabled = false;
+
+            var inputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
+            if (inputModule == null) inputModule = eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+            inputModule.enabled = true;
         }
     }
 }

@@ -247,6 +247,8 @@ public class GopetManager
      */
     public static JArrayList<PetSkill> PET_SKILLS = new();
 
+    public static HashMap<int, MobSkill[]> MOB_SKILL_HASH_MAP = new();
+
     /**
      * Kinh nghiệm của pet
      */
@@ -641,6 +643,9 @@ public class GopetManager
     public static readonly Version VERSION_136 = Version.Parse("1.3.6");
     public static readonly Version VERSION_137 = Version.Parse("1.3.7");
     public static readonly Version VERSION_142 = Version.Parse("1.4.2");
+    /// <summary>Ngưỡng gate cho opcode battle mở rộng (PET_BATTLE_BUFF...). Không đổi
+    /// ngưỡng chặn login (VERSION_142) — jar cũ vẫn phải vào được.</summary>
+    public static readonly Version VERSION_150 = Version.Parse("1.5.0");
     /// <summary>
     /// Giá tiền kích hoạt tài khoản
     /// </summary>
@@ -1093,6 +1098,41 @@ public class GopetManager
                 PET_SKILLS.add(petSkill);
             }
             ServerMonitor.LogInfo("Tải dữ liệu kỹ năng pet từ cơ sở dữ liệu OK");
+            int mobSkillLoaded = 0;
+            HashMap<int, JArrayList<MobSkill>> mobSkillTemp = new();
+            try
+            {
+                var mobSkillRows = conn.Query<MobSkill>("SELECT * FROM `gopet_mob_skill`");
+                foreach (var row in mobSkillRows)
+                {
+                    if (!PETSKILL_HASH_MAP.ContainsKey(row.skillID))
+                    {
+                        ServerMonitor.LogWarning($"gopet_mob_skill: bỏ qua skillID={row.skillID} (không tồn tại)");
+                        continue;
+                    }
+                    var ps = PETSKILL_HASH_MAP.get(row.skillID);
+                    if (row.skillLv < 1 || row.skillLv > ps.skillLv.Count)
+                    {
+                        ServerMonitor.LogWarning($"gopet_mob_skill: bỏ qua petId={row.petId} skillID={row.skillID} skillLv={row.skillLv} (lv không hợp lệ)");
+                        continue;
+                    }
+                    if (!mobSkillTemp.ContainsKey(row.petId))
+                    {
+                        mobSkillTemp.put(row.petId, new());
+                    }
+                    mobSkillTemp.get(row.petId).add(row);
+                    mobSkillLoaded++;
+                }
+                foreach (var entry in mobSkillTemp)
+                {
+                    MOB_SKILL_HASH_MAP.put(entry.Key, entry.Value.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                ServerMonitor.LogWarning($"gopet_mob_skill: bảng chưa tồn tại hoặc lỗi — {ex.Message}");
+            }
+            ServerMonitor.LogInfo($"Tải dữ liệu kỹ năng quái từ cơ sở dữ liệu OK ({mobSkillLoaded} dòng)");
             HashMap<int, JArrayList<MobLvlMap>> mobLvlMap_ = new();
             var mobLvlMapList = conn.Query("SELECT * FROM `gopet_map_moblvl`");
             foreach (var item in mobLvlMapList)

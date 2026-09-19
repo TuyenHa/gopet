@@ -193,7 +193,10 @@ namespace Gopet.Runtime.UI
         private void ShowEmbeddedConfirm(MenuSelection.ConfirmPrompt prompt, Action onYes)
         {
             if (_equipRequestPending || prompt == null || onYes == null) return;
-            ShowConfirmation(prompt.Text, prompt.ConfirmLabel, prompt.CancelLabel, () =>
+            var message = string.IsNullOrWhiteSpace(prompt.Text)
+                ? "Bạn có muốn sử dụng vật phẩm này cho nhân vật không?"
+                : prompt.Text;
+            ShowConfirmation(message, prompt.ConfirmLabel, prompt.CancelLabel, () =>
             {
                 _equipRequestPending = true;
                 try { onYes(); }

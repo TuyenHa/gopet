@@ -8,6 +8,7 @@ using Gopet.Manager;
 using SixLabors.ImageSharp;
 using System.Numerics;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Gopet.Data.Battle;
 using System;
 
@@ -207,6 +208,13 @@ namespace Gopet.Battle
                     case GopetCMD.PET_BATTLE_USE_ITEM:
                         MenuController.sendMenu(MenuController.MENU_SELECT_ITEM_SUPPORT_PET, player);
                         break;
+                    case GopetCMD.PET_BATTLE_SURRENDER:
+                        this.actions.Enqueue(new BattleAction()
+                        {
+                            Player = player,
+                            IsSurrender = true,
+                        });
+                        break;
                 }
             }
             else
@@ -225,6 +233,9 @@ namespace Gopet.Battle
                             break;
                         case GopetCMD.PET_BATTLE_USE_ITEM:
                             MenuController.sendMenu(MenuController.MENU_SELECT_ITEM_SUPPORT_PET, player);
+                            break;
+                        case GopetCMD.PET_BATTLE_SURRENDER:
+                            surrender(player);
                             break;
                     }
                 }
@@ -457,7 +468,7 @@ namespace Gopet.Battle
                 message.putInt(player.user.user_id);
                 writeMyPetInfo(player.playerData.petSelected, message, playerInZone);
                 message.putInt(mob.getMobId());
-                writeMobInfo(mob, message);
+                writeMobInfo(mob, message, playerInZone);
                 message.cleanup();
                 playerInZone.session.sendMessage(message);
             }
@@ -474,6 +485,7 @@ namespace Gopet.Battle
                 message.cleanup();
                 playerInZone.session.sendMessage(message);
             }
+            SendStatsTo(playerInZone);
         }
 
         public void sendStartFightPlayer()
@@ -502,6 +514,8 @@ namespace Gopet.Battle
             message.putbool(false);
             message.cleanup();
             passivePlayer.session.sendMessage(message);
+            sendBuffState();
+            sendStatsState();
         }
 
         public void sendStartFightMob(Mob mob, Player player)
@@ -517,10 +531,12 @@ namespace Gopet.Battle
                 message.putInt(player.user.user_id);
                 writeMyPetInfo(player.playerData.petSelected, message, item);
                 message.putInt(mob.getMobId());
-                writeMobInfo(mob, message);
+                writeMobInfo(mob, message, item);
                 message.cleanup();
                 item.session.sendMessage(message);
             }
+            sendBuffState();
+            sendStatsState();
         }
 
         public static void writeMyPetInfo(Pet pet, Message message, Player player)
@@ -554,19 +570,26 @@ namespace Gopet.Battle
             }
         }
 
-        public static void writeMobInfo(Mob mob, Message message)
+        public static void writeMobInfo(Mob mob, Message message, Player player)
         {
             message.putInt(mob.getMobId());
             message.putUTF(mob.getPetTemplate().frameImg);
             message.putsbyte(mob.Template.frameNum);
             message.putShort(mob.Template.vY);
             message.putUTF(mob.getPetTemplate().name);
-            message.putInt(1);
+            message.putInt(mob.lvl);
             message.putInt(mob.hp);
             message.putInt(mob.mp);
             message.putInt(mob.maxHp);
             message.putInt(mob.maxMp);
-            message.putsbyte(0);
+            var skills = mob.Skills;
+            message.putsbyte((sbyte)skills.Length);
+            foreach (var ms in skills)
+            {
+                PetSkill petSkill = GopetManager.PETSKILL_HASH_MAP.get(ms.skillID);
+                message.putInt(ms.skillID);
+                message.putUTF(petSkill.getName(player) + " " + ms.skillLv);
+            }
         }
 
         public static void writePetPassiveInfo(Pet petPassive, Message message, Player player)
@@ -655,7 +678,11 @@ namespace Gopet.Battle
                         {
                             if (this.actions.TryDequeue(out BattleAction result))
                             {
-                                if (result.IsNormalAttack)
+                                if (result.IsSurrender)
+                                {
+                                    surrender(result.Player);
+                                }
+                                else if (result.IsNormalAttack)
                                 {
                                     petAttack(result.Player);
                                 }
@@ -719,6 +746,8 @@ namespace Gopet.Battle
                 activePlayer.controller.sendMyPetInfo();
                 passivePlayer.controller.sendMyPetInfo();
             }
+            // Đẩy snapshot buff sau khi tick lượt xong — client >= 1.5.0 tiêu thụ, jar bỏ qua.
+            sendBuffState();
         }
 
         private int getFocus()
@@ -873,13 +902,18 @@ namespace Gopet.Battle
                 }
                 else
                 {
+                    // Thách đấu có cược: người thắng nhận cược*2 - 10% phí.
+                    // Đấu trường (coinBet=0) không cộng ngọc — điểm đã cộng ở ArenaPlace.ArenaData.removeAllPlayer().
                     if (price > 0)
                     {
                         int totalPrice = Utilities.round(price * 2 - Utilities.GetValueFromPercent(price * 2, GopetManager.BET_PRICE_PLAYER_CHALLENGE));
                         winner.addCoin(totalPrice);
                         winner.controller.getTaskCalculator().onWinBetBattle();
-                        win(petBattleTexts.ToArray(), price, 0);
                     }
+                    // LUÔN gửi PET_BATTLE_STATE cho cả 2 bên. Trước đây gói này bị bọc trong
+                    // if(price>0) nên trận đấu trường (coinBet=0) hoàn toàn không có gói kết thúc,
+                    // làm overlay bên client treo. Xem plans/260917-1812-pvp-arena-battle-parity/phase-01.
+                    win(petBattleTexts.ToArray(), price, 0);
                 }
             }
 
@@ -1316,11 +1350,11 @@ namespace Gopet.Battle
 
         private void mobUseSkill(PetSkill skill, PetSkillLv petSkillLv)
         {
-            bool isStun = ItemInfo.getValueById(activeBattleInfo.getBuff(), ItemInfo.Type.STUN) > 0 || Utilities.NextFloatPer() < ItemInfo.getValueById(activeBattleInfo.getBuff(), ItemInfo.Type.PER_STUN_1_TURN) / 100f;
+            bool isStun = ItemInfo.getValueById(passiveBattleInfo.getBuff(), ItemInfo.Type.STUN) > 0 || Utilities.NextFloatPer() < ItemInfo.getValueById(passiveBattleInfo.getBuff(), ItemInfo.Type.PER_STUN_1_TURN) / 100f;
             if (!isStun)
             {
-                PetBattleInfo nonPetBattleInfo = passiveBattleInfo;
-                PetBattleInfo petBattleInfo = activeBattleInfo;
+                PetBattleInfo petBattleInfo = passiveBattleInfo;
+                PetBattleInfo nonPetBattleInfo = activeBattleInfo;
                 if (mob.mp - petSkillLv.mpLost >= 0)
                 {
                     int mpdelta = 0;
@@ -1364,62 +1398,45 @@ namespace Gopet.Battle
                         activePlayer.controller.sendMyPetInfo();
                         turnEffects.add(new TurnEffect(TurnEffect.NONE, mob.getMobId(), -1, damageInfo.getHpRecovery(), 0));
                     }
+                    this.MobAttackTime = DateTime.Now.AddSeconds(2);
+                    this.IsMobFighted = true;
                     sendPetAttack(turnEffects, TurnEffect.createWait(-petSkillLv.mpLost, getUserTurnId()));
-                    nextTurn();
-                    if (hasWinner())
-                    {
-                        win();
-                    }
                     return;
                 }
-                nextTurn();
-                if (hasWinner())
-                {
-                    win();
-                }
+                this.IsMobFighted = true;
             }
             else
             {
-                nextTurn();
-                if (hasWinner())
-                {
-                    win();
-                }
+                this.IsMobFighted = true;
+            }
+            if (hasWinner())
+            {
+                win();
             }
         }
 
         private void mobAttack()
         {
+            var skills = mob.Skills;
+            if (skills.Length > 0)
+            {
+                foreach (var ms in skills)
+                {
+                    if (Utilities.NextFloatPer() * 100 < ms.useRate)
+                    {
+                        if (!GopetManager.PETSKILL_HASH_MAP.ContainsKey(ms.skillID)) continue;
+                        PetSkill petSkill = GopetManager.PETSKILL_HASH_MAP.get(ms.skillID);
+                        if (ms.skillLv < 1 || ms.skillLv > petSkill.skillLv.Count) continue;
+                        PetSkillLv petSkillLv = petSkill.skillLv.get(ms.skillLv - 1);
+                        if (!passiveBattleInfo.isCoolDown(ms.skillID) && mob.mp >= petSkillLv.mpLost)
+                        {
+                            mobUseSkill(petSkill, petSkillLv);
+                            return;
+                        }
+                    }
+                }
+            }
             mobUseNormalAttack();
-            //        if (this.mob.getMobLvInfo().getLvl() > 3) {
-            //            bool isUseSkill = Utilities.NextFloatPer() <= 200f;
-            //            if (isUseSkill) {
-            //                ArrayList<PetSkill> listSkill = GopetManager.NCLASS_PETSKILL_HASH_MAP.get(this.mob.getPetTemplate().getNclass());
-            //                if (listSkill != null) {
-            ////                    System.out.println("data.battle.PetBattle.mobAttack() list skill not null");
-            //                    if (!listSkill.isEmpty()) {
-            ////                        System.out.println("data.battle.PetBattle.mobAttack() list skill not empty");
-            //                        PetSkill petSkill = listSkill.get(Utilities.nextInt(listSkill.Count));
-            //                        int skillLv = Utilities.nextInt(0, Math.min(7, this.mob.getMobLvInfo().getLvl() / 7));
-            //                        PetSkillLv petSkillLv = petSkill.skillLv.get(skillLv);
-            ////                        System.out.println("data.battle.PetBattle.mobAttack() mp mob " + this.mob.mp);
-            //                        if ((passiveBattleInfo.isCoolDown(petSkill.skillID) || this.mob.mp < petSkillLv.mpLost)) {
-            //                            mobUseNormalAttack();
-            //                        } else {
-            //                            mobUseSkill(petSkill, petSkillLv);
-            //                        }
-            //                    } else {
-            //                        mobUseNormalAttack();
-            //                    }
-            //                } else {
-            //                    mobUseNormalAttack();
-            //                }
-            //            } else {
-            //                mobUseNormalAttack();
-            //            }
-            //        } else {
-            //            mobUseNormalAttack();
-            //        }
         }
 
         private void applySkill(PetSkillLv petSkillLv, PetBattleInfo petBattleInfo, PetBattleInfo nonBattleInfo)
@@ -1695,10 +1712,188 @@ namespace Gopet.Battle
         }
 
 
+        // -----------------------------------------------------------------
+        // PET_BATTLE_BUFF (opcode 38): snapshot buff/debuff của cả 2 pet.
+        // Gate ApplicationVersion >= 1.5.0 — jar cũ (<=1.4.2) không nhận opcode lạ.
+        // Cooldown không đưa vào gói này (MAX_SKILL_COOLDOWN=3 hằng số, client tự đếm).
+        // Whitelist loại bỏ type nội bộ không hữu ích cho người chơi (DAMAGE_PHANDOAN).
+        // -----------------------------------------------------------------
+        private const int MAX_BUFF_PER_ACTOR = 32;
+
+        private static readonly HashSet<int> BuffTypeWhitelist = new()
+        {
+            ItemInfo.Type.SKILL_BUFF_DAMGE, ItemInfo.Type.DEF, ItemInfo.Type.DEF_PER,
+            ItemInfo.Type.BUFF_STR, ItemInfo.Type.BUFF_DAMGE, ItemInfo.Type.DOT_MANA,
+            ItemInfo.Type.POWER_DOWN_4_TURN, ItemInfo.Type.SKILL_SKIP_DEF,
+            ItemInfo.Type.POWER_DOWN_3_TURN, ItemInfo.Type.SELECT_DEF_IN_3_TURN,
+            ItemInfo.Type.RECOVERY_HP, ItemInfo.Type.MISS_IN_99999_TURN,
+            ItemInfo.Type.DAMGE_TOXIC_IN_3_TURN_PER, ItemInfo.Type.DAMGE_TOXIC_IN_5_TURN,
+            ItemInfo.Type.POWER_DOWN_1_TURN, ItemInfo.Type.STUN,
+            ItemInfo.Type.BUFF_ATK_3_TURN, ItemInfo.Type.PHANDOAN_4_TURN,
+            ItemInfo.Type.PER_STUN_1_TURN, ItemInfo.Type.PER_DEF_BUFF_3_TURN,
+            ItemInfo.Type.DOT_MANA_BY_ATK,
+            ItemInfo.Type.BLOODSUCKING_BASED_ON_DAMAGE_PASSIVE_BUFF,
+            ItemInfo.Type.DAMGE_TOXIC_IN_999999_TURN, ItemInfo.Type.BUFF_DEF_IN_4_TURN,
+            ItemInfo.Type.RECOVERY_HP_IN_4_TURN,
+            ItemInfo.Type.TỈ_LỆ_ĐỊNH_THÂN_KHI_ĐÁNH_TRÚNG,
+        };
+
+        private void sendBuffState()
+        {
+            // PvE: activePlayer nhận với battleId = mình. PvP: mỗi bên nhận với battleId riêng.
+            SendBuffStateTo(activePlayer);
+            if (!petAttackMob && passivePlayer != null) SendBuffStateTo(passivePlayer);
+        }
+
+        private void SendBuffStateTo(Player target)
+        {
+            if (target?.ApplicationVersion == null || target.ApplicationVersion < GopetManager.VERSION_150) return;
+            if (target.session == null) return;
+            Message m = new Message(GopetCMD.PET_SERVICE);
+            m.putsbyte(GopetCMD.PET_BATTLE_BUFF);
+            m.putInt(target.user.user_id);
+            // Actor 1 = my pet (battleId owner), actor 2 = opponent — khớp quy ước sendPetAttack.
+            if (petAttackMob)
+            {
+                m.putsbyte(2);
+                WriteActorBuffs(m, target.user.user_id, activeBattleInfo);
+                WriteActorBuffs(m, mob.getMobId(), passiveBattleInfo);
+            }
+            else
+            {
+                var myInfo = target == activePlayer ? activeBattleInfo : passiveBattleInfo;
+                var otherInfo = target == activePlayer ? passiveBattleInfo : activeBattleInfo;
+                var otherId = target == activePlayer ? passivePlayer.user.user_id : activePlayer.user.user_id;
+                m.putsbyte(2);
+                WriteActorBuffs(m, target.user.user_id, myInfo);
+                WriteActorBuffs(m, otherId, otherInfo);
+            }
+            m.cleanup();
+            target.session.sendMessage(m);
+        }
+
+        private static void WriteActorBuffs(Message m, int actorId, PetBattleInfo info)
+        {
+            m.putInt(actorId);
+            var flat = new JArrayList<int[]>(); // [typeId, value, turnsLeft]
+            foreach (var buff in info.getBuffs())
+            {
+                foreach (var it in buff.infos)
+                {
+                    if (!BuffTypeWhitelist.Contains(it.id)) continue;
+                    if (flat.Count >= MAX_BUFF_PER_ACTOR) break;
+                    flat.add(new[] { it.id, it.value, buff.turn });
+                }
+                if (flat.Count >= MAX_BUFF_PER_ACTOR) break;
+            }
+            m.putsbyte((sbyte)flat.Count);
+            foreach (var row in flat)
+            {
+                m.putInt(row[0]);
+                m.putInt(row[1]);
+                m.putsbyte((sbyte)Math.Min(sbyte.MaxValue, Math.Max(0, row[2])));
+            }
+        }
+
+        private void sendStatsState()
+        {
+            SendStatsTo(activePlayer);
+            if (!petAttackMob && passivePlayer != null) SendStatsTo(passivePlayer);
+        }
+
+        private void SendStatsTo(Player target)
+        {
+            if (target?.ApplicationVersion == null || target.ApplicationVersion < GopetManager.VERSION_150) return;
+            if (target.session == null) return;
+            Message m = new Message(GopetCMD.PET_SERVICE);
+            m.putsbyte(GopetCMD.PET_BATTLE_STATS);
+            m.putInt(target.user.user_id);
+            if (petAttackMob)
+            {
+                m.putsbyte(2);
+                WriteActorStats(m, activePlayer.user.user_id, activePet);
+                WriteActorMobStats(m, mob);
+            }
+            else
+            {
+                var myPet = target == activePlayer ? activePet : passivePet;
+                var otherPet = target == activePlayer ? passivePet : activePet;
+                var otherId = target == activePlayer ? passivePlayer.user.user_id : activePlayer.user.user_id;
+                m.putsbyte(2);
+                WriteActorStats(m, target.user.user_id, myPet);
+                WriteActorStats(m, otherId, otherPet);
+            }
+            m.cleanup();
+            target.session.sendMessage(m);
+        }
+
+        private static void WriteActorStats(Message m, int actorId, Pet pet)
+        {
+            m.putInt(actorId);
+            m.putInt(pet.lvl);
+            m.putInt(pet.getAtk());
+            m.putInt(pet.getDef());
+            m.putShort((short)Math.Clamp(Utilities.round(pet.CritPercent * 10), 0, 1000));
+            sbyte count = (sbyte)Math.Min(pet.skill.Length, 16);
+            m.putsbyte(count);
+            for (int i = 0; i < count; i++)
+            {
+                int skillId = pet.skill[i][0];
+                int skillLv = pet.skill[i][1];
+                PetSkill ps = GopetManager.PETSKILL_HASH_MAP.get(skillId);
+                PetSkillLv lv = ps.skillLv.get(skillLv - 1);
+                m.putInt(skillId);
+                m.putInt(lv.mpLost);
+            }
+        }
+
+        private static void WriteActorMobStats(Message m, Mob mob)
+        {
+            m.putInt(mob.getMobId());
+            m.putInt(mob.lvl);
+            m.putInt(mob.getAtk());
+            m.putInt(mob.getDef());
+            m.putShort((short)Math.Clamp(Utilities.round(mob.CritPercent * 10), 0, 1000));
+            var skills = mob.Skills;
+            sbyte count = (sbyte)Math.Min(skills.Length, 16);
+            m.putsbyte(count);
+            foreach (var ms in skills)
+            {
+                if (count-- <= 0) break;
+                PetSkill ps = GopetManager.PETSKILL_HASH_MAP.get(ms.skillID);
+                PetSkillLv lv = ps.skillLv.get(ms.skillLv - 1);
+                m.putInt(ms.skillID);
+                m.putInt(lv.mpLost);
+            }
+        }
+
+        private void surrender(Player player)
+        {
+            if (hadFinished) return;
+            isClose = true;
+            ClosePlayer = player;
+            if (hasWinner())
+            {
+                win();
+            }
+        }
+
         public void sendFastRemove()
         {
+            // Quy ước battleId: userId của người NHẬN gói. Trong PvP mỗi bên có battleId
+            // riêng (xem sendStartFightPlayer), nên phải phát 2 gói — trước đây chỉ phát 1
+            // với activePlayer.user_id nên bên passive không bao giờ khớp và overlay không đóng.
+            sendFastRemove(activePlayer.user.user_id);
+            if (!petAttackMob && passivePlayer != null)
+            {
+                sendFastRemove(passivePlayer.user.user_id);
+            }
+        }
+
+        private void sendFastRemove(int battleId)
+        {
             Message message = GameController.messagePetService(GopetCMD.FAST_REMOVE_MOB);
-            message.putInt(activePlayer.user.user_id);
+            message.putInt(battleId);
             message.cleanup();
             place.sendMessage(message);
         }

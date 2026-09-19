@@ -127,7 +127,13 @@ namespace Gopet.Net.Images
                 }
                 else
                 {
+                    // Trước đây _pending.Remove xoá luôn Waiters → waiter callback (từ
+                    // RemoteAssetCache.Get) không bao giờ chạy → NPC đọng placeholder
+                    // vĩnh viễn. Bắn synthetic response (Png=null) trước khi xoá để
+                    // downstream biết "load fail" và có thể swap sang fallback texture.
+                    var failed = new ImageResponse { GameType = 0, Type = entry.Type, Path = path, Png = null };
                     _pending.Remove(path);
+                    NotifyAll(entry, failed);
                     TimedOut?.Invoke(path);
                 }
             }

@@ -23,6 +23,12 @@ namespace Gopet.Runtime.World
         private const int GrassImageIdA = 11161;
         private const int GrassImageIdB = 11162;
         private const int StoneBorderImageId = 11003;
+        private const int ShopBuildingAnimationId = 190;
+        private const int ShopBuildingBaseImageId = 189;
+        private const int PineTreeImageId = 158;
+        private const int TopPineRowMaxY = 100;
+        private const int CloudImageIdMin = 30;
+        private const int CloudImageIdMax = 36;
 
         private static Material _unlitMaterial;
         private readonly List<MapPortalView> _portals = new List<MapPortalView>();
@@ -63,7 +69,42 @@ namespace Gopet.Runtime.World
             Map = map;
             BuildTileLayers(map);
             BuildObjects(map);
+            if (_mapId == BeastCityMapId) BuildBeastCityGarden(map);
             BuildMapEntities(map);
+        }
+
+        private void BuildBeastCityGarden(JarMapLayout map)
+        {
+            var garden = new GameObject("Beast City North Garden");
+            garden.transform.SetParent(transform, false);
+            var order = MapPlacement.ObjectSortingOrder(map.Objects.Length);
+
+            // Bottom-centre anchors in map pixels, matching the reference's north lawn.
+            // The existing lamp is at (221, 113); the pavement starts at y = 120.
+            PlaceGardenObject(garden.transform, "Left Pine", PineTreeImageId, 148, 96, 1.3f, order);
+            PlaceGardenObject(garden.transform, "Right Pine", PineTreeImageId, 316, 96, 1.3f, order);
+            PlaceGardenObject(garden.transform, "Left Wooden Bench", 39, 178, 106, 1.5f, order + 1);
+            PlaceGardenObject(garden.transform, "Right Wooden Bench", 39, 277, 96, 1.5f, order + 1);
+            PlaceGardenObject(garden.transform, "Flower Bush", 40, 20, 113, 1.8f, order + 2);
+            for (var i = 0; i < 3; i++)
+                PlaceGardenObject(garden.transform, $"Flower Bed Fence {i + 1}", 12,
+                    6 + i * 18, 117, 0.85f, order + 3);
+
+            // Reference: east of the TAE machine, above the arena path. The generated
+            // 1536x1024 PNG has a 1212px-wide opaque bed and 101px bottom padding.
+            // Scale the visible bed to 82 map pixels and place it in the middle of
+            // the grass lawn, below the mountain area.
+            PlaceGardenObject(garden.transform, "Stone Ring Flower Bed", 11163,
+                512, 115, 82f / 1212f, order + 4);
+        }
+
+        private void PlaceGardenObject(Transform parent, string objectName, int imageId,
+            int jarX, int jarY, float scale, int sortingOrder)
+        {
+            var sprite = TileAssetProvider.FootObject($"newMapData/{imageId}");
+            var placed = PlaceObject(parent, sprite, jarX, jarY, sortingOrder);
+            placed.name = objectName;
+            placed.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
         private void BuildTileLayers(JarMapLayout map)
@@ -140,6 +181,11 @@ namespace Gopet.Runtime.World
                 if (idx < 0 || idx >= map.ResourceIds.Length) continue;
 
                 var id = map.ResourceIds[idx];
+                if (_mapId == BeastCityMapId &&
+                    (id == ShopBuildingAnimationId || id == ShopBuildingBaseImageId ||
+                     (id >= CloudImageIdMin && id <= CloudImageIdMax) ||
+                     (id == PineTreeImageId && item.Y <= TopPineRowMaxY)))
+                    continue;
                 var footY = item.Y - item.YOffset;
                 var order = MapPlacement.ObjectSortingOrder(i);
                 if (map.ResourceTypes[idx] == JarMapLayout.TypeAnimation)
@@ -162,6 +208,8 @@ namespace Gopet.Runtime.World
             {
                 if (entity.Kind == 0)
                 {
+                    if (_mapId == BeastCityMapId && entity.BuildingType >= 27 && entity.BuildingType <= 30)
+                        continue;
                     // Nhà/shop: có buildingType (0-32), không có Name. Dựng MapBuildingView để bấm.
                     var building = MapBuildingView.Create(transform, entity, map.HeightPixels);
                     building.Selected += e => BuildingSelected?.Invoke(e);
@@ -175,7 +223,7 @@ namespace Gopet.Runtime.World
             }
         }
 
-        private void PlaceObject(Transform parent, Sprite sprite, int jarX, int jarY, int sortingOrder)
+        private GameObject PlaceObject(Transform parent, Sprite sprite, int jarX, int jarY, int sortingOrder)
         {
             var (wx, wy) = MapPlacement.JarToWorld(jarX, jarY, Map.HeightPixels);
             var go = new GameObject("Object", typeof(SpriteRenderer));
@@ -186,6 +234,7 @@ namespace Gopet.Runtime.World
             sr.sprite = sprite;
             sr.sortingOrder = sortingOrder;
             ApplyUnlitMaterial(sr);
+            return go;
         }
 
         private static void ApplyUnlitMaterial(Renderer renderer)

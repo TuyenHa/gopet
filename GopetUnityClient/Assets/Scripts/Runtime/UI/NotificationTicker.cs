@@ -23,12 +23,11 @@ namespace Gopet.Runtime.UI
         // delivers non-empty text from the server.
         private const string SpeakerResource = "Ui/Hud/notify-speaker-v2";
 
-        // CharacterHud (280×86 tại 12,-12) chiếm y=[12..98] ở góc trên-trái. TopMargin=92
-        // nâng ticker thêm 10px theo bố cục gameplay. SideMargin=252 cho
-        // width = 960-504 = 456 (dài hơn bản 260 cũ 15px như yêu cầu).
-        private const float TopMargin = 92f;
-        private const float SideMargin = 252f;
-        private const float Height = 36f;
+        // Neo cao ở vùng giữa phía trên; hai SideMargin bằng nhau để pill luôn căn giữa.
+        // Leave the resource bar (gold, bean and rice) visible above the ticker.
+        private const float TopMargin = 38f;
+        private const float SideMargin = 330f;
+        private const float Height = 32f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài
         private const float SpeakerOverhang = 14f;  // px thò ra mép trái pill
         private const float TextLeftPad = 40f;      // chỗ trống bên trong pill cho loa

@@ -15,8 +15,10 @@ namespace Gopet.Net.Auth
     /// </summary>
     public sealed class ClientInfo
     {
-        /// <summary>Server so với <c>VERSION_142</c>; nhỏ hơn là bị từ chối.</summary>
-        public string Version = "1.4.3";
+        /// <summary>Server so với <c>VERSION_142</c>; nhỏ hơn là bị từ chối. Nâng 1.5.0
+        /// để đủ <c>VERSION_150</c> — server gate PET_BATTLE_BUFF theo ngưỡng này
+        /// (xem plans/260917-1812-pvp-arena-battle-parity/phase-04).</summary>
+        public string Version = "1.5.0";
 
         /// <summary>Chuỗi mô tả nền tảng. Server chỉ lưu, không kiểm.</summary>
         public string Info = "unity";

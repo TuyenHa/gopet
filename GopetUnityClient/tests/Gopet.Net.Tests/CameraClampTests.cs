@@ -48,5 +48,40 @@ namespace Gopet.Net.Tests
             Assert.Equal(0, CameraClamp.ClampAxis(-10, 320, 200));
         }
 
+        /// <summary>Map 12 (ải) rộng 360 trên màn 16:9 từng lộ hai dải nền xanh navy hai bên:
+        /// khung nhìn cao 240 × aspect 1.95 = rộng 468 > 360. Xem <c>FitOrthographicSize</c>.</summary>
+        [Fact]
+        public void FitOrthographicSize_MapHepHonKhungNhin_ThuTamNhinLai()
+        {
+            var fit = CameraClamp.FitOrthographicSize(120f, 360, 360, 1.95f);
+
+            Assert.True(fit < 120f, "phải thu nhỏ, nếu không hai mép vẫn hở nền");
+            // Thu vừa đủ để bề ngang khung nhìn bằng đúng bề ngang map.
+            Assert.Equal(360f, fit * 2f * 1.95f, 3);
+        }
+
+        [Fact]
+        public void FitOrthographicSize_MapRongHonKhungNhin_GiuNguyen()
+        {
+            // 768×576 ở aspect 1.95: khung nhìn 468×240, map trùm hết → không đụng vào zoom.
+            Assert.Equal(120f, CameraClamp.FitOrthographicSize(120f, 768, 576, 1.95f));
+        }
+
+        [Fact]
+        public void FitOrthographicSize_MapThapHonKhungNhin_ThuTheoChieuCao()
+        {
+            // Map 900×180: đủ rộng nhưng thấp hơn 240 → cạnh trên/dưới mới là chỗ hở.
+            Assert.Equal(90f, CameraClamp.FitOrthographicSize(120f, 900, 180, 1.95f));
+        }
+
+        [Theory]
+        [InlineData(0, 360, 1.95f)]   // map rỗng
+        [InlineData(360, 0, 1.95f)]
+        [InlineData(360, 360, 0f)]    // aspect 0: màn chưa dựng xong
+        public void FitOrthographicSize_DuLieuVoLy_GiuNguyenThayViTraVe0(int w, int h, float aspect)
+        {
+            // orthographicSize 0 làm camera không vẽ nổi gì — thà giữ giá trị mong muốn.
+            Assert.Equal(120f, CameraClamp.FitOrthographicSize(120f, w, h, aspect));
+        }
     }
 }

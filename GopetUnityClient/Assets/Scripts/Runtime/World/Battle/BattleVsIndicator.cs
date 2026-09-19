@@ -4,9 +4,15 @@ using UnityEngine.UI;
 
 namespace Gopet.Runtime.World.Battle
 {
-    /// <summary>Khối "VS" giữa màn đấu — ghim đỉnh cách lề dưới top bar (32px) 10px.</summary>
+    /// <summary>Khối "VS" giữa màn đấu — ghim đỉnh cách lề dưới top bar (32px) 10px,
+    /// nhãn "Đến lượt bạn" nằm dưới badge đúng <see cref="GapPx"/>.</summary>
     public sealed class BattleVsIndicator : MonoBehaviour
     {
+        private const float RefHeight = 540f;      // CanvasScaler referenceResolution.y
+        private const float GapPx = 5f;            // khoảng hở giữa đáy badge và đỉnh nhãn
+        private const float LabelHeightPx = 36f;
+        private const int FontSize = 22;
+
         private Text _turnLabel;
 
         public static BattleVsIndicator Create(Transform parent, Font font)
@@ -30,14 +36,34 @@ namespace Gopet.Runtime.World.Battle
             bRect.anchorMax = new Vector2(0.57f, 0.76f + deltaY);
             bRect.offsetMin = bRect.offsetMax = Vector2.zero;
 
-            indicator._turnLabel = UiBuilder.MakeText(go.transform, font, "Thông báo lượt", 13, false);
+            indicator._turnLabel = UiBuilder.MakeText(go.transform, font, "Thông báo lượt", FontSize, false);
             var tRect = indicator._turnLabel.rectTransform;
-            tRect.anchorMin = new Vector2(0.3f, 0.54f + deltaY);
-            tRect.anchorMax = new Vector2(0.7f, 0.59f + deltaY);
+            // Cách đáy badge đúng GapPx. Quy về tỉ lệ vì anchor tính theo chiều cao canvas,
+            // mà CanvasScaler khớp theo chiều cao (matchWidthOrHeight = 1) nên 1px luôn là
+            // 1/540 bất kể tỉ lệ màn hình.
+            var labelTopY = 0.58f + deltaY - GapPx / RefHeight;
+            tRect.anchorMin = new Vector2(0.3f, labelTopY - LabelHeightPx / RefHeight);
+            tRect.anchorMax = new Vector2(0.7f, labelTopY);
             tRect.offsetMin = tRect.offsetMax = Vector2.zero;
             indicator._turnLabel.alignment = TextAnchor.MiddleCenter;
             indicator._turnLabel.fontStyle = FontStyle.Bold;
-            indicator._turnLabel.color = new Color(1f, 0.92f, 0.45f, 1f);
+            // Vàng cam đậm, KHÔNG dùng vàng nhạt: viền trắng bao quanh nên chữ phải tối màu
+            // hơn viền, nếu không hai sắc sáng đè nhau thành một vệt mờ.
+            indicator._turnLabel.color = new Color(1f, 0.72f, 0.05f, 1f);
+
+            // Thứ tự QUAN TRỌNG: Outline trước, Shadow sau. Unity UI cho mỗi hiệu ứng nhân bản
+            // luồng đỉnh của các hiệu ứng trước nó, nên Shadow sau sẽ đổ bóng cho cả cụm
+            // chữ-kèm-viền. Đảo lại thành Shadow trước thì viền sẽ bao quanh cả bóng, trông bẩn.
+            var outline = indicator._turnLabel.gameObject.AddComponent<Outline>();
+            outline.effectColor = Color.white;
+            outline.effectDistance = new Vector2(2f, -2f);
+            outline.useGraphicAlpha = false;
+
+            // Bóng tối tách chữ khỏi nền rừng sáng — viền trắng một mình chìm nghỉm trên nền sáng.
+            var shadow = indicator._turnLabel.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            shadow.effectDistance = new Vector2(0f, -3f);
+            shadow.useGraphicAlpha = false;
             return indicator;
         }
 

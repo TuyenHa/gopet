@@ -25,6 +25,10 @@ namespace Gopet.Runtime.World
         private const float TeleportDistance = 160f;
         private const float FrameInterval = 0.2f;
 
+        /// <summary>Khoảng chết trước khi đổi hướng nhìn, pixel. Thiếu nó thì lúc pet đứng gần
+        /// trùng trục owner, dấu của dx đảo liên tục và sprite lật qua lật lại.</summary>
+        private const float FaceDeadZone = 5f;
+
         private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
 
         private Transform _owner;
@@ -112,12 +116,26 @@ namespace Gopet.Runtime.World
             _renderer.sortingOrder = order;
             _label?.SetSortingOrder(order + 20);
 
+            FaceOwner();
+
             if (_frames.Length > 1 && Time.time >= _nextFrameTime)
             {
                 _nextFrameTime = Time.time + FrameInterval;
                 _frame = (_frame + 1) % _frames.Length;
                 _renderer.sprite = _frames[_frame];
             }
+        }
+
+        /// <summary>Quay mặt về phía chủ. Pet đi sau lưng nên nếu không quay thì hay thấy nó
+        /// quay lưng vào người chơi.</summary>
+        private void FaceOwner()
+        {
+            if (_renderer == null || _owner == null) return;
+            var dx = _owner.position.x - transform.position.x;
+            if (Mathf.Abs(dx) < FaceDeadZone) return;
+            // Sprite pet vẽ sẵn quay TRÁI — xem BattlePetCard: chỉ card BÊN TRÁI mới lật
+            // (localScale.x = -1) để nhìn sang đối thủ bên phải. Nên chủ ở bên phải thì lật.
+            _renderer.flipX = dx > 0f;
         }
 
         private void SnapBesideOwner()

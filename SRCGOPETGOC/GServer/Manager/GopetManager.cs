@@ -650,7 +650,9 @@ public class GopetManager
     /// Giá tiền kích hoạt tài khoản
     /// </summary>
     public const int PRICE_ACTIVE_USER = 20000;
-    public const int TIME_DELAY_HEAL_WHEN_MOB_KILL_PET = 30000;
+    /// <summary>Thời gian phạt chờ trước khi pet bắt đầu tự hồi máu sau khi thua quái (ms).
+    /// Hết chờ thì hồi 20% HP/MP mỗi 3 giây (<c>Player.TIME_PET_RECOVERY</c>).</summary>
+    public const int TIME_DELAY_HEAL_WHEN_MOB_KILL_PET = 10000;
     /// <summary>
     /// Giá mở khóa ô kỹ năng bang hội
     /// </summary>

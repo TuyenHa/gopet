@@ -251,6 +251,8 @@ namespace Gopet.Runtime.World
             {
                 // HP/MP self pet — nối vào CharacterHud (3 thanh còn "--" ở Phase 1).
                 s._hud.Character.SetStats(p.Hp, p.MaxHp, p.Mp, p.MaxMp, 0, 100);
+                // …và vào màn đấu: HP hồi từ bình máu CHỈ đi qua gói này, không qua opcode 37.
+                s._battle?.View?.SyncLocalVitals(p.Hp, p.MaxHp, p.Mp, p.MaxMp);
             };
 
             // Danh hiệu/decoration đang dùng của mọi người trong map. Server có thể gửi danh

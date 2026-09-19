@@ -41,10 +41,17 @@ namespace Gopet.Runtime.World
             ShowToast($"Tự hồi HP: {(enabled ? "Bật" : "Tắt")}");
         }
 
+        /// <summary>Gửi trạng thái tự hồi HP sau khi đăng nhập. Server khởi tạo
+        /// <c>isPetRecovery = false</c> (<c>Player.cs:43</c>) và KHÔNG nhớ giữa các phiên,
+        /// nên phải gửi lại mỗi lần vào — kể cả khi tắt, để trạng thái hai bên khớp nhau.
+        ///
+        /// <para>Mặc định BẬT: thua quái xong mà pet không bao giờ hồi máu là bế tắc, người
+        /// chơi không tự đoán được là phải vào Cài đặt bật lên. Server vẫn phạt chờ 30 giây
+        /// sau khi thua (<c>TIME_DELAY_HEAL_WHEN_MOB_KILL_PET</c>) rồi mới hồi 20%/3 giây.</para></summary>
         internal void RestoreAutoRecoveryOnLogin()
         {
-            try { _autoRecovery = PlayerPrefs.GetInt(AutoRecoveryPrefKey, 0) == 1; } catch { _autoRecovery = false; }
-            if (_autoRecovery) _battleHandler?.SetAutoRecovery(true);
+            try { _autoRecovery = PlayerPrefs.GetInt(AutoRecoveryPrefKey, 1) == 1; } catch { _autoRecovery = true; }
+            _battleHandler?.SetAutoRecovery(_autoRecovery);
         }
 
         private void OpenSettings()

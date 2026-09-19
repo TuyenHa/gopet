@@ -67,6 +67,13 @@ namespace Gopet.Runtime.World
             // chiều rộng = cao × aspect. KHÔNG dùng PixelCanvasLayout.LogicalWidth ở đây — cái đó
             // là width logic của UI canvas, không phải camera. Dùng nhầm thì camera offset lệch,
             // map hiện chỉ một góc màn (trả giá đã từng).
+            // Thu tầm nhìn nếu map hẹp/thấp hơn khung nhìn, nếu không hai mép lộ màu nền
+            // camera. Tính LẠI mỗi frame chứ không đặt một lần lúc Attach: đổi map thì kích
+            // thước map đổi, mà xoay máy hay kéo cửa sổ thì aspect cũng đổi.
+            _cam.orthographicSize = CameraClamp.FitOrthographicSize(
+                PixelCanvasLayout.ReferenceHeight / (2f * MapPlacement.PixelsPerUnit),
+                mapW, mapH, _cam.aspect);
+
             var worldViewH = _cam.orthographicSize * 2f;
             var worldViewW = worldViewH * _cam.aspect;
             var effW = System.Math.Min(mapW, (int)(worldViewW * MapPlacement.PixelsPerUnit));

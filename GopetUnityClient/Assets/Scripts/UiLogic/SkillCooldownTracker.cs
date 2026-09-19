@@ -16,11 +16,26 @@ namespace Gopet.UiLogic
         private readonly Dictionary<int, int> _remaining = new Dictionary<int, int>();
         private readonly int _initialTurns;
         private int _lastActorId = -1;
+        private int _lastUsedSkillId = -1;
 
         public SkillCooldownTracker(int initialTurns = DefaultTurns) { _initialTurns = initialTurns; }
 
         /// <summary>Client vừa bấm skill thành công (server chưa từ chối).</summary>
-        public void MarkUsed(int skillId) => _remaining[skillId] = _initialTurns;
+        public void MarkUsed(int skillId)
+        {
+            _remaining[skillId] = _initialTurns;
+            _lastUsedSkillId = skillId;
+        }
+
+        /// <summary>Huỷ lần <see cref="MarkUsed"/> gần nhất — dùng khi server báo kỹ năng
+        /// TRƯỢT: server không trừ MP và không đặt cooldown cho đòn trượt, nên cooldown lạc
+        /// quan của client sẽ xám nút oan 3 lượt nếu không gỡ.</summary>
+        public void CancelLastUsed()
+        {
+            if (_lastUsedSkillId < 0) return;
+            _remaining.Remove(_lastUsedSkillId);
+            _lastUsedSkillId = -1;
+        }
 
         /// <summary>Gọi khi nhận <c>BattleTurn</c>. Chỉ giảm khi <paramref name="actorId"/>
         /// là chính mình — tránh giảm nhầm lượt của đối thủ.</summary>
@@ -50,6 +65,6 @@ namespace Gopet.UiLogic
         public int TurnsLeft(int skillId) =>
             _remaining.TryGetValue(skillId, out var n) ? n : 0;
 
-        public void Reset() { _remaining.Clear(); _lastActorId = -1; }
+        public void Reset() { _remaining.Clear(); _lastActorId = -1; _lastUsedSkillId = -1; }
     }
 }

@@ -9,9 +9,11 @@ namespace Gopet.Runtime.World.Battle
 {
     public sealed class BattleActionBar : MonoBehaviour
     {
-        private readonly List<Button> _buttons = new List<Button>();
+        /// <summary>Chỉ các nút bị khoá theo lượt. Nút xin thua CỐ Ý nằm ngoài danh sách:
+        /// người chơi phải bỏ cuộc được cả trong lượt quái, và trước đây nó nằm trong đây
+        /// nên <see cref="LockSurrender"/> bị huỷ ngay ở gói lượt kế tiếp.</summary>
+        private readonly List<Button> _actionButtons = new List<Button>();
         private Button _surrenderBtn;
-        private float _unlockAt;
         private static Sprite _rounded;
 
         public event Action AttackClicked;
@@ -37,7 +39,6 @@ namespace Gopet.Runtime.World.Battle
                 SoundManager.Instance?.PlayEffect("s_button_ingame");
                 bar.SurrenderClicked?.Invoke();
             });
-            bar._buttons.Add(bar._surrenderBtn);
 
             var potionBtn = MakeItemBtn(go.transform, font);
             potionBtn.onClick.AddListener(() =>
@@ -45,7 +46,7 @@ namespace Gopet.Runtime.World.Battle
                 SoundManager.Instance?.PlayEffect("s_button_ingame");
                 bar.PotionClicked?.Invoke();
             });
-            bar._buttons.Add(potionBtn);
+            bar._actionButtons.Add(potionBtn);
 
             var attackBtn = MakeAttackBtn(go.transform, font);
             attackBtn.onClick.AddListener(() =>
@@ -53,7 +54,7 @@ namespace Gopet.Runtime.World.Battle
                 SoundManager.Instance?.PlayEffect("s_attack");
                 bar.AttackClicked?.Invoke();
             });
-            bar._buttons.Add(attackBtn);
+            bar._actionButtons.Add(attackBtn);
 
             if (!isParticipant) go.SetActive(false);
             return bar;
@@ -142,26 +143,17 @@ namespace Gopet.Runtime.World.Battle
             return _rounded;
         }
 
-        public void Lock()
+        /// <summary>Bật/tắt nút hành động theo lượt. Thay cho cặp Lock/Unlock cũ vốn mở
+        /// lại sau 3.5s bất kể có tới lượt hay chưa — server sẽ trả
+        /// <c>redDialog("Chưa tới lượt của bạn")</c> (<c>PetBattle.cs:317</c>).</summary>
+        public void SetActionsInteractable(bool on)
         {
-            foreach (var b in _buttons) b.interactable = false;
-            _unlockAt = Time.unscaledTime + 3.5f;
-        }
-
-        public void Unlock()
-        {
-            foreach (var b in _buttons) b.interactable = true;
-            _unlockAt = 0f;
+            foreach (var b in _actionButtons) b.interactable = on;
         }
 
         public void LockSurrender()
         {
             if (_surrenderBtn != null) _surrenderBtn.interactable = false;
-        }
-
-        private void Update()
-        {
-            if (_unlockAt > 0f && Time.unscaledTime >= _unlockAt) Unlock();
         }
     }
 }

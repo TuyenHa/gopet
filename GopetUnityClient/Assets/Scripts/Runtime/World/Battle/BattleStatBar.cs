@@ -9,6 +9,9 @@ namespace Gopet.Runtime.World.Battle
         private Image _fill;
         private Text _label;
         private int _current, _max;
+        /// <summary>Giá trị đang VẼ, trượt dần về <c>_current</c>. Jar không nhảy số mà chia
+        /// đôi khoảng cách mỗi frame (<c>bd.java:196-240</c>). Nhãn vẫn in số thật ngay.</summary>
+        private float _display = -1f;
         private Color _normalColor;
         private float _blinkTimer;
         private bool _blinkVisible = true;
@@ -97,12 +100,13 @@ namespace Gopet.Runtime.World.Battle
         {
             _current = Mathf.Max(0, current);
             _max = Mathf.Max(1, max);
+            if (_display < 0f) _display = _current; // lần đầu: vẽ thẳng, không lerp từ 0
             Refresh();
         }
 
         private void Refresh()
         {
-            var ratio = Mathf.Clamp01((float)_current / _max);
+            var ratio = Mathf.Clamp01(_display / _max);
             _fill.rectTransform.anchorMax = new Vector2(ratio, 1f);
             _label.text = $"{_current}/{_max}";
         }
@@ -110,6 +114,16 @@ namespace Gopet.Runtime.World.Battle
         private void Update()
         {
             if (_max <= 0) return;
+            if (Mathf.Abs(_display - _current) > 0.5f)
+            {
+                _display += (_current - _display) * 0.5f;
+                Refresh();
+            }
+            else if (!Mathf.Approximately(_display, _current))
+            {
+                _display = _current;
+                Refresh();
+            }
             var lowHp = _current * 4 <= _max;
             if (!lowHp) { _fill.color = _normalColor; return; }
             _blinkTimer += Time.unscaledDeltaTime;

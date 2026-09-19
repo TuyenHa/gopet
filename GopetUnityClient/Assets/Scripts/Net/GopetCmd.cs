@@ -49,6 +49,7 @@ namespace Gopet.Net
         public const sbyte PET_BATTLE = 37;
         public const sbyte PET_BATTLE_BUFF = 38;
         public const sbyte PET_BATTLE_STATS = 43;
+        public const sbyte PET_BATTLE_EXP = 33;
         public const sbyte PET_BATTLE_SURRENDER = 5;
         public const sbyte PET_BATTLE_STATE = 16;
         public const sbyte PET_RECOVERY_HP = 45;

@@ -16,6 +16,7 @@ namespace Gopet.Net.Battle
         public event Action<int> PetLevelUpdated;
         public event Action<BattleBuffState> BuffStateReceived;
         public event Action<BattleStatsState> StatsReceived;
+        public event Action<BattleExpGain> HitExpReceived;
 
         public BattleHandler(Action<Message> send = null, int localUserId = -1)
         {
@@ -35,6 +36,20 @@ namespace Gopet.Net.Battle
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.UPDATE_PET_LVL, OnPetLevel);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_BUFF, OnBuffState);
             router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_STATS, OnStats);
+            router.RegisterSub(GopetCmd.PET_SERVICE, GopetCmd.PET_BATTLE_EXP, OnHitExp);
+        }
+
+        /// <summary>EXP nhỏ giọt mỗi đòn trúng trong PvE — số vàng bay trên đầu pet.
+        /// Server chỉ gửi cho client &gt;= 1.5.0 (<c>HitExpReward.Send</c>).</summary>
+        private void OnHitExp(Message msg)
+        {
+            var r = msg.Reader;
+            var gain = new BattleExpGain
+            {
+                BattleId = r.ReadInt(), ActorId = r.ReadInt(), Amount = r.ReadInt()
+            };
+            r.ExpectFullyConsumed("PET_BATTLE_EXP");
+            HitExpReceived?.Invoke(gain);
         }
 
         private void OnBuffState(Message msg)
@@ -76,6 +91,12 @@ namespace Gopet.Net.Battle
             var mobId = r.ReadInt();
             start.Opponent = BattleAuxPacketReader.ReadPassivePet(r, mobId);
             start.IsParticipant = ownerId == _localUserId;
+            // Wire PvE không có cờ "ai đi trước" (khác PLAYER_BATTLE), nên suy ra từ server:
+            // constructor PvE đặt setIsActiveTurn(false) (PetBattle.cs:66) ⇒ getUserTurnId()
+            // trả mob.getMobId(), và MobAttackTime khởi tạo = DateTime.Now (:33) đã quá hạn
+            // ngay ⇒ update() gọi mobAttack() ở tick đầu. QUÁI ĐI TRƯỚC, không phải người chơi.
+            // Gói lượt đầu tiên (của quái) sẽ lật IsLocalTurn sang true.
+            start.LocalStarts = false;
             r.ExpectFullyConsumed("ATTACK_MOB");
             BattleStarted?.Invoke(start);
         }

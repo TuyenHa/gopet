@@ -41,6 +41,12 @@ namespace Gopet.Net.Battle
         public BattleEffect[] Effects = Array.Empty<BattleEffect>();
     }
 
+    /// <summary>EXP nhỏ giọt cho một đòn trúng (opcode 81/33, gate 1.5.0).</summary>
+    public sealed class BattleExpGain
+    {
+        public int BattleId, ActorId, Amount;
+    }
+
     public sealed class BattleResult
     {
         public int BattleId, WinnerId, Coin, Experience;

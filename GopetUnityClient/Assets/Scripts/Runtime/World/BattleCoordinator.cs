@@ -79,6 +79,11 @@ namespace Gopet.Runtime.World
         private void OnRemoved(int battleId)
         {
             if (_view == null) return;
+            // Khi THẮNG, server gửi PET_BATTLE_STATE rồi sendFastRemove() ngay sau đó
+            // (PetBattle.cs:951-955) vì quái đã chết. Đóng ngay ở đây sẽ giết panel kết quả
+            // trong cùng frame — thắng thì panel loé rồi biến mất, thua thì panel ở lại.
+            // Hai đằng phải giống nhau: có panel thì để nó tự hết giờ rồi về map.
+            if (_view.HasResult) return;
             // PvP có 2 gói FAST_REMOVE với battleId khác nhau (một cho mỗi bên) từ khi
             // phase-01 sửa server. Client vẫn phải khớp cả OpponentActorId để bền với
             // server cũ chưa có bản sửa.

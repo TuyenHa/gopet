@@ -197,5 +197,16 @@ namespace Gopet.Data.Mob
             }
             return base.getAtk();
         }
+
+        /// <summary>Đối xứng với <see cref="getAtk"/>: ưu tiên cột `def` trong `gopet_mob`,
+        /// NULL thì quay về <c>agi/3</c> của <c>GameObject</c>.</summary>
+        public override int getDef()
+        {
+            if (this.mobLvInfo.def.HasValue)
+            {
+                return this.mobLvInfo.def.Value;
+            }
+            return base.getDef();
+        }
     }
 }

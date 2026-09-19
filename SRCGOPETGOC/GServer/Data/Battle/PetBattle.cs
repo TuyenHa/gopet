@@ -1,4 +1,4 @@
-using Gopet.Data.GopetClan;
+﻿using Gopet.Data.GopetClan;
 using Gopet.Data.Collections;
 using Gopet.Data.GopetItem;
 using Gopet.Data.Mob;
@@ -60,7 +60,11 @@ namespace Gopet.Battle
             this.mob = mob;
             this.place = place;
             this.activePlayer = activePlayer;
-            this.activePlayer.isPetRecovery = false;
+            // KHÔNG tắt isPetRecovery ở đây. Nó là TUỲ CHỌN của người chơi (bật/tắt qua
+            // opcode PET_RECOVERY_HP), không phải cờ trạng thái nội bộ — tắt ở đây là xoá
+            // mất lựa chọn của họ vĩnh viễn vì không chỗ nào bật lại.
+            // Vòng hồi máu (Player.cs:377) đã tự kiểm `getPetBattle() == null` nên đang
+            // đánh nhau vốn đã không hồi; dòng cũ hoàn toàn thừa.
             setActivePet(activePlayer.playerData.petSelected);
             setDelaTimeTurn(Utilities.CurrentTimeMillis + GopetManager.TimeNextTurn);
             setIsActiveTurn(false);
@@ -252,12 +256,13 @@ namespace Gopet.Battle
             bool isStun = ItemInfo.getValueById(getUserPetBattleInfo().getBuff(), ItemInfo.Type.STUN) > 0 || Utilities.NextFloatPer() < ItemInfo.getValueById(getUserPetBattleInfo().getBuff(), ItemInfo.Type.PER_STUN_1_TURN) / 100f;
             if (isStun)
             {
+                sendTurnSkipped();
                 nextTurn();
                 return;
             }
             if (checkWhoseTurn(player))
             {
-                bool isMiss = randMiss(getNonUserPetBattleInfo());
+                bool isMiss = rollMiss(getNonUserPetBattleInfo());
                 JArrayList<TurnEffect> turnEffects = new();
                 if (!isMiss)
                 {
@@ -288,6 +293,7 @@ namespace Gopet.Battle
                         {
                             this.place.UpdateHpMob(this.mob.GetId(), mob.hp);
                         }
+                        awardHitExp();
                     }
                     else
                     {
@@ -317,20 +323,41 @@ namespace Gopet.Battle
             }
         }
 
+        /// <summary>Gửi gói lượt cho trường hợp "bên đang tới lượt không làm gì"
+        /// (bị định thân, hoặc không đủ điều kiện dùng kỹ năng).
+        ///
+        /// Trước đây các nhánh này im lặng rồi gọi thẳng nextTurn(), nên client không hề
+        /// biết lượt đã đổi. Với client khoá nút theo lượt (Unity >= phase 01) điều đó làm
+        /// nút chết tới khi hết delaTimeTurn (25s) mới được server tự đánh thay.
+        ///
+        /// Dùng đúng hình dạng gói của một đòn trượt — main NORMAL + 1 effect SKILL_MISS —
+        /// nên cả jar cũ lẫn Unity đều render được và wire format không đổi.
+        ///
+        /// Effect trỏ vào CHÍNH bên bị định thân (getUserTurnId) chứ không phải đối phương
+        /// (getFocus): Unity chỉ cho lao sang khi effect rơi vào bên kia, nên dùng getFocus
+        /// sẽ khiến con pet đang bị định thân lao sang đánh — vô lý.</summary>
+        private void sendTurnSkipped()
+        {
+            int stunnedId = getUserTurnId();
+            JArrayList<TurnEffect> turnEffects = new();
+            turnEffects.add(new TurnEffect(TurnEffect.SKILL_MISS, stunnedId, TurnEffect.SKILL_MISS, 0, 0));
+            sendPetAttack(turnEffects, TurnEffect.createNormalAttack(activePet.mp, 0, stunnedId));
+        }
+
         private void sendPetAttack(JArrayList<TurnEffect> turnDatas, TurnEffect mainTurnData)
         {
             Message message = new Message(GopetCMD.PET_SERVICE);
             message.putsbyte(GopetCMD.PET_BATTLE);
             message.putInt(activePlayer.user.user_id);
             message.putInt(mainTurnData.petId);
-            if (!petAttackMob)
-            {
-                message.putInt(Utilities.round(delaTimeTurn - Utilities.CurrentTimeMillis));
-            }
-            else
-            {
-                message.putInt((int)(DateTime.Now - MobAttackTime).TotalSeconds);
-            }
+            // Thời gian CÒN LẠI của lượt (ms) — cùng ngữ nghĩa với gói mở trận 36/59
+            // (:463-466, :523-526) và với nhánh gửi cho passivePlayer bên dưới.
+            // Trước đây nhánh PvE gửi (DateTime.Now - MobAttackTime).TotalSeconds, mà
+            // MobAttackTime là mốc TƯƠNG LAI (:1337, :1401 đặt Now.AddSeconds(2)) nên giá
+            // trị luôn ÂM (~-2) — jar vẽ pie lượt bằng remaining*360/max (ei.java:162-171)
+            // nên pie hỏng. MobAttackTime giữ nguyên vai trò bộ đếm "quái suy nghĩ" ở
+            // :667, :671 — không đụng tới.
+            message.putInt(Utilities.round(delaTimeTurn - Utilities.CurrentTimeMillis));
             message.putInt((int)GopetManager.TimeNextTurn);
             message.putsbyte(mainTurnData.type);
             if (mainTurnData.type == TurnEffect.TYPE_EFFECT_WAIT)
@@ -757,6 +784,10 @@ namespace Gopet.Battle
 
         private bool hadFinished = false;
 
+        /// <summary>EXP nhỏ giọt mỗi đòn trúng — sống theo vòng đời TRẬN (PetBattle tạo mới
+        /// mỗi lần GopetPlace.startFightMob) nên trần cộng dồn không rò sang trận sau.</summary>
+        private readonly HitExpReward hitExp = new HitExpReward();
+
         private void win()
         {
             if (hadFinished)
@@ -855,6 +886,11 @@ namespace Gopet.Battle
                 }
                 else
                 {
+                    // Thua quái KHÔNG bị phạt gì ngoài thời gian chờ hồi máu — khớp bản gốc.
+                    // Đã tra client jar: nhánh thua ở e.java:76 chỉ hỏi "Thua rồi, bạn có muốn
+                    // về thành phố để điều trị?"; toàn bộ bảng text không có chuỗi nào về trừ
+                    // exp, và phần hiện thưởng e.java:57-63 chỉ chạy khi số > 0.
+                    // Trừ exp là hành vi RIÊNG của nhánh PK (:917+) — đừng bê sang đây.
                     activePlayer.controller.delayTimeHealPet = Utilities.CurrentTimeMillis + GopetManager.TIME_DELAY_HEAL_WHEN_MOB_KILL_PET;
                 }
                 win(petBattleTexts.ToArray(), coin, exp);
@@ -997,6 +1033,7 @@ namespace Gopet.Battle
 
             if (isStun)
             {
+                sendTurnSkipped();
                 nextTurn();
                 return;
             }
@@ -1027,6 +1064,22 @@ namespace Gopet.Battle
                         PetSkillLv petSkillLv = petSkill.skillLv.get(pet.skill[skillindex][1] - 1);
                         if (pet.mp - petSkillLv.mpLost >= 0)
                         {
+                            // Roll trượt TRƯỚC khi trừ MP và vào cooldown: kỹ năng trượt thì
+                            // không tốn gì cả (user chốt 2026-09-19). Thứ tự cũ trừ MP rồi mới
+                            // roll, nên một đòn không xảy ra vẫn ngốn MP lẫn 3 lượt hồi chiêu.
+                            // Kỹ năng buff/hỗ trợ không roll — buff lên chính mình mà "trượt" là vô nghĩa.
+                            if (!petSkill.isSkillBuff() && rollMiss(nonPetBattleInfo))
+                            {
+                                // Dùng byte-shape của ĐÒN THƯỜNG trượt, không phải shape WAIT của
+                                // kỹ năng: jar cũ lẫn Unity đều đã render được, và gói không mang
+                                // skillId nên client biết kỹ năng chưa thực sự nổ để huỷ cooldown
+                                // lạc quan của mình.
+                                JArrayList<TurnEffect> missEffects = new();
+                                missEffects.add(new TurnEffect(TurnEffect.SKILL_MISS, getFocus(), TurnEffect.SKILL_MISS, 0, 0));
+                                sendPetAttack(missEffects, TurnEffect.createNormalAttack(activePet.mp, 0, getUserTurnId()));
+                                nextTurn();
+                                return;
+                            }
                             int mpdelta = 0;
                             pet.mp -= petSkillLv.mpLost;
                             petBattleInfo.addSkillCoolDown(skillId, GopetManager.MAX_SKILL_COOLDOWN);
@@ -1083,6 +1136,8 @@ namespace Gopet.Battle
                                     {
                                         this.place.UpdateHpMob(this.mob.GetId(), mob.hp);
                                     }
+                                    // Kỹ năng thuần buff lọt vào đây với 0 sát thương — không sinh EXP.
+                                    if (damageInfo.getDamge() + damageInfo.getTrueDamge() > 0) awardHitExp();
                                 }
                                 else
                                 {
@@ -1140,6 +1195,24 @@ namespace Gopet.Battle
             }
         }
 
+        /// <summary>Cộng EXP cho một đòn pet TRÚNG quái, rồi báo client hiện số vàng.
+        ///
+        /// <para>Chỉ PvE với quái thường. Boss bị loại vì <c>win()</c> không thưởng exp cho boss
+        /// (<c>:799</c>) — nhỏ giọt cho boss là rò EXP không có đối trọng, mà boss lại là mục tiêu
+        /// nhiều người cùng đánh.</para>
+        ///
+        /// <para><c>updatePetLvl()</c> gọi mỗi đòn là an toàn: nó chỉ lên 1 cấp mỗi lần gọi và
+        /// chỉ gửi opcode 18 khi thật sự lên cấp (<c>GameController.cs:1745-1771</c>).</para></summary>
+        private void awardHitExp()
+        {
+            if (!petAttackMob || mob is Boss) return;
+            int gained = hitExp.Grant(activePlayer, activePet, mob);
+            if (gained <= 0) return;
+            activePet.addExp(gained);
+            activePlayer.controller.updatePetLvl();
+            HitExpReward.Send(activePlayer, activePlayer.user.user_id, activePlayer.user.user_id, gained);
+        }
+
         private void addRecovery(PetDamgeInfo damageInfo, bool isMiss, Pet pet, Player player, JArrayList<TurnEffect> turnEffects)
         {
             if (damageInfo.getHpRecovery() > 0 && !damageInfo.isSkillMiss() && !isMiss)
@@ -1155,6 +1228,22 @@ namespace Gopet.Battle
             ItemInfo[] itemInfos = nonPetBattleInfo.getBuff();
             return ItemInfo.getValueById(itemInfos, ItemInfo.Type.MISS_IN_99999_TURN) > 0 && ActiveObject.AccuracyPercent - ItemInfo.getValueById(itemInfos, ItemInfo.Type.MISS_IN_99999_TURN) / 100f - PassiveObject.SkipPercent > Utilities.NextFloatPer();
         }
+
+        /// <summary>Có trượt đòn này không. Gộp hai nguồn:
+        /// <list type="bullet">
+        /// <item><c>randMiss</c> — buff né <c>MISS_IN_99999_TURN</c> của đối phương (cơ chế cũ,
+        /// chỉ chạy khi có buff nên trước đây trận đấu gần như không bao giờ trượt).</item>
+        /// <item><c>GameObject.IsMiss</c> — tỉ lệ trượt cơ bản theo nhanh nhẹn
+        /// (<c>Base/GameObject.cs:143</c>, <c>HitRate = 100+agi/1000 − (15+agiB/1000)</c> ≈ 85
+        /// ⇒ 15% trượt). Hàm này viết sẵn từ đầu nhưng KHÔNG nơi nào gọi.</item>
+        /// </list>
+        /// <para>CHỈ áp cho PvE đánh quái (<c>petAttackMob</c>) — quyết định của user
+        /// 2026-09-19: giữ nguyên cân bằng PvP/PK/đấu trường.</para>
+        /// <para><c>ActiveObject</c>/<c>PassiveObject</c> (<c>:433-446</c>) tự đảo theo
+        /// <c>isActiveTurn</c> nên dùng chung được cho cả pet đánh quái lẫn quái đánh pet —
+        /// nhưng phải gọi TRƯỚC <c>nextTurn()</c>.</para></summary>
+        private bool rollMiss(PetBattleInfo nonPetBattleInfo)
+            => randMiss(nonPetBattleInfo) || (petAttackMob && ActiveObject.IsMiss(PassiveObject));
 
         private bool dotmana(PetSkillLv petSkillLv)
         {
@@ -1259,7 +1348,7 @@ namespace Gopet.Battle
             if (!isStun)
             {
                 JArrayList<TurnEffect> turnEffects = new();
-                bool isMiss = randMiss(getNonUserPetBattleInfo());
+                bool isMiss = rollMiss(getNonUserPetBattleInfo());
                 int sum = mob.getAtk();
                 if (mob is Boss boss)
                 {
@@ -1340,6 +1429,8 @@ namespace Gopet.Battle
             }
             else
             {
+                // Quái bị định thân — vẫn phải báo cho client biết lượt đã trôi qua.
+                sendTurnSkipped();
                 this.IsMobFighted = true;
             }
             if (hasWinner())
@@ -1357,6 +1448,18 @@ namespace Gopet.Battle
                 PetBattleInfo nonPetBattleInfo = activeBattleInfo;
                 if (mob.mp - petSkillLv.mpLost >= 0)
                 {
+                    // Đối xứng với useSkill của người chơi: roll trượt trước khi tốn MP/cooldown.
+                    if (!skill.isSkillBuff() && rollMiss(nonPetBattleInfo))
+                    {
+                        JArrayList<TurnEffect> missEffects = new();
+                        missEffects.add(new TurnEffect(TurnEffect.SKILL_MISS, getFocus(), TurnEffect.SKILL_MISS, 0, 0));
+                        sendPetAttack(missEffects, TurnEffect.createNormalAttack(mob.mp, 0, getUserTurnId()));
+                        // KHÔNG gọi nextTurn(): vòng lượt của quái do update() điều khiển, khớp
+                        // nhánh thành công bên dưới cũng chỉ đặt 2 cờ này rồi return.
+                        this.MobAttackTime = DateTime.Now.AddSeconds(2);
+                        this.IsMobFighted = true;
+                        return;
+                    }
                     int mpdelta = 0;
                     mob.mp -= petSkillLv.mpLost;
                     petBattleInfo.addSkillCoolDown(skill.skillID, GopetManager.MAX_SKILL_COOLDOWN);
@@ -1403,10 +1506,14 @@ namespace Gopet.Battle
                     sendPetAttack(turnEffects, TurnEffect.createWait(-petSkillLv.mpLost, getUserTurnId()));
                     return;
                 }
+                // Không đủ MP cho kỹ năng đã chọn — lượt trôi qua, vẫn phải báo client.
+                sendTurnSkipped();
                 this.IsMobFighted = true;
             }
             else
             {
+                // Quái bị định thân.
+                sendTurnSkipped();
                 this.IsMobFighted = true;
             }
             if (hasWinner())

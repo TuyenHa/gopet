@@ -9,16 +9,15 @@ namespace Gopet.Runtime.World
     /// <summary>Phát atlas hiệu ứng battle theo metadata dy.java gốc của JAR.</summary>
     public sealed class BattleEffectView : MonoBehaviour
     {
+        /// <summary>Phóng ở GỐC, không phóng từng mảnh — offset con mới được nhân theo.</summary>
+        private const float SpriteScale = BattleSkin.SpriteScale;
+
+        /// <summary>Kéo dài ĐƯỜNG BAY, không kéo giãn nhịp khung hình — hoạt cảnh lặp lại
+        /// trong lúc rơi. Kéo giãn khung hình sẽ làm 7 hình trải ra thành giật cục.</summary>
+        private const float FallSlowdown = 1.35f;
+
         private static readonly Dictionary<Texture2D, Dictionary<string, Sprite>> RegionSprites =
             new Dictionary<Texture2D, Dictionary<string, Sprite>>();
-
-        private static readonly string[] EffectNames =
-        {
-            "SongKich", "Satthuong", "CuongNo", "Bang", "SamSet", "Lua", "hadoc", "daogam",
-            "voanh", "fandame", "hutmau", "manaburn", "thiencanthu", "lienhoancuoc", "lachan",
-            "Tornado", "Xayda", "MoonShine", "Thorns", "ThorHammer", "Sword", "Shuriken",
-            "ZeusWraith", "Meteor"
-        };
 
         private readonly List<Image> _parts = new List<Image>();
         private JarMapAnimation _animation;
@@ -26,15 +25,22 @@ namespace Gopet.Runtime.World
         private Texture2D _texture;
         private int _sequence;
         private float _next;
+        private Vector3 _travelFrom, _travelTo;
+        private float _travelStart, _travelSeconds;
 
-        public static void Play(Transform parent, RectTransform target, int skillId)
+        /// <param name="fromWorld">Điểm xuất phát (world); null thì nổ tại chỗ.</param>
+        /// <returns>Số giây tới lúc CHẠM ĐÍCH — người gọi chờ rồi mới trừ máu, nếu không pet
+        /// gục trước khi ngọn lửa kịp rơi tới.</returns>
+        public static float Play(Transform parent, RectTransform target, int skillId,
+            Vector3? fromWorld = null)
         {
-            var name = ResolveName(skillId);
-            if (name == null) return;
-            if (skillId >= 125)
+            // Ảnh ghi đè ở Battle/fx/<skillId> thắng atlas jar — xem BattleSkillFx.
+            if (BattleSkillFx.TryPlay(parent, target, skillId, fromWorld, out var impact)) return impact;
+            var name = BattleEffectNames.Resolve(skillId);
+            if (name == null) return 0f;
+            if (BattleEffectNames.IsActorAnimation(skillId))
             {
-                BattleActorEffectView.Play(parent, target, skillId);
-                return;
+                return BattleActorEffectView.Play(parent, target, skillId, fromWorld);
             }
             var sprite = JarSkin.Raw($"pet/battle/{(skillId >= 101 ? "skills/" : string.Empty)}{name}");
             var metadataPath = $"Jar/BattleAnimations/{(skillId >= 101 ? "skills/" : string.Empty)}{name}";
@@ -43,6 +49,7 @@ namespace Gopet.Runtime.World
             var go = new GameObject($"Hiệu ứng {name}", typeof(RectTransform), typeof(CanvasGroup));
             go.transform.SetParent(parent, false);
             ((RectTransform)go.transform).position = target.position;
+            go.transform.localScale = Vector3.one * SpriteScale;
             var effect = go.AddComponent<BattleEffectView>();
             effect._texture = sprite.texture;
             if (metadata != null)
@@ -52,17 +59,47 @@ namespace Gopet.Runtime.World
             }
             if (effect._clip == null) effect.ShowFallback(sprite);
             else effect.ShowFrame();
+            effect.BeginTravel(fromWorld, target);
+            // Thiếu metadata thì rơi về ảnh tĩnh xoay mờ — rất khác bản gốc, dễ tưởng là hỏng.
+            if (metadata == null)
+            {
+                Debug.LogWarning($"[BattleEffect] thiếu metadata {metadataPath} — dùng ảnh tĩnh.");
+            }
+            return effect._travelSeconds;
         }
 
-        private static string ResolveName(int skillId)
+        /// <summary>Chuẩn bị đường bay. Thời lượng bám theo hoạt cảnh gốc nhân
+        /// <see cref="FallSlowdown"/>, không phải một con số đoán mò.</summary>
+        private void BeginTravel(Vector3? fromWorld, RectTransform target)
         {
-            if (skillId >= 125 && skillId <= 130) return skillId.ToString();
-            if (skillId >= 101)
-            {
-                var index = skillId - 101 + 8; // đúng phép ánh xạ dx/di.java
-                if (index >= 0 && index < EffectNames.Length) return EffectNames[index];
-            }
-            return skillId == 0 || skillId == 2 ? "SlashEffect" : null;
+            if (fromWorld == null || target == null) return;
+            _travelFrom = fromWorld.Value;
+            _travelTo = target.position;
+            _travelStart = Time.unscaledTime;
+            _travelSeconds = TotalSeconds() * FallSlowdown;
+            if (_travelSeconds <= 0f) return;
+            transform.position = _travelFrom;
+        }
+
+        private float TotalSeconds()
+        {
+            if (_clip == null) return 0.65f; // khớp nhánh dự phòng
+            var total = 0;
+            foreach (var ms in _clip.DurationsMs) total += Mathf.Max(16, ms);
+            return total / 1000f;
+        }
+
+        private float TravelProgress =>
+            _travelSeconds <= 0f ? 1f
+                : Mathf.Clamp01((Time.unscaledTime - _travelStart) / _travelSeconds);
+
+        private void TickTravel()
+        {
+            if (_travelSeconds <= 0f) return;
+            // Ease-in (t²) chứ không tuyến tính: vật rơi thì phải nhanh dần, rơi đều trông
+            // như bị kéo dây. Cũng cho người chơi kịp thấy nó xuất phát trước khi lao xuống.
+            var t = TravelProgress;
+            transform.position = Vector3.Lerp(_travelFrom, _travelTo, t * t);
         }
 
         private void ShowFallback(Sprite sprite)
@@ -70,12 +107,15 @@ namespace Gopet.Runtime.World
             var image = NewPart(0);
             image.sprite = sprite;
             image.SetNativeSize();
-            image.rectTransform.localScale = Vector3.one * 1.5f;
+            // Gốc đã phóng SpriteScale rồi nên mảnh con giữ 1× — trước đây nhân 1.5 ở đây là
+            // để bù cho việc gốc không phóng.
+            image.rectTransform.localScale = Vector3.one;
             _next = Time.unscaledTime + 0.65f;
         }
 
         private void Update()
         {
+            TickTravel();
             if (_clip == null)
             {
                 var group = GetComponent<CanvasGroup>();
@@ -86,7 +126,12 @@ namespace Gopet.Runtime.World
             }
             if (Time.unscaledTime < _next) return;
             _sequence++;
-            if (_sequence >= _clip.FrameIndices.Length) { Destroy(gameObject); return; }
+            if (_sequence >= _clip.FrameIndices.Length)
+            {
+                // Còn đang rơi thì quay lại đầu hoạt cảnh thay vì biến mất giữa đường.
+                if (TravelProgress >= 1f) { Destroy(gameObject); return; }
+                _sequence = 0;
+            }
             ShowFrame();
         }
 

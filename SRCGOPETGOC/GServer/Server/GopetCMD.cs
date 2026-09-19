@@ -43,6 +43,11 @@ public class GopetCMD
     /// <summary>PET_SERVICE sub — chỉ số HUD trận (level, ATK, DEF, crit, skill MP).
     /// Gửi khi mở trận và khi observer nhận snapshot. Gate <c>VERSION_150</c>.</summary>
     public const sbyte PET_BATTLE_STATS = 43;
+    /// <summary>PET_SERVICE sub — EXP nhỏ giọt mỗi đòn TRÚNG trong PvE, để client hiện số vàng
+    /// bay trên đầu pet. Là thưởng THÊM, cộng lên trên thưởng giết quái (user chốt 2026-09-19).
+    /// Payload: <c>int battleId, int actorId, int expDelta</c>. Gate <c>VERSION_150</c>.
+    /// Xem plans/260919-1102-exp-moi-don-va-danh-truot/phase-02.</summary>
+    public const sbyte PET_BATTLE_EXP = 33;
     /// <summary>PET_BATTLE sub — client xin thua. Không payload. Gate <c>VERSION_150</c>.</summary>
     public const sbyte PET_BATTLE_SURRENDER = 5;
     public const sbyte PET_BATTLE_STATE = 16;

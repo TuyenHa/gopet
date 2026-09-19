@@ -31,6 +31,28 @@ namespace Gopet.UiLogic
             return (camX, camY);
         }
 
+        /// <summary>Nửa chiều cao khung nhìn lớn nhất mà map vẫn phủ kín được màn hình.
+        ///
+        /// <para>Camera cao cố định 240 pixel jar, nhưng bề ngang thì bằng 240 × tỉ lệ màn.
+        /// Màn 16:9 cho khung nhìn rộng ~468, trong khi map 12 (ải) chỉ rộng 360 — hai mép
+        /// lộ <b>màu nền camera</b> thành hai dải xanh navy. Kẹp cứng toạ độ không cứu được:
+        /// map hẹp hơn khung nhìn thì dịch đi đâu cũng hở.</para>
+        ///
+        /// <para>Nên thu tầm nhìn lại cho tới khi map phủ kín. Đổi lại là zoom vào gần hơn,
+        /// nhưng thà thấy ít map hơn còn hơn thấy nền trống.</para></summary>
+        /// <param name="desiredSize">Nửa chiều cao mong muốn, world unit.</param>
+        /// <param name="aspect">Rộng chia cao của khung nhìn camera.</param>
+        public static float FitOrthographicSize(float desiredSize, int mapW, int mapH, float aspect)
+        {
+            // Dữ liệu vô lý (map rỗng, aspect 0 lúc màn chưa dựng xong) thì giữ nguyên
+            // thay vì trả 0 — orthographicSize 0 làm camera không vẽ được gì.
+            if (mapW <= 0 || mapH <= 0 || aspect <= 0f) return desiredSize;
+
+            var byWidth = mapW / (2f * aspect);
+            var byHeight = mapH / 2f;
+            return System.Math.Min(desiredSize, System.Math.Min(byWidth, byHeight));
+        }
+
         /// <summary>Kẹp toạ độ góc trên-trái vào biên map.</summary>
         public static int ClampAxis(int c, int viewSize, int mapSize)
         {

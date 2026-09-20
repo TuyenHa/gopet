@@ -1263,8 +1263,8 @@ namespace Gopet.Battle
         /// <item><c>randMiss</c> — buff né <c>MISS_IN_99999_TURN</c> của đối phương (cơ chế cũ,
         /// chỉ chạy khi có buff nên trước đây trận đấu gần như không bao giờ trượt).</item>
         /// <item><c>GameObject.IsMiss</c> — tỉ lệ trượt cơ bản theo nhanh nhẹn
-        /// (<c>Base/GameObject.cs:143</c>, <c>HitRate = 100+agi/1000 − (15+agiB/1000)</c> ≈ 85
-        /// ⇒ 15% trượt). Hàm này viết sẵn từ đầu nhưng KHÔNG nơi nào gọi.</item>
+        /// (<c>Base/GameObject.cs</c>, <c>HitRate = 100+agi/1000 − (10+agiB/1000)</c> ≈ 90
+        /// ⇒ 10% trượt). Hàm này viết sẵn từ đầu nhưng KHÔNG nơi nào gọi.</item>
         /// </list>
         /// <para>CHỈ áp cho PvE đánh quái (<c>petAttackMob</c>) — quyết định của user
         /// 2026-09-19: giữ nguyên cân bằng PvP/PK/đấu trường.</para>

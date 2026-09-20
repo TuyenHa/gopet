@@ -118,11 +118,16 @@ public class GameObject
     {
         return lvl * 3 + getInt() * 5 + 20;
     }
+    /// <summary>
+    /// Tỉ lệ né cơ bản (%). Nền 10 = hai bên nhanh nhẹn ngang nhau thì trượt 10% —
+    /// hạ từ 15 xuống 10 theo quyết định cân bằng 2026-09-20, đánh quái trượt liên tục
+    /// làm nhịp trận rời rạc.
+    /// </summary>
     public virtual float SkipPercent
     {
         get
         {
-            return 15 + getAgi() / 1000;
+            return 10 + getAgi() / 1000;
         }
     }
 

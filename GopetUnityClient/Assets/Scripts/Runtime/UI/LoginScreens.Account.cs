@@ -65,7 +65,12 @@ namespace Gopet.Runtime.UI
                 if (!_flow.SubmitRegistration(enteredUsername, enteredPassword))
                 {
                     _registrationForm.SetNotice(_flow.Notice);
+                    return;
                 }
+
+                // Gói REGISTER không đổi LoginStage nên không có ai khác khoá form hộ:
+                // phải tự bật ở đây và tự tắt trong OnRegisterReply.
+                _registrationForm.SetBusy(true);
             };
 
             _registrationForm.BackRequested += () =>
@@ -84,6 +89,7 @@ namespace Gopet.Runtime.UI
         /// </summary>
         private void OnRegisterReply(string text)
         {
+            _registrationForm?.SetBusy(false);
             _loginForm?.SetNotice(text);
             _registrationForm?.SetNotice(text);
         }

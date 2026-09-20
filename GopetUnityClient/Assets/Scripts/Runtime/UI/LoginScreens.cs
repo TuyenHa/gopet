@@ -104,10 +104,10 @@ namespace Gopet.Runtime.UI
             }
 
             // Giữ nguyên khung login trong lúc đợi server để không lộ camera xanh.
-            // Chỉ khoá điều khiển nhằm chặn người chơi gửi LOGIN nhiều lần.
+            // Khoá điều khiển để chặn gửi LOGIN nhiều lần, kèm vòng xoay báo đang chờ.
             if (stage == LoginStage.LoggingIn && _loginForm != null)
             {
-                _loginForm.SetInteractionEnabled(false);
+                _loginForm.SetBusy(true);
                 return;
             }
 
@@ -115,7 +115,7 @@ namespace Gopet.Runtime.UI
             // và cập nhật lý do thay vì phá form rồi dựng lại.
             if (stage == LoginStage.EnteringCredentials && _loginForm != null)
             {
-                _loginForm.SetInteractionEnabled(true);
+                _loginForm.SetBusy(false);
                 _loginForm.SetNotice(_flow.Notice);
                 return;
             }

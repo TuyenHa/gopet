@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Gopet.Runtime.World.Battle
 {
-    public sealed class BattleHudPanel : MonoBehaviour
+    public sealed partial class BattleHudPanel : MonoBehaviour
     {
         private static readonly Color HpColor = new Color(0.78f, 0.15f, 0.15f, 1f);
         private static readonly Color MpColor = new Color(0.3f, 0.55f, 0.95f, 1f);
@@ -66,22 +66,6 @@ namespace Gopet.Runtime.World.Battle
             BuildAvatar(go.transform, panel, assets, pet);
             BuildContent(content.transform, panel, pet, font);
             return panel;
-        }
-
-        private static void BuildAvatar(Transform outer, BattleHudPanel panel,
-            RemoteAssetCache assets, BattlePet pet)
-        {
-            const float size = 60f;
-            var go = new GameObject("Avatar", typeof(RectTransform), typeof(RawImage));
-            go.transform.SetParent(outer, false);
-            panel._avatar = go.GetComponent<RawImage>();
-            panel._avatar.raycastTarget = false;
-            var r = (RectTransform)go.transform;
-            r.anchorMin = r.anchorMax = new Vector2(0f, 0.5f);
-            r.pivot = new Vector2(0f, 0.5f);
-            r.anchoredPosition = new Vector2(8f, 0f);
-            r.sizeDelta = new Vector2(size, size);
-            assets.Get(pet.ImagePath, ImagePackets.TypeNpc, panel.SetAvatarTexture);
         }
 
         private static void BuildContent(Transform content, BattleHudPanel panel,
@@ -159,13 +143,6 @@ namespace Gopet.Runtime.World.Battle
 
         private void SetNameText(int level) =>
             _nameLabel.text = $"{_petName}  <color=#4CD964>Lv.{level}</color>";
-
-        private void SetAvatarTexture(Texture2D texture)
-        {
-            if (this == null || _avatar == null || texture == null) return;
-            _avatar.texture = texture;
-            _avatar.uvRect = new Rect(0f, 0f, 1f / Mathf.Max(1, _frameCount), 1f);
-        }
 
         public void UpdateVitals(int hp, int mp, int maxHp, int maxMp)
         {

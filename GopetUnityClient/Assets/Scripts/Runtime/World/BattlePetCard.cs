@@ -78,13 +78,12 @@ namespace Gopet.Runtime.World
             FaintIfDown();
         }
 
-        /// <summary>Hết máu thì nằm vật ra. Jar ép dẹp sprite xuống đất theo lát 4px
-        /// (<c>ei.java:90-96</c>, <c>bd.java:241-252</c>); ở đây là "đổ quanh gốc chân + lún + mờ".
-        ///
-        /// <para>Pivot của sprite là (0.5, 0) tức gốc chân, nên xoay quanh nó ra đúng dáng
-        /// keel-over. Góc phải 90° TRÒN + lún 12px thì thân mới nằm sát đất; 80°/6px cũ dừng ở
-        /// dáng ngã dở, trông như treo nghiêng giữa không khí. Card bên trái có
-        /// <c>localScale.x = -1</c> nên cùng góc âm cho hai bên đổ ngược phía — không cần phân nhánh.</para></summary>
+        /// <summary>Hết máu thì nằm vật ra — jar ép dẹp sprite xuống đất theo lát 4px
+        /// (<c>ei.java:90-96</c>, <c>bd.java:241-252</c>), ở đây là đổ quanh gốc chân + lún + mờ.
+        /// Pivot sprite (0.5, 0) là gốc chân nên xoay quanh nó ra đúng dáng keel-over. Góc phải
+        /// 90° TRÒN + lún 12px thân mới nằm sát đất; 80°/6px cũ dừng ở dáng ngã dở, trông như
+        /// treo nghiêng giữa không khí. Card trái có <c>localScale.x = -1</c> nên cùng góc âm
+        /// cho hai bên đổ ngược phía.</summary>
         private void FaintIfDown()
         {
             if (_fainted || _pet.Hp > 0 || _petImage == null) return;
@@ -175,9 +174,10 @@ namespace Gopet.Runtime.World
             _petImage.texture = texture;
             var count = Mathf.Max(1, _pet.FrameCount);
             var frameWidth = texture.width / count;
-            // Cùng hệ số với hoạt cảnh hiệu ứng — xem BattleSkin.SpriteScale.
+            // Hệ số THÔ nhân scaleFactor lẻ của canvas là sprite giãn lẻ và nhoè.
+            var scale = BattleSkin.SnappedSpriteScale(this);
             _petImage.rectTransform.sizeDelta =
-                new Vector2(frameWidth * BattleSkin.SpriteScale, texture.height * BattleSkin.SpriteScale);
+                new Vector2(frameWidth * scale, texture.height * scale);
             ShowFrame();
         }
 

@@ -29,8 +29,8 @@ namespace Gopet.Runtime.World
             var go = new GameObject($"Hiệu ứng ANU {skillId}", typeof(RectTransform));
             go.transform.SetParent(parent, false);
             ((RectTransform)go.transform).position = target.position;
-            // Cùng hệ số với sprite pet — xem BattleSkin.SpriteScale.
-            go.transform.localScale = Vector3.one * BattleSkin.SpriteScale;
+            // Cùng hệ số với sprite pet — xem BattleSkin.SpriteScale (bản đã chốt pixel).
+            go.transform.localScale = Vector3.one * BattleSkin.SnappedSpriteScale(go.transform);
             var view = go.AddComponent<BattleActorEffectView>();
             view._animation = JarActorAnimation.Parse(metadata.bytes);
             view._texture = source.texture;

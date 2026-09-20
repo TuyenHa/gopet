@@ -9,9 +9,6 @@ namespace Gopet.Runtime.World
     /// <summary>Phát atlas hiệu ứng battle theo metadata dy.java gốc của JAR.</summary>
     public sealed class BattleEffectView : MonoBehaviour
     {
-        /// <summary>Phóng ở GỐC, không phóng từng mảnh — offset con mới được nhân theo.</summary>
-        private const float SpriteScale = BattleSkin.SpriteScale;
-
         /// <summary>Kéo dài ĐƯỜNG BAY, không kéo giãn nhịp khung hình — hoạt cảnh lặp lại
         /// trong lúc rơi. Kéo giãn khung hình sẽ làm 7 hình trải ra thành giật cục.</summary>
         private const float FallSlowdown = 1.35f;
@@ -49,7 +46,7 @@ namespace Gopet.Runtime.World
             var go = new GameObject($"Hiệu ứng {name}", typeof(RectTransform), typeof(CanvasGroup));
             go.transform.SetParent(parent, false);
             ((RectTransform)go.transform).position = target.position;
-            go.transform.localScale = Vector3.one * SpriteScale;
+            go.transform.localScale = Vector3.one * BattleSkin.SnappedSpriteScale(go.transform);
             var effect = go.AddComponent<BattleEffectView>();
             effect._texture = sprite.texture;
             if (metadata != null)

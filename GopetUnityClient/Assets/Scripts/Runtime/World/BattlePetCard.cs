@@ -18,9 +18,9 @@ namespace Gopet.Runtime.World
         /// frame đó nhanh gấp đôi, đúng cách jar làm.</summary>
         private const float RunFrameInterval = 0.08f;
 
-        private const float FaintSeconds = 0.5f;
-        private const float FaintAngle = -80f;
-        private const float FaintSinkPixels = 6f;
+        private const float FaintSeconds = 0.45f;
+        private const float FaintAngle = -90f;
+        private const float FaintSinkPixels = 12f;
         private const float FaintAlpha = 0.75f;
 
         private BattlePet _pet;
@@ -78,13 +78,13 @@ namespace Gopet.Runtime.World
             FaintIfDown();
         }
 
-        /// <summary>Hết máu thì đổ vật ra. Jar ép dẹp sprite xuống đất theo từng lát 4px
-        /// (<c>ei.java:90-96</c> vẽ lát cao <c>4-r</c>, <c>bd.java:241-252</c> tăng <c>r</c>
-        /// 1→4); ở đây làm rõ hơn thành "đổ nghiêng quanh gốc chân + lún + mờ".
+        /// <summary>Hết máu thì nằm vật ra. Jar ép dẹp sprite xuống đất theo lát 4px
+        /// (<c>ei.java:90-96</c>, <c>bd.java:241-252</c>); ở đây là "đổ quanh gốc chân + lún + mờ".
         ///
         /// <para>Pivot của sprite là (0.5, 0) tức gốc chân, nên xoay quanh nó ra đúng dáng
-        /// keel-over. Card bên trái có <c>localScale.x = -1</c> (lật hình), nên cùng một góc
-        /// âm sẽ cho hai bên đổ ra hai phía ngược nhau — đúng ý, không cần phân nhánh.</para></summary>
+        /// keel-over. Góc phải 90° TRÒN + lún 12px thì thân mới nằm sát đất; 80°/6px cũ dừng ở
+        /// dáng ngã dở, trông như treo nghiêng giữa không khí. Card bên trái có
+        /// <c>localScale.x = -1</c> nên cùng góc âm cho hai bên đổ ngược phía — không cần phân nhánh.</para></summary>
         private void FaintIfDown()
         {
             if (_fainted || _pet.Hp > 0 || _petImage == null) return;

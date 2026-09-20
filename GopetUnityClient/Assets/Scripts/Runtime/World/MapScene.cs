@@ -31,6 +31,11 @@ namespace Gopet.Runtime.World
         public Transform TryGetAvatarTransform(int userId) =>
             _avatars.TryGetValue(userId, out var a) && a != null ? a.transform : null;
 
+        /// <summary>Transform của một con quái, hoặc null nếu đã bị gỡ. Nút đánh dùng làm
+        /// đích của vệt chém.</summary>
+        public Transform MobTransform(int mobId) =>
+            _actors != null ? _actors.MobTransform(mobId) : null;
+
         /// <summary>Tên hiển thị của người chơi trên map, dùng cho lịch sử chat khu vực.</summary>
         public string TryGetAvatarName(int userId) =>
             _avatars.TryGetValue(userId, out var avatar) && avatar != null

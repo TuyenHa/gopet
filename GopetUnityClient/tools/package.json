@@ -14,6 +14,7 @@
     "gen:attack-icon": "python image-gen/make-attack-button.py",
     "gen:mountain-tiles": "python image-gen/make-mountain-grass-tiles.py",
     "gen:path-tiles": "python image-gen/make-path-reskin-tiles.py",
+    "gen:slash-fx": "python image-gen/make-slash-effect.py",
     "gen:palm": "python image-gen/make-palm-tree.py",
     "gen:lotus-pond": "python image-gen/make-lotus-pond.py",
     "gen:thatch-house": "python image-gen/make-thatch-house.py",

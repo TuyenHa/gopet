@@ -112,8 +112,10 @@ thanh HP → lùi về), port `di.java:82-89` + `e.java`. Ba điểm bắt buộ
 
 ### 2.7 Hiệu ứng xỉu
 
-Pet hết máu thì đổ vật ra: xoay `-80°` quanh gốc chân (pivot sprite là `(0.5, 0)`), lún
-xuống 6px, mờ còn 75%, trong 0.5s — `BattlePetCard.FaintIfDown()`. Animation đi bộ đóng
+Pet hết máu thì nằm vật ra: xoay `-90°` quanh gốc chân (pivot sprite là `(0.5, 0)`), lún
+xuống 12px, mờ còn 75%, trong 0.45s — `BattlePetCard.FaintIfDown()`. Góc phải tròn 90° và
+lún đủ sâu thì thân mới nằm sát đất; bản đầu dùng `-80°`/6px nên dừng ở dáng ngã dở, chụp
+màn hình lúc đòn kết liễu vừa xong sẽ thấy con vật treo nghiêng giữa không khí. Animation đi bộ đóng
 băng và `HitsOpponent` trả `false` nên pet đã xỉu không lao đi đâu nữa.
 
 Card bên trái có `localScale.x = -1` (lật hình) nên **cùng một góc âm** cho hai bên đổ ra

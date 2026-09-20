@@ -17,7 +17,7 @@ namespace Gopet.Runtime.World
     /// pivot (0.5, 0) đặt chân sprite tại y=0 rồi lift theo <c>VerticalOffset</c>
     /// của server (âm = lên trên).</para>
     /// </summary>
-    public sealed class PetAvatar : MonoBehaviour
+    public sealed partial class PetAvatar : MonoBehaviour
     {
         private const float FollowDistance = 40f;
         private const float InitialOffsetX = 28f;
@@ -117,6 +117,8 @@ namespace Gopet.Runtime.World
             _label?.SetSortingOrder(order + 20);
 
             FaceOwner();
+            // Sau khi đã bám đuôi chủ xong mới đè vị trí lao — xem PetAvatar.Lunge.cs.
+            ApplyLunge();
 
             if (_frames.Length > 1 && Time.time >= _nextFrameTime)
             {

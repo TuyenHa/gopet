@@ -65,6 +65,11 @@ namespace Gopet.Runtime.World
             }
         }
 
+        /// <summary>Pet của một người chơi, hoặc null nếu chưa spawn. Nút đánh dùng để lấy
+        /// điểm xuất phát của vệt chém và cho pet lao tới.</summary>
+        public PetAvatar PetOf(int ownerUserId) =>
+            _pets.TryGetValue(ownerUserId, out var pet) && pet != null ? pet : null;
+
         /// <summary>Gọi khi 1 player mới spawn (self hoặc other) để try-flush pending pet.</summary>
         public void OnOwnerSpawned(int userId)
         {

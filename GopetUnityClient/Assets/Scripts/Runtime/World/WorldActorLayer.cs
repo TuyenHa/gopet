@@ -148,6 +148,10 @@ namespace Gopet.Runtime.World
             _mobs.Remove(id);
         }
 
+        /// <summary>Transform của một con quái, hoặc null nếu nó đã bị gỡ khỏi map.</summary>
+        public Transform MobTransform(int mobId) =>
+            _mobs.TryGetValue(mobId, out var view) && view != null ? view.transform : null;
+
         public void ApplyBossHp(BossHpUpdate update)
         {
             if (update == null) return;

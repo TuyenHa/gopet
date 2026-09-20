@@ -79,6 +79,9 @@ namespace Gopet.Runtime.World
         private PetZoneHandler _petZoneHandler;
         private PetLayer _petLayer;
         private bool _hasPetFollowing;
+
+        /// <summary>Vệt chém của nút đánh đang diễn — chặn bấm chồng, xem AttackNearestMob.</summary>
+        private bool _slashPlaying;
         private GuildInfoHandler _guildInfoHandler;
         private GuildView _guildView;
         private GuildNameLayer _guildNameLayer;

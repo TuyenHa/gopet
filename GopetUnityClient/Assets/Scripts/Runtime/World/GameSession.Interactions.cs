@@ -91,7 +91,28 @@ namespace Gopet.Runtime.World
                 ShowToast("Không có quái nào ở gần.");
                 return;
             }
-            _battleHandler.SendAttackMob(mobId);
+            // Đang diễn vệt chém thì nuốt cú bấm: bấm chồng sẽ bắn hai gói ATTACK_MOB,
+            // server mở trận cho gói đầu rồi từ chối gói sau.
+            if (_slashPlaying) return;
+
+            var pet = _petLayer != null ? _petLayer.PetOf(_login.UserId) : null;
+            var to = _scene.MobTransform(mobId);
+            if (pet == null || to == null)
+            {
+                // Chưa có pet đi theo, hoặc quái vừa bị gỡ khỏi map — đánh thẳng, không diễn.
+                _battleHandler.SendAttackMob(mobId);
+                return;
+            }
+
+            // Pet chồm tới và vệt lửa quét CÙNG LÚC, cùng độ dài: đòn đánh phải có người ra
+            // đòn, chứ một vệt lửa bay ngang thì không ai ra tay cả.
+            _slashPlaying = true;
+            pet.PlayLunge(to.position, WorldSlashEffect.TotalSeconds);
+            WorldSlashEffect.Play(_scene.transform, pet.transform.localPosition, to.localPosition, () =>
+            {
+                _slashPlaying = false;
+                _battleHandler.SendAttackMob(mobId);
+            });
         }
 
         private void ShowToast(string text)

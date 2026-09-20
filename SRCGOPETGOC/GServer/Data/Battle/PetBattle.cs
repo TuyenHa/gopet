@@ -1446,7 +1446,10 @@ namespace Gopet.Battle
                     {
                         turnEffects.add(new TurnEffect(TurnEffect.SKILL_NORMAL, getFocus(), TurnEffect.SKILL_NORMAL, -sum, 0));
                     }
-                    activePet.hp -= sum;
+                    // subHp chứ KHÔNG trừ thẳng: trừ thẳng cho hp ÂM, và số âm đó đi nguyên
+                    // vào MY_PET_INFO nên HUD hiện máu âm, còn client kiểm "hp == 0" để biết
+                    // pet kiệt sức thì trượt. Mọi đường sát thương khác đều đi qua subHp.
+                    activePet.subHp(sum);
                 }
                 else
                 {

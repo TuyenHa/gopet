@@ -91,9 +91,25 @@ namespace Gopet.Runtime.World
                 ShowToast("Không có quái nào ở gần.");
                 return;
             }
+            AttackMob(mobId);
+        }
+
+        /// <summary>Đánh một con quái cụ thể. Dùng CHUNG cho nút đánh và cho cú chạm thẳng
+        /// vào sprite quái — trước đây cú chạm nối thẳng vào <c>SendAttackMob</c> nên không
+        /// có vệt chém, không có chặn pet kiệt sức, hai lối vào hành xử khác hẳn nhau.</summary>
+        private void AttackMob(int mobId)
+        {
             // Đang diễn vệt chém thì nuốt cú bấm: bấm chồng sẽ bắn hai gói ATTACK_MOB,
             // server mở trận cho gói đầu rồi từ chối gói sau.
             if (_slashPlaying) return;
+            // Pet kiệt sức (vừa thua quái) thì server từ chối bằng Popup "không đủ máu"
+            // (GopetPlace.startFightMob:456). Chặn ngay tại client để khỏi diễn xong cả nhát
+            // chém rồi mới ăn lời từ chối — nhìn như pet chém vào không khí.
+            if (_selfPetHp <= 0)
+            {
+                ShowToast("Thú cưng đã kiệt sức, chờ hồi máu rồi đánh tiếp.");
+                return;
+            }
 
             var pet = _petLayer != null ? _petLayer.PetOf(_login.UserId) : null;
             var to = _scene.MobTransform(mobId);

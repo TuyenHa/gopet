@@ -82,6 +82,14 @@ namespace Gopet.Runtime.World
 
         /// <summary>Vệt chém của nút đánh đang diễn — chặn bấm chồng, xem AttackNearestMob.</summary>
         private bool _slashPlaying;
+
+        /// <summary>HP pet self mới nhất từ <c>MY_PET_INFO</c>. Nút đánh cần biết để không
+        /// diễn cả hoạt cảnh rồi mới ăn lời từ chối của server.
+        ///
+        /// <para>Chưa nhận gói nào thì để <c>int.MaxValue</c> chứ KHÔNG để -1: server cũ trừ
+        /// thẳng <c>hp -= sat thuong</c> ở đòn thường của quái nên HP xuống ÂM, lấy -1 làm cờ
+        /// "chưa biết" sẽ lẫn với máu âm thật.</para></summary>
+        private int _selfPetHp = int.MaxValue;
         private GuildInfoHandler _guildInfoHandler;
         private GuildView _guildView;
         private GuildNameLayer _guildNameLayer;
@@ -144,8 +152,9 @@ namespace Gopet.Runtime.World
 
             s._battleHandler = new BattleHandler(client.Send, login.UserId);
             s._battleHandler.RegisterOn(client.Router);
-            s._scene.SubscribeWorld(s._worldHandler, assets, guider.TalkToNpc,
-                s._battleHandler.SendAttackMob);
+            // Chạm thẳng vào quái đi CHUNG một đường với nút đánh (vệt chém + chặn pet kiệt
+            // sức), thay vì nối tắt vào SendAttackMob.
+            s._scene.SubscribeWorld(s._worldHandler, assets, guider.TalkToNpc, s.AttackMob);
 
             var mainCamera = EnsureMainCamera();
             if (mainCamera.GetComponent<Physics2DRaycaster>() == null)
@@ -272,6 +281,7 @@ namespace Gopet.Runtime.World
             s._petZoneHandler.MyPetInfoReceived += p =>
             {
                 // HP/MP self pet — nối vào CharacterHud (3 thanh còn "--" ở Phase 1).
+                s._selfPetHp = p.Hp;
                 s._hud.Character.SetStats(p.Hp, p.MaxHp, p.Mp, p.MaxMp, 0, 100);
                 // …và vào màn đấu: HP hồi từ bình máu CHỈ đi qua gói này, không qua opcode 37.
                 s._battle?.View?.SyncLocalVitals(p.Hp, p.MaxHp, p.Mp, p.MaxMp);

@@ -53,6 +53,32 @@ namespace Gopet.UiLogic
             return System.Math.Min(desiredSize, System.Math.Min(byWidth, byHeight));
         }
 
+        /// <summary>
+        /// Thu tầm nhìn sao cho MỘT pixel nguồn phủ đúng một số NGUYÊN pixel màn hình.
+        ///
+        /// <para>Art là pixel art vẽ ở 240 px chiều cao, còn màn hình thì cao bao nhiêu
+        /// cũng có. 1080/240 = 4.5 nghĩa là pixel nguồn này chiếm 4 pixel màn, pixel kế
+        /// bên chiếm 5 — bộ lọc Point không cứu được, mắt đọc ra thành nhoè. Chốt tỉ lệ
+        /// về số nguyên thì mọi pixel nguồn to bằng nhau.</para>
+        ///
+        /// <para>Làm tròn LÊN chứ không xuống: tròn lên là thu tầm nhìn lại, luôn ≤ cỡ
+        /// đang có nên không lộ ra ngoài biên map mà <see cref="FitOrthographicSize"/>
+        /// vừa kẹp. Tròn xuống sẽ mở rộng tầm nhìn và phá mất cái kẹp đó.</para>
+        /// </summary>
+        /// <param name="screenHeightPx">Chiều cao khung vẽ, pixel.</param>
+        public static float SnapOrthographicSize(float desiredSize, int screenHeightPx)
+        {
+            if (desiredSize <= 0f || screenHeightPx <= 0) return desiredSize;
+
+            var scale = screenHeightPx / (desiredSize * 2f);
+
+            // Màn thấp hơn cả khung nhìn (chưa tới 1 pixel màn cho 1 pixel nguồn) thì
+            // không có tỉ lệ nguyên nào dùng được — giữ nguyên, thà đúng khung còn hơn.
+            if (scale <= 1f) return desiredSize;
+
+            return screenHeightPx / (2f * (float)System.Math.Ceiling(scale));
+        }
+
         /// <summary>Kẹp toạ độ góc trên-trái vào biên map.</summary>
         public static int ClampAxis(int c, int viewSize, int mapSize)
         {

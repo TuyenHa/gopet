@@ -63,6 +63,7 @@ namespace Gopet.Runtime.World
             spriteGo.transform.SetParent(go.transform, false);
             view._visual = spriteGo.transform;
             view._renderer = spriteGo.GetComponent<SpriteRenderer>();
+            PixelSnapVisual.Attach(spriteGo.transform);
             view._renderer.sortingOrder = MapPlacement.ActorSortingOrder(jarY);
             view._clicked = clicked;
             view.MakeLabel(labelText, view._renderer.sortingOrder + 20);

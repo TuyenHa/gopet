@@ -146,8 +146,16 @@ namespace Gopet.Runtime.World
             _bobNext = Time.time + 0.4f;
             _bobDown = !_bobDown;
             if (_visual == null) return;
+
+            // Ép dọc SPRITE quanh chân (pivot 0.5,0) nên chân đứng yên. Hệ số phải làm
+            // sprite lùn đi ĐÚNG 1 pixel nguồn, không phải 0.95 cố định: 0.95 cho ra
+            // chiều cao lẻ (24 → 22.8 px), pixel bị lấy mẫu lệch và con vật trông nhoè
+            // suốt nửa nhịp nhún. Lùn 1 pixel vẫn đủ thấy nhún.
+            var height = _renderer != null && _renderer.sprite != null
+                ? _renderer.sprite.rect.height
+                : 0f;
             var scale = _visual.localScale;
-            scale.y = _bobDown ? 0.95f : 1f; // ép dọc SPRITE quanh chân (pivot 0.5,0), chân đứng yên
+            scale.y = _bobDown && height >= 2f ? (height - 1f) / height : 1f;
             _visual.localScale = scale;
         }
 

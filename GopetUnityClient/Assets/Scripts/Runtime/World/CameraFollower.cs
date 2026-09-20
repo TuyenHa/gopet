@@ -70,9 +70,13 @@ namespace Gopet.Runtime.World
             // Thu tầm nhìn nếu map hẹp/thấp hơn khung nhìn, nếu không hai mép lộ màu nền
             // camera. Tính LẠI mỗi frame chứ không đặt một lần lúc Attach: đổi map thì kích
             // thước map đổi, mà xoay máy hay kéo cửa sổ thì aspect cũng đổi.
-            _cam.orthographicSize = CameraClamp.FitOrthographicSize(
-                PixelCanvasLayout.ReferenceHeight / (2f * MapPlacement.PixelsPerUnit),
-                mapW, mapH, _cam.aspect);
+            // Kẹp theo biên map TRƯỚC, chốt tỉ lệ nguyên SAU: chốt trước rồi kẹp thì cái
+            // kẹp lại trả về một cỡ lẻ, mất công chốt.
+            _cam.orthographicSize = CameraClamp.SnapOrthographicSize(
+                CameraClamp.FitOrthographicSize(
+                    PixelCanvasLayout.ReferenceHeight / (2f * MapPlacement.PixelsPerUnit),
+                    mapW, mapH, _cam.aspect),
+                Screen.height);
 
             var worldViewH = _cam.orthographicSize * 2f;
             var worldViewW = worldViewH * _cam.aspect;

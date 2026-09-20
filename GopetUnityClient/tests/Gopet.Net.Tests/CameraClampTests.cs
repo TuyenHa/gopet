@@ -83,5 +83,45 @@ namespace Gopet.Net.Tests
             // orthographicSize 0 làm camera không vẽ nổi gì — thà giữ giá trị mong muốn.
             Assert.Equal(120f, CameraClamp.FitOrthographicSize(120f, w, h, aspect));
         }
+
+        /// <summary>1080 / 240 = 4.5 pixel màn cho mỗi pixel nguồn — tròn lên 5, tầm nhìn
+        /// còn 216 đơn vị. Đây là ca hay gặp nhất (màn 1080p, khung nhìn 240).</summary>
+        [Fact]
+        public void SnapOrthographicSize_TiLeLe_TronLenThanhSoNguyen()
+        {
+            Assert.Equal(108f, CameraClamp.SnapOrthographicSize(120f, 1080));
+        }
+
+        [Theory]
+        [InlineData(120f, 960)]    // 960/240 = 4 chẵn
+        [InlineData(120f, 1200)]   // 1200/240 = 5 chẵn
+        [InlineData(90f, 720)]     // 720/180 = 4 chẵn
+        public void SnapOrthographicSize_DaChan_GiuNguyen(float size, int screenHeight)
+        {
+            Assert.Equal(size, CameraClamp.SnapOrthographicSize(size, screenHeight));
+        }
+
+        /// <summary>Chỉ được THU tầm nhìn: nới ra sẽ lộ ra ngoài biên map mà
+        /// FitOrthographicSize vừa kẹp xong.</summary>
+        [Theory]
+        [InlineData(1080)]
+        [InlineData(1050)]
+        [InlineData(800)]
+        [InlineData(1440)]
+        public void SnapOrthographicSize_KhongBaoGioNoiRongTamNhin(int screenHeight)
+        {
+            Assert.True(CameraClamp.SnapOrthographicSize(120f, screenHeight) <= 120f);
+        }
+
+        /// <summary>Màn thấp hơn cả khung nhìn thì không có tỉ lệ nguyên nào dùng được —
+        /// giữ nguyên cỡ, thà đúng khung còn hơn vỡ bố cục.</summary>
+        [Theory]
+        [InlineData(120f, 200)]
+        [InlineData(120f, 0)]
+        [InlineData(0f, 1080)]
+        public void SnapOrthographicSize_KhongChotDuoc_GiuNguyen(float size, int screenHeight)
+        {
+            Assert.Equal(size, CameraClamp.SnapOrthographicSize(size, screenHeight));
+        }
     }
 }

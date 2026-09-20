@@ -58,6 +58,7 @@ namespace Gopet.Runtime.World
             var spriteGo = new GameObject("Sprite", typeof(SpriteRenderer));
             spriteGo.transform.SetParent(go.transform, false);
             view._renderer = spriteGo.GetComponent<SpriteRenderer>();
+            PixelSnapVisual.Attach(spriteGo.transform);
 
             view._label = JarNameLabel.Create(go.transform, new Vector3(0f, 0f, 0f), 0.7f,
                 JarIconTokens.Strip(entry.DisplayName ?? string.Empty));

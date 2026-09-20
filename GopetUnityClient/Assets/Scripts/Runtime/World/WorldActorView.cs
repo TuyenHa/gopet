@@ -74,6 +74,23 @@ namespace Gopet.Runtime.World
             PlaceLabel();
         }
 
+        /// <summary>
+        /// Dời quái sang chỗ mới (xem <see cref="MobWanderer"/>). Phải cập nhật CẢ thứ
+        /// tự vẽ: nó tính theo Y, quái đi xuống mà giữ thứ tự cũ là chui ra sau cái cây
+        /// mà đáng lẽ nó đang đứng trước.
+        /// </summary>
+        internal void MoveTo(int jarX, int jarY, int mapHeightPixels)
+        {
+            var (x, y) = UiLogic.MapPlacement.JarToWorld(jarX, jarY, mapHeightPixels);
+            transform.localPosition = new Vector3(x, y, 0f);
+
+            var order = UiLogic.MapPlacement.ActorSortingOrder(jarY);
+            if (order == _renderer.sortingOrder) return;
+            _renderer.sortingOrder = order;
+            _labelOrder = order + 20;
+            _label?.SetSortingOrder(_labelOrder);
+        }
+
         public void SetBossHp(int hp)
         {
             BossHp = Mathf.Max(0, hp);

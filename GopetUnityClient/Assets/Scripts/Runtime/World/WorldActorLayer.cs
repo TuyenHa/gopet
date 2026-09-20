@@ -133,7 +133,11 @@ namespace Gopet.Runtime.World
             foreach (var mob in mobs)
             {
                 OnMobRemoved(mob.Id);
-                _mobs[mob.Id] = WorldActorView.CreateMob(_scene.transform, mob, MapHeight, _assets, _attackMob);
+                var view = WorldActorView.CreateMob(_scene.transform, mob, MapHeight, _assets, _attackMob);
+                _mobs[mob.Id] = view;
+                // Quái đứng chôn chân nhìn như tượng; server không gửi gói di chuyển nào
+                // nên client tự cho nó đi lảng vảng quanh chỗ sinh.
+                MobWanderer.Attach(view, _scene.Map?.Map, mob.Id, mob.X, mob.Y + mob.VerticalOffset);
             }
         }
 

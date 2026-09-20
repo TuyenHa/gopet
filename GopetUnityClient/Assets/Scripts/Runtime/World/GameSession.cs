@@ -167,6 +167,10 @@ namespace Gopet.Runtime.World
             s._hud.Character.Clicked += s.OpenCharacterHub;
             s.UpdateMapName();
             guider.BossBannerShown += s._hud.Ticker.Show;
+            // Banner thường (SERVER_MESSAGE/BANNER_MESSAGE) dùng chung băng chạy chữ với banner
+            // boss. Trước đây event này không có ai nghe nên mọi Player.showBanner() gọi đơn lẻ
+            // đều rơi vào hư không.
+            guider.BannerShown += s._hud.Ticker.Show;
             s._worldStatusHandler.BossHpUpdated += s._scene.ApplyBossHp;
             s._worldStatusHandler.PlaceTimeUpdated += s._hud.ShowPlaceTime;
             s._worldStatusHandler.BigTextShown += s._hud.ShowBigText;
@@ -560,6 +564,9 @@ namespace Gopet.Runtime.World
                     TargetPlayerMenu.Action.Pk        => Gopet.Net.Social.TargetPlayerPackets.SendPk(userId),
                     TargetPlayerMenu.Action.ViewEquip => Gopet.Net.Social.TargetPlayerPackets.ViewEquipment(userId),
                     TargetPlayerMenu.Action.AddFriend => Gopet.Net.Social.FriendPackets.AddFriendById(userId),
+                    // Server trả về màn kỹ năng bang của người đó (clan sub 27) — dùng lại đúng
+                    // GuildView đang có, không cần màn riêng.
+                    TargetPlayerMenu.Action.ClanSkill => Gopet.Net.Guild.GuildPackets.ShowClanSkill(userId),
                     _ => null,
                 };
                 if (msg != null) _client.Send(msg);

@@ -142,23 +142,23 @@ namespace Gopet.UiLogic
             }
         }
 
+        /// <summary>Menu local mà <see cref="Dispatch"/> THẬT SỰ trả về.
+        ///
+        /// <para>Trước đây enum còn liệt kê nhà hẻm/nhà mặt tiền/biệt thự/dinh thự/nhà/vườn/
+        /// cà phê/kiosk giày/mỹ viện/tiệm tóc/gara. Không mục nào trong số đó được trả ra: các
+        /// buildingType tương ứng (0-4, 7, 10, 19-21, 23) đi thẳng vào <c>Noop</c> vì CHÍNH JAR
+        /// cũng không xử lý — nó tạo command local 602/603/606/607/1004/1005/1006/1008 rồi
+        /// <c>dv.java</c> không có case nào bắt, và server cũng không có engine tương ứng.
+        /// <c>BuildingDispatcherTests.Dispatch_CommandJarKhongCoCaseTrongDv_TraNoop</c> khoá
+        /// hành vi đó.</para>
+        ///
+        /// <para>Giữ lại danh sách chết chỉ tạo ảo giác "còn tính năng chưa nối" — đã xoá.</para></summary>
         public enum LocalMenu
         {
             None,
-            RealEstateNhaHem,
-            RealEstateMatTien,
-            RealEstateBietThu,
-            RealEstateDinhThu,
-            RealEstateNha,
-            Garden,
             TicketRoom,
-            Cafe,
             ChangeZone,
             Mailbox,
-            PetShoesKiosk,
-            BeautySalon,
-            HairSalon,
-            Garage,
             PetProfile,
         }
     }

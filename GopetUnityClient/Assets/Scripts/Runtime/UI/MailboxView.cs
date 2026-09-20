@@ -23,15 +23,57 @@ namespace Gopet.Runtime.UI
             return view;
         }
 
+        /// <summary>Loại thư của server (<c>Data/User/Letter.cs:13-15</c>). 0 là "tất cả",
+        /// không phải một loại thật — jar cũng chia đúng ba nhóm này.</summary>
+        private const sbyte TypeAll = 0, TypeFriend = 1, TypeAdmin = 2, TypeEvent = 3;
+
+        private Mailbox _mailbox;
+        private Transform _listPanel;
+        private Text _title;
+        private sbyte _filter = TypeAll;
+
         private void Build(Mailbox mailbox)
         {
-            var panel = LetterDetailView.Panel(transform, new Vector2(480f, 380f));
-            var title = LetterDetailView.Text(panel, "Title", $"Hộp thư ({mailbox.Letters.Length})", 18, 10f, 34f);
-            title.alignment = TextAnchor.MiddleCenter;
-            MakeTopButton(panel, "Soạn thư", () => ComposeRequested?.Invoke());
-            var content = MakeScrollArea(panel, mailbox.Letters.Length);
-            for (var i = 0; i < mailbox.Letters.Length; i++)
-                MakeRow(content, mailbox.Letters[i], i * 52f);
+            _mailbox = mailbox;
+            _listPanel = LetterDetailView.Panel(transform, new Vector2(480f, 380f));
+            _title = LetterDetailView.Text(_listPanel, "Title", string.Empty, 18, 10f, 34f);
+            _title.alignment = TextAnchor.MiddleCenter;
+            MakeTopButton(_listPanel, "Soạn thư", () => ComposeRequested?.Invoke(), 12f);
+            MakeTopButton(_listPanel, "Tất cả", () => SetFilter(TypeAll), 132f, 68f);
+            MakeTopButton(_listPanel, "Admin", () => SetFilter(TypeAdmin), 206f, 68f);
+            MakeTopButton(_listPanel, "Sự kiện", () => SetFilter(TypeEvent), 280f, 68f);
+            MakeTopButton(_listPanel, "Bạn bè", () => SetFilter(TypeFriend), 354f, 68f);
+            Rebuild();
+        }
+
+        private void SetFilter(sbyte type)
+        {
+            if (_filter == type) return;
+            _filter = type;
+            Rebuild();
+        }
+
+        /// <summary>Dựng lại danh sách theo bộ lọc. Xoá cả vùng cuộn cũ chứ không chỉ các dòng:
+        /// chiều cao vùng cuộn tính theo SỐ dòng, giữ lại là cuộn hụt hoặc thừa.</summary>
+        private void Rebuild()
+        {
+            var old = _listPanel.Find("Letters");
+            if (old != null) Destroy(old.gameObject);
+
+            var letters = Filtered();
+            _title.text = _filter == TypeAll
+                ? $"Hộp thư ({letters.Count})"
+                : $"Hộp thư ({letters.Count}/{_mailbox.Letters.Length})";
+            var content = MakeScrollArea(_listPanel, letters.Count);
+            for (var i = 0; i < letters.Count; i++) MakeRow(content, letters[i], i * 52f);
+        }
+
+        private System.Collections.Generic.List<Letter> Filtered()
+        {
+            var result = new System.Collections.Generic.List<Letter>();
+            foreach (var letter in _mailbox.Letters)
+                if (_filter == TypeAll || letter.Type == _filter) result.Add(letter);
+            return result;
         }
 
         private static Transform MakeScrollArea(Transform panel, int count)
@@ -78,15 +120,16 @@ namespace Gopet.Runtime.UI
             go.GetComponent<Button>().onClick.AddListener(() => LetterSelected?.Invoke(letter));
         }
 
-        private static void MakeTopButton(Transform parent, string label, Action action)
+        private static void MakeTopButton(Transform parent, string label, Action action,
+            float x, float width = 112f)
         {
             var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(12f, -48f);
-            rect.sizeDelta = new Vector2(112f, 32f);
+            rect.anchoredPosition = new Vector2(x, -48f);
+            rect.sizeDelta = new Vector2(width, 32f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
             text.text = label;

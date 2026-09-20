@@ -56,5 +56,12 @@ namespace Gopet.Net.Kiosk
 
         public static Message RemoveListing(int itemId) =>
             Message.Create(GopetCmd.PET_SERVICE).PutSByte(GopetCmd.REMOVE_SELL_ITEM).PutInt(itemId);
+
+        /// <summary>Xin xem hình xăm của một con pet ĐANG BÁN trong ki-ốt pet.
+        /// <paramref name="itemId"/> là id món hàng trong ki-ốt, server tra
+        /// <c>kiosk.kioskItems.Where(p =&gt; p.itemId == IdMenuItem)</c>
+        /// (<c>GameController.cs:1222-1236</c>) rồi mở màn hình xăm của chính con pet đó.</summary>
+        public static Message ShowPetTattoo(int itemId) =>
+            Message.Create(GopetCmd.PET_SERVICE).PutSByte(GopetCmd.SHOW_TATTO_PET_IN_KIOSK).PutInt(itemId);
     }
 }

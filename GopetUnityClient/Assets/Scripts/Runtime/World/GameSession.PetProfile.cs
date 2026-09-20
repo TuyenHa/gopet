@@ -42,6 +42,10 @@ namespace Gopet.Runtime.World
             _petProfileView.CloseRequested += ClosePetProfile;
             _petProfileView.GymRequested += () => _client.Send(PetProfilePackets.RequestGym());
             _petProfileView.TattooRequested += () => _client.Send(TattooPackets.RequestScreen());
+            // Server nhận id rồi mở menu chọn kỹ năng (MENU_LEARN_NEW_SKILL = 799); GenericMenuView
+            // sẵn có tự dựng menu đó nên ở đây chỉ cần gửi.
+            _petProfileView.LearnSkillRequested += skillId =>
+                _client.Send(PetProfilePackets.LearnSkill(skillId));
         }
 
         private void ClosePetProfile()

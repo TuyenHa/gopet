@@ -2,6 +2,7 @@ using System.IO;
 using Gopet.Net.Auth;
 using Gopet.Net.Guider;
 using Gopet.Net.Bank;
+using Gopet.Net.Kiosk;
 using Gopet.Net.Pet;
 using Gopet.Net.Player;
 using Gopet.Runtime.Assets;
@@ -106,6 +107,9 @@ namespace Gopet.Runtime
             var wings = new WingHandler(_client.Send);
             wings.RegisterOn(_client.Router);
             _ui.InitializeWings(wings);
+            // Xem hình xăm con pet đang bán trong ki-ốt: menu 81028 của server chỉ có đường
+            // "chọn", nút này là đường thứ hai — xem UiRoot.KioskPet.cs.
+            _ui.KioskPetTattooRequested += itemId => _client.Send(KioskPackets.ShowPetTattoo(itemId));
 
             // HUD Cửa hàng / Dịch vụ / Sự kiện: ẩn cho tới khi vào map (sau LOGIN_SUCCES).
             // Đặt SAU UiRoot để nằm trên nó — nút HUD phải bấm được cả khi có popup, và

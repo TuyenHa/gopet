@@ -62,8 +62,10 @@ namespace Gopet.Runtime.World
                             _client.Send(PetProfilePackets.RequestProfile());
                             break;
                         default:
-                            ShowToast($"'{label}' — chưa mở trong Unity (menu local, chờ phase kế).");
-                            Debug.Log($"[Gopet] Building '{label}' (type {entity.BuildingType}) → menu local {action.Menu} (chưa impl).");
+                            // Không tới được: Dispatch chỉ trả 4 menu ở trên, mọi buildingType
+                            // jar-inert đều ra Noop. Giữ nhánh này để thêm menu mới mà quên nối
+                            // thì thấy log, chứ không phải "còn tính năng chưa làm".
+                            Debug.LogWarning($"[Gopet] Building '{label}' (type {entity.BuildingType}) → menu local {action.Menu} chưa có màn hình.");
                             break;
                     }
                     break;

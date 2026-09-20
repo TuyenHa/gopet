@@ -13,7 +13,7 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class TargetPlayerMenu : MonoBehaviour
     {
-        public enum Action { ViewInfo, Challenge, Pk, ViewEquip, AddFriend }
+        public enum Action { ViewInfo, Challenge, Pk, ViewEquip, AddFriend, ClanSkill }
 
         public event System.Action<Action> Chosen;
         public event System.Action CloseRequested;
@@ -32,7 +32,7 @@ namespace Gopet.Runtime.UI
             panel.transform.SetParent(backdrop.transform, false);
             var rect = (RectTransform)panel.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(220f, 300f);
+            rect.sizeDelta = new Vector2(220f, 344f);
             var img = panel.GetComponent<Image>();
             RoundedUiSprite.Apply(img);
             img.color = new Color(0.11f, 0.14f, 0.2f, 0.98f);
@@ -55,6 +55,7 @@ namespace Gopet.Runtime.UI
             view.Row(panel.transform, "PK ngay",       Action.Pk,        2, new Color(0.75f, 0.25f, 0.25f, 1f));
             view.Row(panel.transform, "Xem đồ pet",    Action.ViewEquip, 3, new Color(0.35f, 0.55f, 0.75f, 1f));
             view.Row(panel.transform, "Kết bạn",       Action.AddFriend, 4, new Color(0.45f, 0.65f, 0.35f, 1f));
+            view.Row(panel.transform, "Kỹ năng bang",  Action.ClanSkill, 5, new Color(0.55f, 0.45f, 0.75f, 1f));
             return view;
         }
 

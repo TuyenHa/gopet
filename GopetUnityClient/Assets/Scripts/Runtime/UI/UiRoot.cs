@@ -120,6 +120,8 @@ namespace Gopet.Runtime.UI
             view.EnableInteractiveScroll();
             if (screen.ListId == WingInventoryMenuId && _wingHandler != null)
                 view.SelectionOverride = index => TryShowWingActions(view, screen, index);
+            else if (screen.ListId == KioskPetMenuId)
+                view.SelectionOverride = index => TryShowKioskPetActions(view, screen, index);
 
             // Dòng cần xác nhận: đẩy hộp thoại lên TRÊN menu, không thay thế nó —
             // huỷ thì phải quay lại đúng menu đang xem.

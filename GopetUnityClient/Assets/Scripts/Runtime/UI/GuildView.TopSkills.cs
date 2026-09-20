@@ -153,7 +153,14 @@ namespace Gopet.Runtime.UI
             dr.offsetMin = new Vector2(8f, 4f);
             dr.offsetMax = Vector2.zero;
 
-            if (!canEdit || locked) return;
+            if (!canEdit) return;
+            if (locked)
+            {
+                // Ô khoá: server mở ô KẾ TIẾP theo clan.slotSkill nên nút không cần tham số,
+                // và nó trả về Y/N dialog chuẩn — client không phải dựng hộp thoại riêng.
+                MakeRowButton(go.transform, "Mở ô", () => UnlockSkillSlotRequested?.Invoke());
+                return;
+            }
 
             var btnGo = new GameObject("Action", typeof(RectTransform), typeof(Image), typeof(Button));
             btnGo.transform.SetParent(go.transform, false);
@@ -179,19 +186,6 @@ namespace Gopet.Runtime.UI
                 bLabel.text = "Đổi";
                 btnGo.GetComponent<Button>().onClick.AddListener(() => SkillRentRequested?.Invoke(slotIndex));
             }
-        }
-
-        public void ShowDonateOptions(GuildDonateOption[] options)
-        {
-            SelectTab(0);
-            _infoText.gameObject.SetActive(true);
-            _searchField.transform.parent.gameObject.SetActive(false);
-            _guildListContainer.gameObject.SetActive(false);
-
-            var lines = new string[options.Length];
-            for (var i = 0; i < options.Length; i++)
-                lines[i] = options[i].Description;
-            _infoText.text = string.Join("\n\n", lines);
         }
     }
 }

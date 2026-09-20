@@ -41,6 +41,13 @@ namespace Gopet.Runtime.UI
         public event Action TopFundRequested;
         public event Action MemberListRequested;
         public event Action DonateRequested;
+
+        /// <summary>Người chơi chọn một MỨC góp quỹ; tham số là <c>GuildDonateOption.Id</c>
+        /// server gửi kèm, không phải chỉ số dòng trên màn hình.</summary>
+        public event Action<int> DonateOptionChosen;
+
+        /// <summary>Xin mở thêm một ô kỹ năng bang. Server tự chọn ô kế tiếp.</summary>
+        public event Action UnlockSkillSlotRequested;
         public event Action ChatHistoryRequested;
 
         public static GuildView Create(Transform parent)

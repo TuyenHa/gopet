@@ -123,6 +123,36 @@ Jar gốc làm khác: ép dẹp sprite xuống đất theo từng lát 4px, vẽ
 chạy 1→4 (`ei.java:90-96`, `bd.java:241-252`), tới `r == 4` là biến mất hẳn. Bản Unity
 giữ pet nằm lại trên sân vì overlay còn hiện panel kết quả.
 
+### 2.8 Máu thật của quái LỚN HƠN `maxHp` server gửi
+
+`Mob.initMob()` lấy máu thật từ bảng `gopet_mob` (`hp = mobLvInfo.hp`) nhưng tính trần
+bằng công thức chung `getHpViaPrice() = lvl*3 + str*4 + 20`. Hai nguồn này không khớp:
+quái lv45 có `hp = 384310` trong khi `maxHp = 192155` — đúng gấp đôi.
+
+Client vì thế **không được kẹp** hp theo maxHp mà server gửi. `ReadVitals` nới trần thành
+`max(maxHp, hp)`; thiếu nó thì `BattlePetCard.Apply` cắt mất nửa máu ngay đòn đầu, thanh
+máu quái về 0 khi server còn nửa pool → trận vẫn chạy mà không bao giờ có băng chiến thắng.
+
+Hệ quả còn lại phía server (chưa đổi vì là thay đổi cân bằng): `addHpPet` kẹp theo `maxHp`
+nên quái hút máu khi đang trên trần sẽ **tụt** xuống `maxHp`; độc theo % (`updateDamageToxic`)
+cũng tính trên trần chứ không trên máu thật.
+
+### 2.9 `update()` phải chốt trận trước khi thoát sớm
+
+`PetBattle.update()` mở đầu bằng `if (hasWinner()) { if (!isClose) win(); return; }`. Trước
+đây nhánh này `return` trần. Vòng lặp `GopetPlace.update` dọn trận ngay sau mỗi `update()`
+(`update(); if (hasWinner()) { clean(); remove; }`) nên hầu hết đường chốt trận đã được phủ;
+lỗ còn lại là trạng thái thắng xuất hiện **ngoài** `update()` giữa hai tick — `useItem` chạy
+thẳng trên thread mạng từ `MenuController`, không qua hàng đợi `actions` và không giữ `mutex`.
+Khi đó tick sau thoát sớm và `PET_BATTLE_STATE` không bao giờ được gửi → overlay client treo
+tới khi hết watchdog. `win()` idempotent nhờ cờ `hadFinished`.
+
+`isClose` bị loại trừ có chủ đích: `hasWinner()` trả true cho mọi trận `isClose`, mà `Close()`
+(đổi map / mất kết nối) cố ý **bỏ** trận — chỉ `clean()`, không thưởng không phạt. Gọi `win()`
+ở đó sẽ trừ exp / cộng ngọc / dịch chuyển người chơi giữa lúc đổi map, và chỉ xảy ra khi tick
+chạm đúng snapshot cũ của `petBattles` nên không tất định. Xin thua không mất đường chốt vì
+`surrender()` tự gọi `win()`.
+
 ## 3. Quy ước `battleId`
 
 **`battleId` = userId của NGƯỜI NHẬN gói**, không phải "một id trận" toàn cục.

@@ -672,6 +672,19 @@ namespace Gopet.Battle
             {
                 if (hasWinner())
                 {
+                    // Chốt trận trước khi thoát. Trạng thái "đã có kẻ thắng" có thể xuất hiện
+                    // NGOÀI update() giữa hai tick (useItem chạy thẳng trên thread mạng từ
+                    // MenuController, không qua hàng đợi và không giữ mutex), khi đó vòng lặp
+                    // GopetPlace không kịp thấy để dọn, tick sau vào đây thoát sớm và
+                    // PET_BATTLE_STATE không bao giờ được gửi — overlay client treo tới khi hết
+                    // watchdog, không có băng thắng/thua. win() idempotent nhờ cờ hadFinished.
+                    //
+                    // TRỪ isClose: Close() (đổi map/mất kết nối) cố ý bỏ trận KHÔNG thưởng cũng
+                    // không phạt — chỉ clean(). Gọi win() ở đây sẽ trừ exp/cộng ngọc/dịch chuyển
+                    // người chơi giữa lúc đổi map, và chỉ xảy ra khi tick chạm đúng snapshot cũ
+                    // của danh sách trận, tức không tất định. Xin thua tự gọi win() trong
+                    // surrender() nên không mất đường chốt.
+                    if (!isClose) win();
                     return;
                 }
                 // Chưa qua nhịp mở trận thì KHÔNG ai đánh: chặn ở đây là chặn cả đòn quái,

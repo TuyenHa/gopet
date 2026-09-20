@@ -68,11 +68,11 @@ namespace Gopet.Runtime.World
             FaintIfDown();
         }
 
-        /// <summary>Gán tuyệt đối (không phải delta) — dùng cho snapshot MY_PET_INFO.</summary>
+        /// <summary>Gán tuyệt đối — snapshot MY_PET_INFO; trần nới theo hp/mp thật vì server gửi được hp &gt; maxHp (xem <c>BattleAuxPacketReader.ReadVitals</c>).</summary>
         public void SetVitals(int hp, int maxHp, int mp, int maxMp)
         {
-            _pet.MaxHp = Mathf.Max(0, maxHp);
-            _pet.MaxMp = Mathf.Max(0, maxMp);
+            _pet.MaxHp = Mathf.Max(0, Mathf.Max(maxHp, hp));
+            _pet.MaxMp = Mathf.Max(0, Mathf.Max(maxMp, mp));
             _pet.Hp = Mathf.Clamp(hp, 0, Mathf.Max(0, _pet.MaxHp));
             _pet.Mp = Mathf.Clamp(mp, 0, Mathf.Max(0, _pet.MaxMp));
             FaintIfDown();

@@ -90,10 +90,21 @@ namespace Gopet.Net.Battle
             FrameCount = r.ReadSByte(), VerticalOffset = r.ReadShort(), Name = r.ReadUtf()
         };
 
+        /// <summary>HP/MP hiện tại + trần của một actor.
+        ///
+        /// <para>Trần phải NỚI theo giá trị hiện tại: với quái, server lấy máu thật từ bảng
+        /// <c>gopet_mob.hp</c> nhưng tính <c>maxHp</c> bằng công thức
+        /// <c>lvl*3 + str*4 + 20</c> (<c>Mob.initMob</c>), nên hp thường LỚN HƠN maxHp
+        /// (lv45: 384310 máu thật so với trần 192155). Giữ nguyên trần của server thì
+        /// <see cref="Gopet.Runtime.World.BattlePetCard.Apply"/> kẹp máu xuống trần ngay đòn
+        /// đầu, quái "chết" khi mới ăn nửa số máu — thanh máu về 0 mà trận vẫn chạy và
+        /// không bao giờ có băng chiến thắng.</para></summary>
         private static void ReadVitals(JavaBinaryReader r, BattlePet pet)
         {
-            pet.Hp = r.ReadInt(); pet.Mp = r.ReadInt();
-            pet.MaxHp = r.ReadInt(); pet.MaxMp = r.ReadInt();
+            var hp = r.ReadInt(); var mp = r.ReadInt();
+            var maxHp = r.ReadInt(); var maxMp = r.ReadInt();
+            pet.Hp = hp; pet.Mp = mp;
+            pet.MaxHp = Math.Max(maxHp, hp); pet.MaxMp = Math.Max(maxMp, mp);
         }
 
         private static BattleSkill[] ReadSkills(JavaBinaryReader r, bool detailed)

@@ -33,6 +33,9 @@ namespace Gopet.Runtime.World
         {
             // Ảnh ghi đè ở Battle/fx/<skillId> thắng atlas jar — xem BattleSkillFx.
             if (BattleSkillFx.TryPlay(parent, target, skillId, fromWorld, out var impact)) return impact;
+            // Đòn thường/chí mạng: dùng CHUNG vệt lửa với nút đánh ngoài map thay cho dải
+            // SlashEffect của jar — xem BattleSlashFx.
+            if (BattleSlashFx.TryPlay(parent, target, skillId, out var slash)) return slash;
             var name = BattleEffectNames.Resolve(skillId);
             if (name == null) return 0f;
             if (BattleEffectNames.IsActorAnimation(skillId))

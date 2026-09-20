@@ -427,10 +427,16 @@ marker cho đòn thường (`SKILL_NORMAL=0`, `SKILL_MISS=1`, `SKILL_CRIT=2`) ho
 
 | skillId | Ra gì | Nguồn asset |
 |---|---|---|
-| 0, 2 | `SlashEffect` | `Resources/Jar/Art/Raw/pet/battle/` |
+| 0, 2 | **`BattleSlashFx`** — vệt lửa dùng chung với nút đánh ngoài map | `Resources/Ui/fx-slash.png` |
 | 1 | `null` — chỉ hiện chữ "TRƯỢT", không vẽ sprite | — |
 | 101..124 | `Overrides[skillId]` nếu có, không thì `Atlas[skillId - 101]` | `pet/battle/skills/<tên>` + `Jar/BattleAnimations/skills/<tên>.bytes` |
 | 125..130 | `<skillId>` qua `BattleActorEffectView` | `pet/battle/skills/<id>.anu.bytes` |
+
+`BattleEffectView.Play` xét theo thứ tự: ảnh ghi đè `Battle/fx/<skillId>.png` (`BattleSkillFx`)
+→ **đòn thường/chí mạng** (`BattleSlashFx`) → atlas jar theo `BattleEffectNames.Resolve`.
+`Resolve(0)` vẫn trả `SlashEffect` và giữ nguyên để đối chiếu ngược với jar, nhưng đường đó
+không còn được dùng: dải gốc là 4 khung vệt vàng mảnh vẽ cho màn hình 240px, phóng lên màn
+hình bây giờ thành hai que chéo to đùng. Chí mạng dùng cùng ảnh, phóng 1.3×.
 
 `Atlas` là bản chép **nguyên trạng** bảng tra của jar (`dx.java` case 0..23) — giữ y nguyên để
 còn đối chiếu ngược. Muốn đổi hiệu ứng cho một kỹ năng thì thêm vào `Overrides`, đừng sửa mảng.

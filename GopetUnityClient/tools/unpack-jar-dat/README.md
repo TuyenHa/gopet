@@ -70,6 +70,17 @@ trả `null` dù file nằm đúng chỗ.
 `maps/11.dat` là **nền màn đăng nhập** — `fb.java` dựng `new ef(11, …)` rồi ghi đè
 `b()` của lớp cha để vẽ map thay cho nền màu phẳng.
 
+## Bản vá có chủ ý: bờ nước 3 map băng
+
+`map-water-bank-patch.js` mở viền bờ của Băng động 1 (23), Sông băng (24) và Băng động 2
+(25) trước khi ghi `.bytes`. Dữ liệu gốc viền quanh mọi vũng nước bằng một đường ô chặn
+một phần nên không bước từ bờ xuống mặt băng được: vùng đi được lớn nhất chỉ 48% / 80% /
+75% diện tích (21 map còn lại đều 93–100%), map 23 còn đứt hẳn làm đôi và 6/11 điểm sinh
+quái nằm ở nửa không tới được. Sau khi vá: 98% / 92% / 89%, quái tới được hết.
+
+Vì vá nằm trong pipeline nên `--check` vẫn đối chiếu được với jar và chạy lại unpack
+không làm mất bản vá. Chi tiết quy tắc chọn ô ghi trong đầu file module.
+
 ## Kiểm chứng
 
 - Mọi khối giải ra phải bắt đầu bằng chữ ký PNG (`decodeBank` ném lỗi nếu không).

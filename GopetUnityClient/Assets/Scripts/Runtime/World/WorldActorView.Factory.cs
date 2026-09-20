@@ -50,6 +50,9 @@ namespace Gopet.Runtime.World
             string labelText, int jarX, int jarY, int mapHeight, int frameCount,
             RemoteAssetCache assets, Action clicked, int[] bounds)
         {
+            // Chuẩn hoá MỘT lần ở đây để cả tra ảnh cục bộ lẫn gói xin ảnh dùng chung một
+            // dạng đường dẫn — vài dòng `npc.imgPath` trong DB viết kiểu Windows.
+            imagePath = JarAssetPath.Normalize(imagePath);
             var go = new GameObject(objectName, typeof(BoxCollider2D));
             go.transform.SetParent(parent, false);
             var (x, y) = MapPlacement.JarToWorld(jarX, jarY, mapHeight);

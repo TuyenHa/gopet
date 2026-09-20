@@ -193,13 +193,18 @@ namespace Gopet.Runtime.World
             }
             if (_map == null) return;
 
+            // Gói warp không mang chỗ đứng thật — server đặt cứng (360,360) và trông cậy client
+            // tra mốc theo waypointIndex. Xem MapSpawnPoint.
+            int spawnX = evt.SelfX, spawnY = evt.SelfY;
+            MapSpawnPoint.Resolve(_map.Map, evt.SelfWaypointIndex, ref spawnX, ref spawnY);
+
             if (!_avatars.ContainsKey(_selfUserId))
-                SpawnAvatar(_selfUserId, _selfName, _selfGender, evt.SelfX, evt.SelfY);
-            else Self.SnapTo(evt.SelfX, evt.SelfY);
+                SpawnAvatar(_selfUserId, _selfName, _selfGender, spawnX, spawnY);
+            else Self.SnapTo(spawnX, spawnY);
 
             SelfSpawned?.Invoke(new PlayerEnterMap
             {
-                UserId = _selfUserId, X = evt.SelfX, Y = evt.SelfY, Gender = _selfGender
+                UserId = _selfUserId, X = spawnX, Y = spawnY, Gender = _selfGender
             });
 
             foreach (var o in evt.Others)

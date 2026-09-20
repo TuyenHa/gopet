@@ -113,6 +113,29 @@ Asset sinh bằng `tools/image-gen` (gpt-image), đặt ở `Assets/Resources/Ui
 `JarMapThumbnail` (bake map jar ra `RenderTexture`) vẫn còn nhưng nay **chỉ minimap dùng**;
 màn bản đồ không bake gì nên không có đường rò VRAM.
 
+## Chỗ đứng sau khi sang map
+
+Server KHÔNG biết bố cục map (bảng `map` chỉ có mapId/tên/npc/boss), nên khi nhận
+`ON_PLAYER_WARPING` nó đặt cứng `x = y = 360` cho mọi map (`GameController.cs:318`) và gửi
+kèm `waypointIndex` của cổng vừa đi. Đưa nhân vật về đúng mốc là việc của client: dữ liệu
+mốc (`z[]` trong `maps/<n>.dat`) chỉ có ở đây.
+
+`MapSpawnPoint.Resolve` làm việc đó — chỉ can thiệp khi toạ độ server đúng bằng (360,360),
+còn lại giữ nguyên (đổi khu, kết thúc trận… đều mang toạ độ thật). Khớp mốc theo `Kind`
+trước rồi mới tới thứ tự mảng: map 11 xếp mảng [kind 2, kind 1, kind 0] nên lấy theo thứ tự
+sẽ nhả người chơi ra mép tây thay vì giữa thành.
+
+Thiếu bước này thì mọi map đều nhả nhân vật ra giữa map, và ở 3 map băng (23, 24, 25) điểm
+(360,360) rơi đúng giữa vũng nước — vừa vào map đã thấy mình đứng dưới nước.
+
+Cổng mang sẵn chỉ số mốc của map đích (`JarMapEntity.ExtraB`), ví dụ hai cổng của Sông băng
+trỏ về Băng động 1 với index 2 và 3 = mốc (117,86) và (98,311), đúng hai bờ bắc/nam. Menu
+dịch chuyển luôn gửi index 0 (`GameController.mapTeleMenu`).
+
+Khoảng cách từ (360,360) tới mốc xa nhất của các map hiện có đều dưới `MAX_MOVE_DISTANCE_PX`
+(600), nên gói di chuyển đầu tiên sau khi vào map không bị luật chống dịch-chuyển-lậu của
+server tính là gian lận.
+
 ## Giới hạn đã biết
 
 - `mapId` truyền bằng `sbyte` → tối đa 127. Map cao nhất hiện tại là 34.

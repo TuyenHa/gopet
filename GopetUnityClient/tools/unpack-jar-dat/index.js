@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { decodeBank } = require('./dat-bank');
+const { patchWaterBanks } = require('./map-water-bank-patch');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const JAR_DIR = path.join(REPO_ROOT, 'client.jar_Decompiler.com');
@@ -69,7 +70,8 @@ function buildPlan() {
     }
 
     for (const rel of walk(path.join(JAR_DIR, 'maps'), '.dat')) {
-        const bytes = fs.readFileSync(path.join(JAR_DIR, 'maps', rel));
+        // 3 map bang duoc mo bo nuoc - xem map-water-bank-patch.js. Cac map khac giu nguyen byte.
+        const bytes = patchWaterBanks(rel, fs.readFileSync(path.join(JAR_DIR, 'maps', rel)));
         plan.push({ dest: path.join(MAPS_DIR, rel.replace(/\.dat$/i, '.bytes')), bytes, kind: `map ${rel}` });
     }
 

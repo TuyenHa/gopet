@@ -1,4 +1,5 @@
 using System;
+using Gopet.UiLogic;
 using UnityEngine;
 
 namespace Gopet.Runtime.World
@@ -17,12 +18,13 @@ namespace Gopet.Runtime.World
         /// <summary>
         /// Trả texture cục bộ nếu đã unpack, hoặc <c>null</c> nếu chưa — KHÔNG ném lỗi
         /// như <c>JarSkin</c>, vì thiếu bản cục bộ là tình huống hợp lệ (rơi về mạng).
-        /// Vài dòng dữ liệu cũ dùng backslash (<c>npcs\ten.png</c>) — chuẩn hoá trước khi tra.
+        /// Dữ liệu cũ có dòng dùng backslash, thậm chí gạch đôi (<c>npcs\\ten.png</c>) —
+        /// chuẩn hoá qua <see cref="JarAssetPath"/> trước khi tra.
         /// </summary>
         public static Texture2D LoadLocalTexture(string imagePath)
         {
             if (string.IsNullOrEmpty(imagePath)) return null;
-            var normalized = imagePath.Replace('\\', '/');
+            var normalized = JarAssetPath.Normalize(imagePath);
             if (normalized.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 normalized = normalized.Substring(0, normalized.Length - 4);
             var sprite = Resources.Load<Sprite>(LocalRoot + normalized);

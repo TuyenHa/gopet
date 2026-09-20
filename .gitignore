@@ -11,3 +11,8 @@ SRCGOPETGOC/GServer/obj*
 .tmp-build-attackboss-star*
 SRCGOPETGOC/GServer/*.log
 
+# Dump DB va log runtime cua GServer: sinh moi lan chay, ten co timestamp nen
+# moi lan lai la mot file moi. Khong ignore thi `git add -A` nuot ca dump chua
+# du lieu tai khoan nguoi choi.
+SRCGOPETGOC/GServer/backup_sql/
+SRCGOPETGOC/GServer/log/

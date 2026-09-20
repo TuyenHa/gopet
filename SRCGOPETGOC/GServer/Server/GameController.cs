@@ -1,4 +1,4 @@
-
+﻿
 using Gopet.App;
 using Gopet.Data.Event.DailyCheckin;
 using Gopet.Battle;
@@ -303,7 +303,7 @@ public class GameController
                     if (getPetBattle() == null)
                     {
                         int mapId = message.reader().readInt();
-                        if (!CheckSky(mapId))
+                        if (!CheckMapAccess(mapId))
                         {
                             return;
                         }
@@ -1536,16 +1536,19 @@ public class GameController
 
     private void mapTeleMenu()
     {
-        // TELE_MENU phải chỉ quảng cáo map mà chính ON_PLAYER_WARPING cho phép.
-        // Trước đây map 26-28 vẫn được gửi cho người chưa mở thượng giới; chọn vào
-        // bị CheckSky từ chối, khiến client đã fade đen nhưng không nhận MapUpdated.
-        // Đồng thời TeleMapId có map 22 lặp hai lần nên loại trùng tại đây.
-        List<int> availableMapIds = new();
-        foreach (int mapId in GopetManager.TeleMapId)
-        {
-            if (mapId >= 26 && !player.playerData.isOnSky) continue;
-            if (!availableMapIds.Contains(mapId)) availableMapIds.Add(mapId);
-        }
+        // TELE_MENU liệt kê MỌI map đang bật, kèm cờ khoá — không còn lọc theo danh
+        // sách tuyển GopetManager.TeleMapId (8 map). Client vẽ đủ map và gắn icon ổ
+        // khoá cho map chưa vào được, nên người chơi thấy hết đích đến thay vì đoán.
+        //
+        // An toàn vì ON_PLAYER_WARPING vốn KHÔNG giới hạn theo TeleMapId: nó chặn bằng
+        // CheckMapAccess (và pet chết vì PK). Cờ khoá ở đây dùng CHUNG MapLockReason với
+        // CheckMapAccess — gồm cả luật thượng giới lẫn luật nhiệm vụ — nên map hiện mở
+        // khoá thì chắc chắn warp vào được.
+        //
+        // Sắp theo mapId để thứ tự menu ổn định — HashMap không hứa thứ tự duyệt, và
+        // menu nhảy loạn giữa hai lần mở là lỗi người dùng thấy ngay.
+        List<int> availableMapIds = new(MapManager.maps.Keys);
+        availableMapIds.Sort();
 
         Message ms = new Message(GopetCMD.MGO_COMMAND);
         ms.putsbyte(GopetCMD.TELE_MENU);
@@ -1557,6 +1560,11 @@ public class GameController
             ms.putUTF(mapData.mapTemplate.getName(player));
             ms.putUTF(mapData.mapTemplate.getName(player));
             ms.putsbyte(0);
+            // Cờ khoá + LÝ DO khoá (chuỗi rỗng khi map mở). Client hiển thị nguyên văn
+            // chuỗi này thay vì tự chế câu chữ — thêm luật khoá mới không phải sửa client.
+            string lockReason = MapLockReason(j);
+            ms.putsbyte((sbyte)(lockReason.Length > 0 ? 1 : 0));
+            ms.putUTF(lockReason);
         }
         ms.writer().flush();
         ms.cleanup();
@@ -1573,7 +1581,7 @@ public class GameController
                 if (changePlaceDelay < Utilities.CurrentTimeMillis)
                 {
                     int mapId = info[0];
-                    if (!CheckSky(mapId))
+                    if (!CheckMapAccess(mapId))
                     {
                         return;
                     }
@@ -5099,11 +5107,45 @@ public class GameController
     }
 
 
-    public bool CheckSky(int mapId)
+    /// <summary>
+    /// Map thượng giới mà người chơi chưa mở. Tách riêng khỏi <see cref="CheckSky"/>
+    /// vì TELE_MENU cần CÙNG luật này nhưng không được gửi dialog — hai bản sao của
+    /// điều kiện sẽ lệch nhau, và lúc đó client vẽ ổ khoá lên map vào được (hoặc tệ
+    /// hơn: cho bấm map bị chặn rồi treo màn fade).
+    /// </summary>
+    public bool IsSkyLocked(int mapId) => mapId >= 26 && !player.playerData.isOnSky;
+
+    /// <summary>
+    /// Lý do map này đang khoá với người chơi hiện tại, chuỗi RỖNG = vào được.
+    ///
+    /// <para>MỘT nguồn sự thật cho cả ba đường: TELE_MENU (vẽ ổ khoá), ON_PLAYER_WARPING
+    /// và đổi kênh. Hai bản sao của điều kiện sẽ lệch nhau, và lúc đó client vẽ map vào
+    /// được thành khoá (hoặc tệ hơn: cho bấm map bị chặn rồi treo màn fade).</para>
+    /// </summary>
+    public string MapLockReason(int mapId)
     {
-        if (mapId >= 26 && !player.playerData.isOnSky)
+        if (IsSkyLocked(mapId))
         {
-            player.redDialog(player.Language.LawToUnlockSkyPlace);
+            return player.Language.LawToUnlockSkyPlace;
+        }
+        if (MapUnlockRules.TryGetRequiredTask(mapId, out int taskId)
+            && !player.playerData.wasTask.Contains(taskId))
+        {
+            return player.Language.TaskLockedMapHint;
+        }
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Cổng chặn cho mọi đường đổi map. KHÔNG tin cờ khoá client gửi lên: menu chỉ là
+    /// gợi ý hiển thị, còn quyền vào map chốt ở đây.
+    /// </summary>
+    public bool CheckMapAccess(int mapId)
+    {
+        string reason = MapLockReason(mapId);
+        if (reason.Length > 0)
+        {
+            player.redDialog(reason);
             return false;
         }
         return true;

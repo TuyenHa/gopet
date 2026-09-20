@@ -145,6 +145,7 @@ namespace Gopet.Net.LiveSmoke
             var guider = GuiderChecks.Run(socket, _router);
             MapMovementChecks.Verify(socket, _router, mapRec, _success.UserId);
             ShopChecks.Run(socket, _router, guider);
+            TeleportMenuChecks.Run(socket, _router);
             WarpChecks.Run(socket, _router, mapRec);
             ChallengePlaceChecks.Run(socket, _router, mapRec);
             MarketPlaceChecks.Run(socket, _router, mapRec);

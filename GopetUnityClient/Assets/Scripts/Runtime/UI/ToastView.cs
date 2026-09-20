@@ -1,11 +1,12 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Toast một dòng, hiện ~2 giây rồi tự huỷ. Dùng cho thông báo nhẹ như
+    /// Toast hiện ~2 giây rồi tự huỷ, cao theo nội dung (câu dài tự xuống dòng thay
+    /// vì tràn ra ngoài nền). Dùng cho thông báo nhẹ như
     /// "sắp có", không cần chặn tương tác của player.
     ///
     /// <para><b>Không đè lên chồng dialog:</b> toast dùng để BÁO, không để CHỜ trả
@@ -14,6 +15,10 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class ToastView : MonoBehaviour
     {
+        private const float Width = 360f;
+        private const float MinHeight = 44f;
+        /// <summary>Chừa hai bên cho chữ không dính mép nền.</summary>
+        private const float TextPadding = 16f;
         private const float DurationSeconds = 2f;
         private const float FadeSeconds = 0.35f;
 
@@ -24,19 +29,33 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(parent, false);
 
             var rect = (RectTransform)go.transform;
-            // Neo giữa dưới, cao 44 — vừa đủ đọc một dòng.
+            // Neo giữa dưới. Cao 44 cho câu ngắn một dòng, nới thêm ở dưới theo
+            // preferredHeight khi câu dài phải xuống dòng.
             rect.anchorMin = new Vector2(0.5f, 0.15f);
             rect.anchorMax = new Vector2(0.5f, 0.15f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(360f, 44f);
+            rect.sizeDelta = new Vector2(Width, MinHeight);
 
             var bg = go.GetComponent<Image>();
             bg.color = new Color(0.06f, 0.07f, 0.1f, 0.9f);
 
-            var label = UiBuilder.MakeText(go.transform, font, "Label", 16, stretch: true);
+            // stretch: false — label phải có BỀ NGANG XÁC ĐỌNH ngay lúc này thì
+            // preferredHeight mới tính đúng số dòng; anchor stretch phải đợi layout pass.
+            var label = UiBuilder.MakeText(go.transform, font, "Label", 16, stretch: false);
+            var labelRect = label.rectTransform;
+            labelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            labelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.anchoredPosition = Vector2.zero;
+            labelRect.sizeDelta = new Vector2(Width - TextPadding, MinHeight);
             label.alignment = TextAnchor.MiddleCenter;
             label.text = text;
             label.color = UiBuilder.TextMain;
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
+            var height = Mathf.Max(MinHeight, label.preferredHeight + TextPadding);
+            rect.sizeDelta = new Vector2(Width, height);
+            labelRect.sizeDelta = new Vector2(Width - TextPadding, height - TextPadding);
 
             var view = go.AddComponent<ToastView>();
             view.StartCoroutine(view.FadeAndDestroy(go.GetComponent<CanvasGroup>()));

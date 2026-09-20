@@ -19,13 +19,17 @@ namespace Gopet.Runtime.World
         /// <summary>Nút tròn ở tâm, trượt theo hướng — <c>Resources/Ui/dpad-knob.png</c>.</summary>
         private const string KnobSprite = "Ui/dpad-knob";
 
+        /// <summary>Khoảng cách tới lề màn. Nút đánh bên phải dùng chung để hai nút ngón
+        /// cái nằm đúng một hàng, không cái cao cái thấp.</summary>
+        public const float ScreenMargin = 28f;
+
         public static VirtualJoystick Create(Transform parent)
         {
             var go = new GameObject("Movement Joystick", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(parent, false);
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.zero;
-            rect.anchoredPosition = new Vector2(28f, 28f);
+            rect.anchoredPosition = new Vector2(ScreenMargin, ScreenMargin);
             rect.sizeDelta = new Vector2(132f, 132f);
 
             var stick = go.AddComponent<VirtualJoystick>();

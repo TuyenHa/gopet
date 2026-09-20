@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Gopet.Runtime.World
 {
     /// <summary>NPC + quái của map. Tách khỏi <see cref="MapScene"/> để mỗi lớp một việc.</summary>
-    public sealed class WorldActorLayer : MonoBehaviour
+    public sealed partial class WorldActorLayer : MonoBehaviour
     {
         private const float ScanInterval = 0.1f; // 10 lần/giây đủ mượt, không tốn CPU trên 5-10 NPC
         private const float NpcBodyCenterOffset = 32f; // đẩy điểm proximity từ chân NPC lên tâm thân
@@ -48,6 +48,7 @@ namespace Gopet.Runtime.World
             ClearActors(_npcs);
             ClearActors(_mobs);
             _promptNpcId = NpcProximity.None;
+            ClearMobTarget();
         }
 
         private int MapHeight => _scene.Map.Map.HeightPixels;
@@ -72,6 +73,7 @@ namespace Gopet.Runtime.World
             if (self == null)
             {
                 SetPrompt(NpcProximity.None);
+                ClearMobTarget();
                 return;
             }
 
@@ -108,6 +110,7 @@ namespace Gopet.Runtime.World
                 Debug.Log(sb.ToString());
             }
             SetPrompt(picked);
+            ScanMobs(selfPos);
         }
 
         private void SetPrompt(int id)

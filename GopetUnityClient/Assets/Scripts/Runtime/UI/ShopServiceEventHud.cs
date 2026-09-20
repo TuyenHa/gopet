@@ -14,17 +14,31 @@ namespace Gopet.Runtime.UI
     public sealed class ShopServiceEventHud : MonoBehaviour
     {
         /// <summary>
-        /// Cạnh nút HUD theo tỉ lệ chiều cao.
+        /// Cạnh nút HUD theo tỉ lệ chiều cao. <see cref="MinimapWidget"/> dùng chung để
+        /// nằm đúng hàng với ba nút này.
         /// </summary>
-        private const float SizeFrac = 0.075f;
+        public const float SizeFrac = 0.075f;
 
         /// <summary>Khoảng cách giữa các nút, theo tỉ lệ chiều cao.</summary>
-        private const float GapFrac = 0.006f;
+        public const float GapFrac = 0.006f;
 
-        /// <summary>Khoảng cách của nút ngoài cùng tới mép phải.</summary>
-        private const float ReservedRightFrac = 0.012f;
+        /// <summary>Khoảng cách của ô ngoài cùng tới mép phải.</summary>
+        public const float ReservedRightFrac = 0.012f;
 
-        private const float TopMarginFrac = 0.015f;
+        public const float TopMarginFrac = 0.015f;
+
+        /// <summary>
+        /// Ô ngoài cùng bên PHẢI của hàng để trống cho minimap — ba nút vì thế lùi sang
+        /// trái đúng một ô. Minimap tự neo vào ô này (<see cref="MinimapWidget"/>); hai
+        /// bên dùng chung hằng số nên không thể lệch nhau.
+        /// </summary>
+        public const float MinimapSlotFrac = SizeFrac;
+
+        /// <summary>
+        /// Nhãn ("Cửa hàng"/"Sự kiện"…) thò xuống dưới đáy nút bao nhiêu, tính theo cạnh
+        /// nút. <see cref="MinimapWidget"/> dùng để kéo dài xuống ĐÚNG mép dưới của chữ.
+        /// </summary>
+        public const float LabelBottomFrac = 0.25f;
 
         public event Action ShopClicked;
         public event Action ServiceClicked;
@@ -44,8 +58,9 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<ShopServiceEventHud>();
 
-            // Xếp phải → trái: Sự kiện, Dịch vụ, Cửa hàng. Bỏ Bang hội theo yêu cầu user.
-            var right = ReservedRightFrac;
+            // Xếp phải → trái: minimap (ô trống), Sự kiện, Dịch vụ, Cửa hàng.
+            // Bỏ Bang hội theo yêu cầu user.
+            var right = ReservedRightFrac + MinimapSlotFrac + GapFrac;
             MakeButton(go.transform, font, HudSkin.Event, "Sự kiện", right,
                 () => view.EventClicked?.Invoke());
             right += SizeFrac + GapFrac;
@@ -105,7 +120,7 @@ namespace Gopet.Runtime.UI
             // trong nút một chút), không còn khoảng trống thừa. Vẫn mở rộng ngang
             // ngoài rìa nút để chữ dài (Cửa hàng) không bị cắt.
             var labelRect = text.rectTransform;
-            labelRect.anchorMin = new Vector2(-0.2f, -0.25f);
+            labelRect.anchorMin = new Vector2(-0.2f, -LabelBottomFrac);
             labelRect.anchorMax = new Vector2(1.2f, 0.1f);
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 

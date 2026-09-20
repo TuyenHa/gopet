@@ -26,6 +26,13 @@ namespace Gopet.Runtime.World
             _handler.SendUseItem();
         }
 
+        /// <summary>
+        /// Báo ngắn NGAY TRONG màn đấu. Toast của HUD dựng ở canvas 35, nằm dưới canvas
+        /// 40 của màn này nên bắn ra đó là người chơi không thấy gì.
+        /// </summary>
+        public void ShowNotice(string text) =>
+            ToastView.Create(transform, UiBuilder.BuiltinFont(), text);
+
         /// <summary>Nút tròn mở/đóng popup. Không gate theo lượt — xem được kỹ năng lúc nào
         /// cũng được, chỉ từng dòng mới khoá khi chưa tới lượt hoặc thiếu MP.</summary>
         private void ToggleSkillPopup() => _skillPopup?.Toggle();

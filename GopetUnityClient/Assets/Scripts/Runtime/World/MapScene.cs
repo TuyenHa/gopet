@@ -215,7 +215,14 @@ namespace Gopet.Runtime.World
             handler.PetInteractionReceived += OnPetInteraction;
             _actors = WorldActorLayer.Attach(this);
             _actors.Subscribe(handler, assets, talkToNpc, attackMob);
+            _actors.NearestMobChanged += mobId => NearestMobChanged?.Invoke(mobId);
         }
+
+        /// <summary>Quái nút đánh đang nhắm, <see cref="UiLogic.NpcProximity.None"/> nếu không có.</summary>
+        public int NearestMobId => _actors != null ? _actors.NearestMobId : UiLogic.NpcProximity.None;
+
+        /// <summary>Đổi quái đang nhắm — HUD bật/mờ nút đánh theo.</summary>
+        public event System.Action<int> NearestMobChanged;
 
         public void ApplyBossHp(BossHpUpdate update) => _actors?.ApplyBossHp(update);
 

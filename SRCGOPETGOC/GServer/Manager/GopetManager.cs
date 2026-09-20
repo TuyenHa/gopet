@@ -394,6 +394,10 @@ public class GopetManager
     /**
      * Id các map được dịch chuyển
      */
+    /// <summary>
+    /// Danh sách map tuyển cũ. KHÔNG còn điều khiển TELE_MENU: menu dịch chuyển giờ
+    /// liệt kê mọi map đang bật (GameController.mapTeleMenu). Giữ lại làm tư liệu.
+    /// </summary>
     public static readonly int[] TeleMapId = new int[] { 11, 19, 21, 22, 24, 22, 27, 26, 28 };
     //public static int[] TeleMapId = new int[] { 11, 19, 24, 22 };
     /**

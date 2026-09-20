@@ -28,6 +28,13 @@ namespace Gopet.Runtime.World
         private const float ItemGap = 4f;
         private const float PanelPadding = 4f;
 
+        /// <summary>
+        /// Mép trái thanh tài nguyên, tính từ lề trái màn: đặt CẠNH PHẢI của CharacterHud
+        /// (rộng 240 + margin 12 = 252, cộng thêm khe thở). Băng thông báo ngay dưới dùng
+        /// chung con số này để hai thanh thẳng cột với nhau.
+        /// </summary>
+        public const float LeftMargin = 268f;
+
         private static readonly (string label, Color color)[] IconStyles =
         {
             ("★", new Color(0.98f, 0.82f, 0.20f, 1f)),   // Star vàng
@@ -52,12 +59,12 @@ namespace Gopet.Runtime.World
                 typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
             go.transform.SetParent(parent, false);
 
-            // Neo top-left, đặt CẠNH PHẢI của CharacterHud (rộng 240 + margin 12 = 252)
-            // để không chạm shop icons ở góc phải-trên (ShopServiceEventHud).
+            // Neo top-left, xem LeftMargin; tránh chạm shop icons ở góc phải-trên
+            // (ShopServiceEventHud).
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(268f, -8f);
+            rect.anchoredPosition = new Vector2(LeftMargin, -8f);
             rect.sizeDelta = new Vector2(0f, ItemHeight + PanelPadding * 2);
 
             var panel = go.GetComponent<Image>();

@@ -19,7 +19,8 @@ namespace Gopet.Net.LiveSmoke
         /// Đổi <see cref="ClientInfoPacket"/> mà quên cập nhật đây thì test đỏ — đúng ý.
         /// </summary>
         private const string ExpectedClientInfoHex =
-            "dc00000000040005312e342e330010756e6974792d6c6976652d736d6f6b65" +
+            // "1.5.0": ClientInfo.Version nâng theo gate EXP nhỏ giọt của server (commit 3110fc7).
+            "dc00000000040005312e352e300010756e6974792d6c6976652d736d6f6b65" +
             "00000140000000f000027669" +
             "0005322e342e39";
 

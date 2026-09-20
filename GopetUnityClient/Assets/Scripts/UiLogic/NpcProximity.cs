@@ -44,10 +44,14 @@ namespace Gopet.UiLogic
         /// <summary>
         /// Trả về id NPC nên hiện nút "Nói chuyện", hoặc <see cref="None"/> nếu không NPC
         /// nào trong tầm. Ưu tiên giữ nguyên <paramref name="currentId"/> nếu nó vẫn còn
-        /// trong <see cref="HideRadius"/> (hysteresis); nếu không, chọn NPC gần nhất trong
-        /// <see cref="ShowRadius"/>.
+        /// trong bán kính nhả (hysteresis); nếu không, chọn NPC gần nhất trong bán kính bắt.
         /// </summary>
-        public static int Pick(float playerX, float playerY, IReadOnlyList<NpcPoint> npcs, int currentId)
+        /// <param name="showRadius">Bán kính BẮT mục tiêu mới. Quái to hơn NPC nên nút đánh
+        /// truyền bán kính rộng hơn mặc định.</param>
+        /// <param name="hideRadius">Bán kính NHẢ mục tiêu đang giữ; phải lớn hơn
+        /// <paramref name="showRadius"/>, nếu không mục tiêu nhấp nháy ở biên.</param>
+        public static int Pick(float playerX, float playerY, IReadOnlyList<NpcPoint> npcs, int currentId,
+            float showRadius = ShowRadius, float hideRadius = HideRadius)
         {
             if (npcs == null) throw new ArgumentNullException(nameof(npcs));
             if (npcs.Count == 0) return None;
@@ -57,14 +61,14 @@ namespace Gopet.UiLogic
                 for (var i = 0; i < npcs.Count; i++)
                 {
                     if (npcs[i].Id != currentId) continue;
-                    if (DistanceSquared(playerX, playerY, npcs[i]) <= HideRadius * HideRadius)
+                    if (DistanceSquared(playerX, playerY, npcs[i]) <= hideRadius * hideRadius)
                         return currentId;
                     break;
                 }
             }
 
             var bestId = None;
-            var bestDistanceSquared = ShowRadius * ShowRadius;
+            var bestDistanceSquared = showRadius * showRadius;
             for (var i = 0; i < npcs.Count; i++)
             {
                 var distanceSquared = DistanceSquared(playerX, playerY, npcs[i]);

@@ -1,4 +1,4 @@
-using Gopet.Net;
+﻿using Gopet.Net;
 using Gopet.Net.Auth;
 using Gopet.Net.Chat;
 using Gopet.Net.Map;
@@ -63,6 +63,7 @@ namespace Gopet.Runtime.World
         private CharacterMenuButton _menuButton;
         private CharacterMenuView _menuView;
         private PetActionButton _petButton;
+        private AttackButton _attackButton;
         private PetActionRadial _petRadial;
         private float _petActionCooldownUntil;
         private Transform _hudParent;
@@ -72,7 +73,9 @@ namespace Gopet.Runtime.World
         private PetEquipHandler _petEquipHandler;
         private PetEquipView _petEquipView;
         private ChoiceDialogView _channelDialog;
-        private MapPickerView _mapPickerView;
+        private WorldMapView _worldMapView;
+        private MinimapWidget _minimap;
+        private MinimapCamera _minimapCamera;
         private PetZoneHandler _petZoneHandler;
         private PetLayer _petLayer;
         private bool _hasPetFollowing;
@@ -176,6 +179,22 @@ namespace Gopet.Runtime.World
 
             s._petButton = PetActionButton.Create(s._hudParent);
             s._petButton.Clicked += s.OpenPetRadial;
+
+            // Nút đánh nhắm con quái gần nhất; MapScene báo mỗi khi mục tiêu đổi.
+            s._attackButton = AttackButton.Create(s._hudParent);
+            s._attackButton.Clicked += s.AttackNearestMob;
+            s._scene.NearestMobChanged += mobId =>
+                s._attackButton.SetTargetInRange(mobId != NpcProximity.None);
+            // Minimap góc HUD vừa là la bàn vừa là lối vào bản đồ thế giới — chạm vào là
+            // xin TELE_MENU, đúng chỗ người chơi tìm khi muốn đi map khác.
+            // Camera phụ chụp trọn map cho minimap — con của scene nên đổi map/thoát
+            // game là nó đi theo, không để lại camera mồ côi.
+            s._minimapCamera = MinimapCamera.Attach(s._scene.transform);
+            s._minimap = MinimapWidget.Create(s._hudParent, UiBuilder.BuiltinFont());
+            s._minimap.Clicked += () => s._mapTeleportHandler.RequestOptions();
+            // Map khởi đầu đã nạp xong TỪ TRƯỚC khi HUD dựng (LoadMap gọi ở đầu Start),
+            // nên chỉ nghe MapLoaded thôi thì minimap trống trơn cho tới lần warp đầu tiên.
+            s.RefreshMinimap();
 
             s._letterHandler = new LetterHandler();
             s._letterHandler.RegisterOn(client.Router);
@@ -285,19 +304,24 @@ namespace Gopet.Runtime.World
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.
             s._scene.MapLoaded += () => s._camera?.Recenter();
             s._scene.MapLoaded += s.UpdateMapName;
+            s._scene.MapLoaded += s.RefreshMinimap;
 
             // Gắn MovementController khi SELF vừa spawn — sự kiện đến từ opcode 29
             // (ON_UPDATE_PLAYER_IN_MAP), KHÔNG phải opcode 24 (ON_PLAYER_ENTER_MAP)
             // vì server broadcast ENTER_MAP TRƯỚC khi thêm self vào players, nên self
             // không nhận được gói của chính mình.
             s._scene.SelfSpawned += s.OnSelfSpawned;
+            s._scene.SelfSpawned += _ => s._minimap?.BindPlayer(s._scene.Self);
             // Sau khi self avatar dựng, thử flush pet đang chờ owner (thường là chính self).
             s._scene.SelfSpawned += evt => s._petLayer.OnOwnerSpawned(evt.UserId);
             s._warpFade = WarpFadeOverlay.Create(s._hudParent);
+            // Server có nhánh im lặng (pet đang đánh, pet chết vì PK, ngoại lệ bị nuốt)
+            // — watchdog mở lại màn hình, còn toast để người chơi biết vì sao đứng yên.
+            s._warpFade.TimedOut += () => s.ShowToast("Không vào được bản đồ — thử lại.");
             s._scene.PortalSelected += portal =>
             {
                 SoundManager.Instance?.PlayEffect("s_outMap_0");
-                s._warpFade.FadeOut();
+                s._warpFade.FadeOut(MapDisplayNames.Get(portal.ExtraA));
                 s._mapHandler.SendWarp(portal.ExtraA, portal.ExtraB, 1);
             };
             // Sau khi map mới nạp xong → mở fade (đã có MapLoaded ở Recenter phía trên).

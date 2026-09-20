@@ -10,6 +10,9 @@
     "gen:jar-assets": "node unpack-jar-dat/index.js",
     "check:jar-assets": "node unpack-jar-dat/index.js --check",
     "gen:jar-strings": "node extract-jar-strings/index.js",
+    "gen:map-pins": "python image-gen/make-world-map-pins.py",
+    "gen:attack-icon": "python image-gen/make-attack-button.py",
+    "gen:mountain-tiles": "python image-gen/make-mountain-grass-tiles.py",
     "check:jar-strings": "node extract-jar-strings/index.js --check",
     "gen:all": "npm run gen:cmd && npm run gen:vectors && npm run gen:jar-assets && npm run gen:jar-strings",
     "diff": "node packet-diff/index.js"

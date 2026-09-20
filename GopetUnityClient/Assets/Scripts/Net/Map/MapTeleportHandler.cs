@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Gopet.Net.Map
 {
@@ -8,9 +8,20 @@ namespace Gopet.Net.Map
         public string Name;
         public string Description;
         public int WaypointIndex;
+        /// <summary>Map tồn tại nhưng người chơi chưa đủ điều kiện vào (thượng giới, hoặc chưa xong nhiệm vụ).</summary>
+        public bool Locked;
+        /// <summary>
+        /// Lý do khoá do SERVER gửi (rỗng khi map mở). Client hiển thị nguyên văn chứ
+        /// không tự chế câu chữ: thêm luật khoá mới bên server thì client không phải sửa.
+        /// </summary>
+        public string LockReason;
     }
 
-    /// <summary>Legacy MGO_COMMAND/TELE_MENU map picker used by VIP/admin teleport.</summary>
+    /// <summary>
+    /// MGO_COMMAND/TELE_MENU: danh sách MỌI map dịch chuyển kèm cờ khoá và lý do khoá.
+    /// Wire-format 6 trường mỗi map — server cũ (5 trường) sẽ làm
+    /// <c>ExpectFullyConsumed</c> ném, nên phải deploy server trước client.
+    /// </summary>
     public sealed class MapTeleportHandler
     {
         private readonly Action<Message> _send;
@@ -44,7 +55,9 @@ namespace Gopet.Net.Map
                     MapId = message.Reader.ReadSByte(),
                     Name = message.Reader.ReadUtf(),
                     Description = message.Reader.ReadUtf(),
-                    WaypointIndex = message.Reader.ReadSByte()
+                    WaypointIndex = message.Reader.ReadSByte(),
+                    Locked = message.Reader.ReadSByte() != 0,
+                    LockReason = message.Reader.ReadUtf()
                 };
             }
             message.Reader.ExpectFullyConsumed("MGO_COMMAND/TELE_MENU");

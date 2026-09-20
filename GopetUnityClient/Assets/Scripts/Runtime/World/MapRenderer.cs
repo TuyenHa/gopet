@@ -16,13 +16,8 @@ namespace Gopet.Runtime.World
     /// </summary>
     public sealed class MapRenderer : MonoBehaviour
     {
-        private const int BeastCityMapId = 11;
-        private const int SnowGrassImageIdA = 161;
-        private const int SnowGrassImageIdB = 162;
-        private const int SnowBorderImageId = 3;
-        private const int GrassImageIdA = 11161;
-        private const int GrassImageIdB = 11162;
-        private const int StoneBorderImageId = 11003;
+        /// <summary>Đổi bộ tile theo map nằm ở <see cref="MapSkinOverrides"/>.</summary>
+        private const int BeastCityMapId = MapSkinOverrides.BeastCityMapId;
         private const int ShopBuildingAnimationId = 190;
         private const int ShopBuildingBaseImageId = 189;
         private const int PineTreeImageId = 158;
@@ -138,7 +133,7 @@ namespace Gopet.Runtime.World
                         if (strip < 0 || strip >= map.ImageCount) continue;
 
                         var unityRow = map.HeightTiles - 1 - row;
-                        var imageId = ResolveSkinImageId(_mapId, map.ResourceIds[strip]);
+                        var imageId = MapSkinOverrides.ResolveImageId(_mapId, map.ResourceIds[strip]);
 
                         // Các strip thay thế giữ nguyên thứ tự ô gốc, nên dữ liệu map tự xếp đúng
                         // cỏ, nền đường, cạnh và góc đá mà không phải sửa file map nhị phân.
@@ -150,18 +145,6 @@ namespace Gopet.Runtime.World
                 tilemap.SetTilesBlock(bounds, tiles);
                 tilemap.CompressBounds();
             }
-        }
-
-        private static int ResolveSkinImageId(int mapId, int imageId)
-        {
-            if (mapId == BeastCityMapId)
-            {
-                if (imageId == SnowGrassImageIdA) return GrassImageIdA;
-                if (imageId == SnowGrassImageIdB) return GrassImageIdB;
-                if (imageId == SnowBorderImageId) return StoneBorderImageId;
-            }
-
-            return imageId;
         }
 
         /// <summary>

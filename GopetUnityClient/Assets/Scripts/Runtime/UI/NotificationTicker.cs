@@ -23,10 +23,18 @@ namespace Gopet.Runtime.UI
         // delivers non-empty text from the server.
         private const string SpeakerResource = "Ui/Hud/notify-speaker-v2";
 
-        // Neo cao ở vùng giữa phía trên; hai SideMargin bằng nhau để pill luôn căn giữa.
-        // Leave the resource bar (gold, bean and rice) visible above the ticker.
+        // Neo cao ở vùng giữa phía trên, NGAY DƯỚI thanh tài nguyên (đậu/lúa/vàng) và
+        // thẳng cột với nó: hai thanh cùng một khối thông tin, lệch mép trái nhìn rất
+        // chướng. Mép phải chừa rộng hơn để không chạm cụm icon shop góc phải-trên.
         private const float TopMargin = 38f;
-        private const float SideMargin = 330f;
+        // Cái mắt thấy ở mép trái băng là CÁI LOA (nó thò ra ngoài viên thuốc), nên
+        // thẳng cột với thanh tài nguyên nghĩa là loa thẳng cột, không phải viên thuốc.
+        private const float LeftMargin = World.CurrencyBar.LeftMargin + SpeakerOverhang;
+        /// <summary>
+        /// Lề phải. Ở khung chuẩn 960 băng dài 261px — bằng 3/4 độ dài cũ (348px): chữ
+        /// vẫn chạy thoải mái mà băng không kéo dài gần hết bề ngang màn.
+        /// </summary>
+        private const float RightMargin = 417f;
         private const float Height = 32f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài
         private const float SpeakerOverhang = 14f;  // px thò ra mép trái pill
@@ -53,8 +61,8 @@ namespace Gopet.Runtime.UI
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.offsetMin = new Vector2(SideMargin, -(TopMargin + Height));
-            rect.offsetMax = new Vector2(-SideMargin, -TopMargin);
+            rect.offsetMin = new Vector2(LeftMargin, -(TopMargin + Height));
+            rect.offsetMax = new Vector2(-RightMargin, -TopMargin);
 
             // Viên thuốc nâu đen mờ — copy HUD "loa thông báo" mobile: chỉ 1 lớp, không viền.
             var pill = go.GetComponent<Image>();

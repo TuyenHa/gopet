@@ -229,6 +229,7 @@ namespace Gopet.Language
         public string DuplicateItemRemove { get; set; } = "Nhân vật của bạn vừa bị xóa {0} vật phẩm do BUG mà có!";
         public string NotEnoughItemWithCount { get; set; } = "Không đủ vật phẩm {0} cần số lượng : {1}";
         public string LawToUnlockSkyPlace { get; set; } = "Để lên thượng giới bạn cần 1 con thú cưng có cánh.\n Có nghĩa là bạn cần có 1 con pet trùng sinh!!!";
+        public string TaskLockedMapHint { get; set; } = "Hãy chăm chỉ làm nhiệm vụ để mở map này";
         public string WrongItemType { get; set; } = "Sai loại vật phẩm";
         public string CannotFindEvents { get; set; } = "Không tìm thấy sự kiện";
         public string WinEventMessage { get; set; } = "Thắng trận nhận được 1";

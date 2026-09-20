@@ -18,6 +18,7 @@ namespace Gopet.Runtime.World
 
         public bool TryConsumeHudMenu(MenuScreen screen)
         {
+            if (TryConsumeBattleItemMenu(screen)) return true;
             if (TryConsumeCharacterHubMenu(screen)) return true;
             if (screen == null || (screen.ListId != 1033 && screen.ListId != 1034)) return false;
 

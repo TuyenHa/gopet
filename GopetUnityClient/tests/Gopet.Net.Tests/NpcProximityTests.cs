@@ -105,5 +105,28 @@ namespace Gopet.Net.Tests
             var result = NpcProximity.Pick(0, 0, npcs, NpcProximity.None);
             Assert.Equal(NpcProximity.None, result);
         }
+
+        /// <summary>Nút đánh quái dùng tầm rộng hơn tầm nói chuyện với NPC.</summary>
+        [Fact]
+        public void Pick_BanKinhRieng_BatDuocMucTieuNgoaiTamMacDinh()
+        {
+            var mobs = new List<NpcPoint> { new NpcPoint(7, 90, 0) };
+
+            Assert.Equal(NpcProximity.None, NpcProximity.Pick(0, 0, mobs, NpcProximity.None));
+            Assert.Equal(7, NpcProximity.Pick(0, 0, mobs, NpcProximity.None,
+                showRadius: 96f, hideRadius: 120f));
+        }
+
+        /// <summary>Hysteresis phải chạy theo bán kính truyền vào, không phải hằng số NPC.</summary>
+        [Fact]
+        public void Pick_BanKinhRieng_GiuMucTieuDangNhamTrongTamNha()
+        {
+            var mobs = new List<NpcPoint> { new NpcPoint(7, 110, 0) };
+
+            Assert.Equal(7, NpcProximity.Pick(0, 0, mobs, currentId: 7,
+                showRadius: 96f, hideRadius: 120f));
+            Assert.Equal(NpcProximity.None, NpcProximity.Pick(0, 0, mobs, currentId: 7,
+                showRadius: 96f, hideRadius: 100f));
+        }
     }
 }

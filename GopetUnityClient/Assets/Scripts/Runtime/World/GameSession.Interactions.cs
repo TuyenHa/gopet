@@ -76,6 +76,24 @@ namespace Gopet.Runtime.World
             }
         }
 
+        /// <summary>
+        /// Nút đánh: gửi ATTACK_MOB cho con quái gần nhất, server mở trận đấu theo lượt
+        /// và <see cref="BattleCoordinator"/> dựng màn đánh khi PET_BATTLE về.
+        ///
+        /// <para>Tầm với do CLIENT chốt (<c>WorldActorLayer.MobReachRadius</c>) — server
+        /// nhận mọi mobId của map, không kiểm tra khoảng cách.</para>
+        /// </summary>
+        private void AttackNearestMob()
+        {
+            var mobId = _scene != null ? _scene.NearestMobId : NpcProximity.None;
+            if (mobId == NpcProximity.None)
+            {
+                ShowToast("Không có quái nào ở gần.");
+                return;
+            }
+            _battleHandler.SendAttackMob(mobId);
+        }
+
         private void ShowToast(string text)
         {
             if (_hudParent == null) return;

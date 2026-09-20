@@ -15,9 +15,11 @@ namespace Gopet.UiLogic
     /// </summary>
     public sealed class MobWander
     {
-        /// <summary>Bán kính lảng vảng quanh chỗ sinh, pixel jar. Rộng hơn thì quái đi
-        /// lạc khỏi khu của nó, người chơi tìm mãi không thấy con mình định đánh.</summary>
-        public const float Radius = 40f;
+        /// <summary>
+        /// Bán kính lảng vảng quanh chỗ sinh, pixel jar — 4 ô tile (24px/ô). Rộng nữa
+        /// thì quái lạc hẳn khỏi khu của nó và người chơi phải dò tìm con định đánh.
+        /// </summary>
+        public const float Radius = 96f;
 
         /// <summary>
         /// Tốc độ đi, pixel/giây — hơn nửa tốc độ người chơi một chút

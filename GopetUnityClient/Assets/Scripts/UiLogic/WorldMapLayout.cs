@@ -58,7 +58,19 @@ namespace Gopet.UiLogic
             new[] { 12, 13, 14, 15 },                     // Rừng Linh
             new[] { 16, 17, 18, 21 },                     // Vùng núi
             new[] { 23, 24, 25 },                         // Băng nguyên
-            new[] { 26, 27, 28, 29, 30, 31, 32, 33, 34 }  // Thượng giới
+            new[] { 27, 28, 29, 30, 31, 32, 33, 34 }      // Thượng giới (26 đặt tay, xem FixedNodes)
+        };
+
+        /// <summary>
+        /// Map đặt TAY, không theo lưới cụm: trên tranh có những chỗ đặc trưng mà lưới
+        /// không với tới được. Map ở đây phải bị loại khỏi <see cref="Members"/>, nếu
+        /// không lưới của cụm sẽ chừa một ô trống.
+        /// </summary>
+        private static readonly Dictionary<int, Node> FixedNodes = new Dictionary<int, Node>
+        {
+            // Vùng đất phong ấn: hòn đảo nhỏ lẻ loi ngoài khơi mép trái, hợp với một
+            // vùng bị phong ấn hơn là đứng lẫn trong cụm đảo Thượng giới.
+            { 26, new Node(4, 0.05f, 0.65f) }
         };
 
         /// <summary>Vị trí một pin, theo tỉ lệ 0..1 của tranh nền.</summary>
@@ -83,6 +95,7 @@ namespace Gopet.UiLogic
         /// <param name="unknownMapIds">Mọi mapId lạ của lần bind này, dùng để xếp chỗ ổn định.</param>
         public static Node Of(int mapId, IReadOnlyList<int> unknownMapIds = null)
         {
+            if (FixedNodes.TryGetValue(mapId, out var fixedNode)) return fixedNode;
             for (var region = 0; region < Members.Length; region++)
             {
                 var slot = Array.IndexOf(Members[region], mapId);
@@ -94,6 +107,7 @@ namespace Gopet.UiLogic
         /// <summary>Map này có chỗ cố định trong bảng không (false = sẽ rơi vào cụm "Khác").</summary>
         public static bool IsKnown(int mapId)
         {
+            if (FixedNodes.ContainsKey(mapId)) return true;
             foreach (var region in Members)
                 if (Array.IndexOf(region, mapId) >= 0) return true;
             return false;

@@ -52,6 +52,99 @@ namespace Gopet.Net.Tests
             Assert.Equal(StoneBorder, MapSkinOverrides.ResolveImageId(map, SnowBorder));
         }
 
+        /// <summary>
+        /// Linh Lâm: lối tuyết thành đường đất. PHẢI là bộ 12xxx chứ không phải bộ cỏ 11xxx —
+        /// đổi sang cỏ thì lối đi tan vào bãi cỏ, không còn thấy đường.
+        /// </summary>
+        [Fact]
+        public void LinhLam_LoiTuyetThanhDuongDat()
+        {
+            const int snowPath = 151;
+            const int dirtPath = 12151, dirtGrassA = 12161, dirtGrassB = 12162;
+            var map = MapSkinOverrides.SpiritForestMapId;
+
+            Assert.Equal(dirtPath, MapSkinOverrides.ResolveImageId(map, snowPath));
+            Assert.Equal(dirtGrassA, MapSkinOverrides.ResolveImageId(map, SnowGrassA));
+            Assert.Equal(dirtGrassB, MapSkinOverrides.ResolveImageId(map, SnowGrassB));
+        }
+
+        /// <summary>Đại Linh Cảnh: cùng ba dải đó và cũng thành đường ĐẤT — dùng chung
+        /// bộ 12xxx với Linh Lâm để hai map rừng cùng một tông nền.</summary>
+        [Fact]
+        public void DaiLinhCanh_LoiTuyetThanhDuongDat()
+        {
+            const int snowPath = 151;
+            const int dirtPath = 12151, dirtGrassA = 12161, dirtGrassB = 12162;
+            var map = MapSkinOverrides.GreatSpiritViewMapId;
+
+            Assert.Equal(dirtPath, MapSkinOverrides.ResolveImageId(map, snowPath));
+            Assert.Equal(dirtGrassA, MapSkinOverrides.ResolveImageId(map, SnowGrassA));
+            Assert.Equal(dirtGrassB, MapSkinOverrides.ResolveImageId(map, SnowGrassB));
+        }
+
+        /// <summary>Đại Linh Cảnh: vật thể mùa đông đổi sang bản nhiệt đới.</summary>
+        [Theory]
+        [InlineData(158, 14158)]    // cây thông có tuyết -> cây dừa
+        [InlineData(177, 14177)]    // nhà gỗ phủ tuyết   -> nhà lá
+        public void DaiLinhCanh_VatTheMuaDongThanhNhietDoi(int winter, int tropical)
+        {
+            Assert.Equal(tropical, MapSkinOverrides.ResolveObjectImageId(
+                MapSkinOverrides.GreatSpiritViewMapId, winter));
+        }
+
+        /// <summary>
+        /// Bộ nhiệt đới CHỈ ở Đại Linh Cảnh. Linh Lâm cũng dùng ảnh 158 và cũng đã đổi
+        /// nền đất, nhưng cây thì giữ nguyên — không được đổi lây theo bảng nền.
+        /// </summary>
+        [Theory]
+        [InlineData(158)]
+        [InlineData(177)]
+        public void BoNhietDoi_ChiODaiLinhCanh(int winterObject)
+        {
+            Assert.Equal(winterObject, MapSkinOverrides.ResolveObjectImageId(
+                MapSkinOverrides.SpiritForestMapId, winterObject));
+            Assert.Equal(winterObject, MapSkinOverrides.ResolveObjectImageId(
+                MapSkinOverrides.BeastCityMapId, winterObject));
+        }
+
+        /// <summary>
+        /// Bảng VẬT THỂ và bảng Ô NỀN là hai bảng riêng: dải nền 151/161/162 của Đại Linh
+        /// Cảnh không được chui sang bảng vật thể, và ngược lại cây 158 không được đổi ở
+        /// bảng nền.
+        /// </summary>
+        [Fact]
+        public void BangVatTheVaBangONen_KhongDinhVaoNhau()
+        {
+            const int snowPath = 151, pineTree = 158;
+            var map = MapSkinOverrides.GreatSpiritViewMapId;
+
+            Assert.Equal(snowPath, MapSkinOverrides.ResolveObjectImageId(map, snowPath));
+            Assert.Equal(pineTree, MapSkinOverrides.ResolveImageId(map, pineTree));
+        }
+
+        /// <summary>Map 14/17/18 cũng dùng dải 151 nhưng KHÔNG đổi — giữ tuyết.</summary>
+        [Fact]
+        public void MapRungKhac_GiuNguyenMatTuyet()
+        {
+            const int snowPath = 151;
+            const int linhMocMapId = 14;
+
+            Assert.Equal(snowPath, MapSkinOverrides.ResolveImageId(linhMocMapId, snowPath));
+            Assert.Equal(SnowGrassA, MapSkinOverrides.ResolveImageId(linhMocMapId, SnowGrassA));
+        }
+
+        /// <summary>Dải ngoài ba dải lối đi thì map 13/15 cũng không đụng tới.</summary>
+        [Fact]
+        public void DaiKhongThuocLoiDi_GiuNguyenOMapDoiAo()
+        {
+            const int treeStrip = 158;
+
+            Assert.Equal(treeStrip,
+                MapSkinOverrides.ResolveImageId(MapSkinOverrides.SpiritForestMapId, treeStrip));
+            Assert.Equal(treeStrip,
+                MapSkinOverrides.ResolveImageId(MapSkinOverrides.GreatSpiritViewMapId, treeStrip));
+        }
+
         /// <summary>Dải 180/179 chỉ đổi ở map núi — map khác không có dải này.</summary>
         [Fact]
         public void MatNui_ChiApDungChoMapNui()

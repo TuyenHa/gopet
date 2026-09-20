@@ -13,6 +13,10 @@
     "gen:map-pins": "python image-gen/make-world-map-pins.py",
     "gen:attack-icon": "python image-gen/make-attack-button.py",
     "gen:mountain-tiles": "python image-gen/make-mountain-grass-tiles.py",
+    "gen:path-tiles": "python image-gen/make-path-reskin-tiles.py",
+    "gen:palm": "python image-gen/make-palm-tree.py",
+    "gen:lotus-pond": "python image-gen/make-lotus-pond.py",
+    "gen:thatch-house": "python image-gen/make-thatch-house.py",
     "check:jar-strings": "node extract-jar-strings/index.js --check",
     "gen:all": "npm run gen:cmd && npm run gen:vectors && npm run gen:jar-assets && npm run gen:jar-strings",
     "diff": "node packet-diff/index.js"

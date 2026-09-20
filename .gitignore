@@ -19,3 +19,7 @@ SRCGOPETGOC/GServer/*.log
 # doi schema that cua du an nen van phai theo doi.
 SRCGOPETGOC/GServer/backup_sql/*.sql
 SRCGOPETGOC/GServer/log/
+
+# Python bytecode cache cua tools/image-gen
+__pycache__/
+*.pyc

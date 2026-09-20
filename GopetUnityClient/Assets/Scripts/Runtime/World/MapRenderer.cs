@@ -14,10 +14,11 @@ namespace Gopet.Runtime.World
     /// Toàn bộ chuyển đổi nằm trong <see cref="MapPlacement.JarToWorld"/> — thuần C#,
     /// test được ngoài Editor.</para>
     /// </summary>
-    public sealed class MapRenderer : MonoBehaviour
+    public sealed partial class MapRenderer : MonoBehaviour
     {
         /// <summary>Đổi bộ tile theo map nằm ở <see cref="MapSkinOverrides"/>.</summary>
         private const int BeastCityMapId = MapSkinOverrides.BeastCityMapId;
+        private const int GreatSpiritViewMapId = MapSkinOverrides.GreatSpiritViewMapId;
         private const int ShopBuildingAnimationId = 190;
         private const int ShopBuildingBaseImageId = 189;
         private const int PineTreeImageId = 158;
@@ -65,6 +66,7 @@ namespace Gopet.Runtime.World
             BuildTileLayers(map);
             BuildObjects(map);
             if (_mapId == BeastCityMapId) BuildBeastCityGarden(map);
+            if (_mapId == GreatSpiritViewMapId) BuildGreatSpiritViewPond();
             BuildMapEntities(map);
         }
 
@@ -164,11 +166,14 @@ namespace Gopet.Runtime.World
                 if (idx < 0 || idx >= map.ResourceIds.Length) continue;
 
                 var id = map.ResourceIds[idx];
+                var isCloud = id >= CloudImageIdMin && id <= CloudImageIdMax;
                 if (_mapId == BeastCityMapId &&
-                    (id == ShopBuildingAnimationId || id == ShopBuildingBaseImageId ||
-                     (id >= CloudImageIdMin && id <= CloudImageIdMax) ||
+                    (id == ShopBuildingAnimationId || id == ShopBuildingBaseImageId || isCloud ||
                      (id == PineTreeImageId && item.Y <= TopPineRowMaxY)))
                     continue;
+                // Đại Linh Cảnh: hai cụm mây tuyết nằm ngay trên mái nhà. Map đã chuyển
+                // sang nhiệt đới nên chúng thành đống tuyết đọng trên mái tranh — bỏ.
+                if (_mapId == GreatSpiritViewMapId && isCloud) continue;
                 var footY = item.Y - item.YOffset;
                 var order = MapPlacement.ObjectSortingOrder(i);
                 if (map.ResourceTypes[idx] == JarMapLayout.TypeAnimation)
@@ -179,7 +184,8 @@ namespace Gopet.Runtime.World
                 else
                 {
                     // y.java đặt ảnh tại (x-width/2, y-height): điểm (x,y) là giữa đáy.
-                    var sprite = TileAssetProvider.FootObject($"newMapData/{id}");
+                    var artId = MapSkinOverrides.ResolveObjectImageId(_mapId, id);
+                    var sprite = TileAssetProvider.FootObject($"newMapData/{artId}");
                     PlaceObject(container.transform, sprite, item.X, footY, order);
                 }
             }

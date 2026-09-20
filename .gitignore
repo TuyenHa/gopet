@@ -13,6 +13,9 @@ SRCGOPETGOC/GServer/*.log
 
 # Dump DB va log runtime cua GServer: sinh moi lan chay, ten co timestamp nen
 # moi lan lai la mot file moi. Khong ignore thi `git add -A` nuot ca dump chua
-# du lieu tai khoan nguoi choi.
-SRCGOPETGOC/GServer/backup_sql/
+# mat khau, email, so dien thoai va IP cua nguoi choi.
+#
+# Chi chan dump nam THANG trong backup_sql/; backup_sql/migrations/ la script
+# doi schema that cua du an nen van phai theo doi.
+SRCGOPETGOC/GServer/backup_sql/*.sql
 SRCGOPETGOC/GServer/log/

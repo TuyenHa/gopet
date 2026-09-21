@@ -5,6 +5,7 @@ namespace Gopet.Runtime.World
     /// <summary>
     /// Lời giới thiệu ngắn của các NPC dịch vụ. ID NPC đến từ bảng <c>npc</c>
     /// phía máy chủ; dùng câu ngắn để người mới nhìn là biết nên ghé NPC nào.
+
     /// </summary>
     internal static class NpcPurposeHints
     {

@@ -124,6 +124,34 @@ namespace Gopet.PlayModeTests
         }
 
         [Test]
+        public void ServerShopMenu_DungTheItemTrongPopup()
+        {
+            _ui.OpenShopPopup();
+            ServerSendsMenu(ShopPopupView.ShopWeapon,
+                TestPackets.ShopItem(10, "búa gỗ(Yêu cầu   25 (str) ,  0 (agi) ,  0 (int))",
+                    "búa cho chiến binh( [80 (atk) -85 (atk) ] ,  [0 (def) -0 (def) ],  " +
+                    "[0 (hp) -0 (hp) ] ,  [0 (mp) -0 (mp) ] )", "20 (vang)"),
+                TestPackets.ShopItem(11, "kiếm cùi", "cho sát thủ", "25 (vang)"));
+
+            Assert.AreEqual(2, _ui.ShopPopup.RowCount, "mỗi dòng server gửi phải có một thẻ item");
+        }
+
+        [Test]
+        public void DoiTab_XoaDanhSachCu_KhongDeMuaNhamMonTabTruoc()
+        {
+            _ui.OpenShopPopup();
+            ServerSendsMenu(ShopPopupView.ShopWeapon,
+                TestPackets.ShopItem(10, "búa gỗ", "mô tả", "20 (vang)"));
+            Assert.AreEqual(1, _ui.ShopPopup.RowCount);
+
+            _ui.ShopPopup.SelectTab(ShopPopupView.ShopArmour);
+
+            Assert.AreEqual(0, _ui.ShopPopup.RowCount,
+                "danh sách vũ khí phải biến mất ngay khi chuyển sang tab Giáp");
+            Assert.AreEqual(ShopPopupView.ShopArmour, _ui.ShopPopup.ActiveShopId);
+        }
+
+        [Test]
         public void GoiShopSkinFromMap19Quirk_VanDuocSwallow()
         {
             // Server tự đổi SHOP_FOOD sang SHOP_SKIN=7 khi player ở map 19

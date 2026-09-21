@@ -20,8 +20,15 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed class HeavenNpcTabsView : MonoBehaviour
     {
-        // MENU_PET_SACRIFICE = 1084 (MenuController.cs:141) — listId server trả cho tab 2.
-        internal const int MenuPetSacrificeListId = 1084;
+        /// <summary>
+        /// <c>MENU_PET_SACRIFICE = 1084</c> (<c>MenuController.cs:141</c>) — listId server
+        /// trả cho tab "Hiến tặng".
+        ///
+        /// <para><c>public</c> chứ không <c>internal</c>: PlayMode test là một assembly
+        /// RIÊNG trong Unity. Bước compile <c>Gopet.PlayMode.Compile</c> gộp Runtime và
+        /// test vào một assembly nên không bắt được lỗi này — chỉ Unity mới báo.</para>
+        /// </summary>
+        public const int MenuPetSacrificeListId = 1084;
 
         // Text hardcode khớp Language.GuideToHeaven (LanguageData.cs:581).
         private const string GuideText =
@@ -29,51 +36,41 @@ namespace Gopet.Runtime.UI
             "Nơi thú cưng đột biến kinh khủng khiếp đang trên đầu chúng ta.";
 
         private const float Width = 520f;
-        private const float Height = 280f;
-        private const float Padding = 8f;
-        private const float Gap = 6f;
-        private const float TabHeight = 30f;
+        private const float Height = 320f;
 
-        private static readonly Color PanelBg = new Color(0.985f, 0.992f, 1f, 0.995f);
-        private static readonly Color PanelBorder = new Color(0.26f, 0.58f, 0.95f, 1f);
-        // Bám ShopPopupView: vàng active, xanh nhạt inactive, chữ xanh đậm.
-        private static readonly Color TabActive = new Color(1f, 0.85f, 0.2f, 1f);
-        private static readonly Color TabInactive = new Color(0.35f, 0.65f, 1f, 1f);
-        private static readonly Color TabText = new Color(0.14f, 0.24f, 0.44f, 1f);
-        private static readonly Color TextDark = new Color(0.14f, 0.18f, 0.25f, 1f);
-        private static readonly Color BodyBg = new Color(0.995f, 1f, 1f, 0.94f);
+        /// <summary>Băng chân đổi theo tab đang xem; tab lạ dùng câu đầu.</summary>
+        private static readonly string[] FooterByTab =
+        {
+            "Hướng dẫn đường lên thiên đình",
+            "Chọn thú cưng để hiến tặng",
+        };
+
+        private static readonly Color TextDark = PopupPalette.TextDark;
 
         public event Action<int> TabChosen;
         public event Action Closed;
         public event Action<Gopet.UiLogic.MenuSelection.ConfirmPrompt, Action> ConfirmRequested;
 
         private int _activeOptionId;
-        private Image[] _tabBackgrounds;
+        private GamePopupFrame _frame;
+        private PopupTabRail _rail;
         private NpcOptions.Option[] _options;
         private GameObject _guideView;
         private PetGridView _petGrid;
 
         public static HeavenNpcTabsView Create(Transform parent, Font font, NpcOptions options)
         {
-            var root = new GameObject("HeavenNpcTabs", typeof(RectTransform), typeof(Image));
-            root.transform.SetParent(parent, false);
-            var rect = (RectTransform)root.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(Width, Height);
+            var frame = GamePopupFrame.Create(parent, font, "Sứ giả", Width, Height,
+                footer: FooterByTab[0]);
+            frame.gameObject.name = "HeavenNpcTabs";
 
-            var image = root.GetComponent<Image>();
-            RoundedUiSprite.Apply(image);
-            image.color = PanelBg;
-            var outline = root.AddComponent<Outline>();
-            outline.effectColor = PanelBorder;
-            outline.effectDistance = new Vector2(2f, 2f);
-
-            var view = root.AddComponent<HeavenNpcTabsView>();
+            var view = frame.gameObject.AddComponent<HeavenNpcTabsView>();
+            view._frame = frame;
             view._options = options?.Options ?? Array.Empty<NpcOptions.Option>();
-            view.BuildTabs(root.transform, font);
-            view.BuildBody(root.transform, font);
-            view.BuildClose(root.transform, font);
+            frame.Closed += () => view.Closed?.Invoke();
+
+            view.BuildTabs(frame, font);
+            view.BuildBody(frame.Content, font);
             view.SelectFirstTab();
             return view;
         }
@@ -91,56 +88,27 @@ namespace Gopet.Runtime.UI
             return true;
         }
 
-        private void BuildTabs(Transform parent, Font font)
+        private void BuildTabs(GamePopupFrame frame, Font font)
         {
-            var count = _options.Length;
-            if (count == 0) return;
+            if (_options.Length == 0) return;
 
-            var availableWidth = Width - Padding * 2f;
-            var tabWidth = (availableWidth - Gap * (count - 1)) / count;
+            var labels = new string[_options.Length];
+            for (var i = 0; i < _options.Length; i++) labels[i] = _options[i].Text ?? string.Empty;
 
-            _tabBackgrounds = new Image[count];
-
-            for (var i = 0; i < count; i++)
-            {
-                var option = _options[i];
-                var go = new GameObject($"Tab_{option.Id}", typeof(RectTransform), typeof(Image), typeof(Button));
-                go.transform.SetParent(parent, false);
-                var rect = (RectTransform)go.transform;
-                rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-                rect.pivot = new Vector2(0f, 1f);
-                rect.sizeDelta = new Vector2(tabWidth, TabHeight);
-                rect.anchoredPosition = new Vector2(Padding + i * (tabWidth + Gap), -Padding);
-
-                var background = go.GetComponent<Image>();
-                RoundedUiSprite.Apply(background);
-                _tabBackgrounds[i] = background;
-
-                var label = UiBuilder.MakeText(go.transform, font, "Label", 10, true);
-                label.text = option.Text ?? string.Empty;
-                label.alignment = TextAnchor.MiddleCenter;
-                label.color = TabText;
-                label.fontStyle = FontStyle.Bold;
-                label.horizontalOverflow = HorizontalWrapMode.Wrap;
-                label.verticalOverflow = VerticalWrapMode.Truncate;
-
-
-                var captured = option.Id;
-                go.GetComponent<Button>().onClick.AddListener(() => SelectTab(captured));
-            }
+            _rail = PopupTabRail.Create(frame.Content, font, frame.ContentWidth, labels);
         }
 
-        private void BuildBody(Transform parent, Font font)
+        private void BuildBody(RectTransform content, Font font)
         {
             var body = new GameObject("Body", typeof(RectTransform), typeof(Image));
-            body.transform.SetParent(parent, false);
+            body.transform.SetParent(content, false);
             var rect = (RectTransform)body.transform;
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(Padding, Padding);
-            rect.offsetMax = new Vector2(-Padding, -(Padding + TabHeight + Gap));
-            RoundedUiSprite.Apply(body.GetComponent<Image>());
-            body.GetComponent<Image>().color = BodyBg;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = new Vector2(0f, -(PopupTabRail.Height + PopupTabRail.Gap));
+            RoundedBorder.Apply(body, RoundedUiSprite.DefaultRadius, PopupPalette.ListBg,
+                PopupPalette.Hairline);
 
             _guideView = BuildGuideText(body.transform, font);
             _petGrid = PetGridView.Create(body.transform, font);
@@ -166,51 +134,28 @@ namespace Gopet.Runtime.UI
             return go;
         }
 
-        private void BuildClose(Transform parent, Font font)
-        {
-            var go = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(30f, 30f);
-            rect.anchoredPosition = new Vector2(5f, 5f);
-
-            var image = go.GetComponent<Image>();
-            image.preserveAspect = true;
-            var sprite = HudSkin.Get(HudSkin.Close);
-            if (sprite != null) { image.sprite = sprite; image.color = Color.white; }
-            else
-            {
-                image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
-                var label = UiBuilder.MakeText(go.transform, font, "X", 18, true);
-                label.text = "×"; label.alignment = TextAnchor.MiddleCenter;
-                label.color = Color.white; label.fontStyle = FontStyle.Bold;
-            }
-            go.GetComponent<Button>().onClick.AddListener(() => Closed?.Invoke());
-        }
-
+        /// <summary>
+        /// Chọn tab đầu KHÔNG báo server (tab 1 là text hướng dẫn, hiện ngay). Nối sự
+        /// kiện của khay tab SAU đó: <c>Select</c> chỉ bắn khi tab đổi, nối trước là
+        /// lần chọn đầu cũng gửi option đi.
+        /// </summary>
         private void SelectFirstTab()
         {
             if (_options.Length == 0) return;
+
+            _rail.Select(0);
             SelectTab(_options[0].Id, notify: false);
-            // Tab 1 = guide text: không cần gọi server, hiển thị ngay.
+            _rail.Selected += index => SelectTab(_options[index].Id);
         }
 
         private void SelectTab(int optionId, bool notify = true)
         {
             _activeOptionId = optionId;
-            // Chỉ đổi background (vàng active / xanh inactive) — chữ giữ nguyên TabText,
-            // giống ShopPopupView (line 249).
-            for (var i = 0; i < _options.Length; i++)
-            {
-                if (_tabBackgrounds != null && _tabBackgrounds[i] != null)
-                    _tabBackgrounds[i].color = _options[i].Id == optionId ? TabActive : TabInactive;
-            }
 
             // Tab 1 (index 0) = guide text hardcode, không cần round-trip server.
             // Tab 2+ = mở list qua SelectNpcOption.
             var isGuideTab = _options.Length > 0 && _options[0].Id == optionId;
+            _frame.SetFooter(FooterByTab[isGuideTab ? 0 : 1]);
             if (_guideView != null) _guideView.SetActive(isGuideTab);
             if (_petGrid != null && isGuideTab) _petGrid.gameObject.SetActive(false);
 

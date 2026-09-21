@@ -20,7 +20,12 @@ namespace Gopet.Runtime.UI
     /// <summary>Danh sách pet dạng thẻ ngang dùng cho tab Nhận pet và Shop pet.</summary>
     public sealed class PetGridView : MonoBehaviour
     {
-        private const float Gap = 4f;
+        /// <summary>
+        /// Không hở giữa các dòng: dòng phân tách nhau bằng một vạch ngang ở chân,
+        /// giống danh sách cửa hàng. Trước đây mỗi dòng là một thẻ có viền riêng, và
+        /// viền thẻ đè lên viền khung chứa thành hai nét chồng nhau.
+        /// </summary>
+        private const float Gap = 0f;
         private const float CardHeight = 46f;
         private const float IconSize = 31f;
         private const float PortraitWidth = 50f;
@@ -101,6 +106,10 @@ namespace Gopet.Runtime.UI
                 var rect = (RectTransform)_cards[i].transform;
                 rect.sizeDelta = new Vector2(0f, CardHeight);
                 rect.anchoredPosition = new Vector2(0f, -i * (CardHeight + Gap));
+
+                // Vạch ở dòng cuối là một nét lửng ngay trên mép khung — bỏ đi.
+                var divider = rect.Find("RowDivider");
+                if (divider != null) divider.gameObject.SetActive(i < _cards.Count - 1);
             }
         }
 
@@ -117,21 +126,15 @@ namespace Gopet.Runtime.UI
             // Nếu cộng thêm chiều rộng content, nút Nhận/Mua sẽ bị đẩy ra ngoài viewport.
             rect.sizeDelta = new Vector2(0f, CardHeight);
             rect.anchoredPosition = new Vector2(0f, -index * (CardHeight + Gap));
-            // Dùng hai lớp Image 9-slice thay cho Outline: Outline có thể bị hở nét
-            // ở cạnh thẳng khi Canvas làm tròn theo pixel hoặc bị scale.
-            var border = go.GetComponent<Image>();
-            RoundedUiSprite.Apply(border);
-            border.color = new Color(0.72f, 0.82f, 0.97f, 1f);
-            var surface = new GameObject("Surface", typeof(RectTransform), typeof(Image));
-            surface.transform.SetParent(go.transform, false);
-            var surfaceRect = (RectTransform)surface.transform;
-            UiBuilder.Stretch(surfaceRect);
-            surfaceRect.offsetMin = new Vector2(1f, 1f);
-            surfaceRect.offsetMax = new Vector2(-1f, -1f);
-            var surfaceImage = surface.GetComponent<Image>();
-            RoundedUiSprite.Apply(surfaceImage);
-            surfaceImage.color = new Color(0.995f, 0.998f, 1f, 1f);
-            surfaceImage.raycastTarget = false;
+            // Nền TRONG SUỐT, không viền: khung chứa đã trắng sẵn. Tô trắng đặc thì
+            // dòng đầu và dòng cuối phủ vuông lên bốn góc bo của khung, chỉ chừa lại
+            // một lát cong mỏng bên ngoài — nhìn y như góc bị nhoè.
+            //
+            // Vẫn giữ raycastTarget để ScrollRect bắt được cú kéo trên thân dòng.
+            var background = go.GetComponent<Image>();
+            background.color = Color.clear;
+            background.raycastTarget = true;
+            BuildRowDivider(go.transform);
 
             var strength = FindStat(item.Description, "str", "sức mạnh");
             var agility = FindStat(item.Description, "agi", "độ nhanh");
@@ -150,6 +153,24 @@ namespace Gopet.Runtime.UI
                 BuildStat(go.transform, "mp", "Kỹ năng", MaxMp(item.Description, agility), 3);
                 BuildAction(go.transform, item, index);
             }
+        }
+
+        /// <summary>Vạch ngăn dưới chân dòng. Dòng cuối tự ẩn trong <see cref="LateUpdate"/>.</summary>
+        private static void BuildRowDivider(Transform parent)
+        {
+            var go = new GameObject("RowDivider", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0f, 0f);
+            rect.offsetMin = new Vector2(8f, 0f);
+            rect.offsetMax = new Vector2(-8f, 1f);
+
+            var image = go.GetComponent<Image>();
+            image.color = PopupPalette.Hairline;
+            image.raycastTarget = false;
         }
 
         private void BuildPetIcon(Transform parent, MenuItemInfo item)

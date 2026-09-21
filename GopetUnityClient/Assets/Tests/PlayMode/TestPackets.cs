@@ -32,6 +32,19 @@ namespace Gopet.PlayModeTests
             };
         }
 
+        /// <summary>Dòng cửa hàng thật: có hộp xác nhận và một lựa chọn thanh toán.</summary>
+        public static MenuItemInfo ShopItem(int itemId, string title, string description,
+                                            string moneyText, sbyte affordable = 1)
+        {
+            var item = Item(itemId, title, canSelect: true, showDialog: true);
+            item.Description = description;
+            item.PaymentOptions = new[]
+            {
+                new MenuItemInfo.PaymentOption { Id = 0, MoneyText = moneyText, IsEnabled = affordable }
+            };
+            return item;
+        }
+
         public static MenuScreen Screen(int listId, params MenuItemInfo[] items)
         {
             return new MenuScreen { ListId = listId, Type = 0, Title = "Thử", Items = items };
@@ -53,7 +66,14 @@ namespace Gopet.PlayModeTests
                     m.PutUtf(item.DialogText).PutUtf(item.LeftCommandText).PutUtf(item.RightCommandText);
                 }
 
-                m.PutSByte(item.SaleStatus).PutBool(item.CloseScreenAfterClick).PutInt(0);
+                m.PutSByte(item.SaleStatus).PutBool(item.CloseScreenAfterClick);
+
+                var payments = item.PaymentOptions ?? Array.Empty<MenuItemInfo.PaymentOption>();
+                m.PutInt(payments.Length);
+                foreach (var pay in payments)
+                {
+                    m.PutInt(pay.Id).PutUtf(pay.MoneyText).PutSByte(pay.IsEnabled);
+                }
             }
 
             return m;

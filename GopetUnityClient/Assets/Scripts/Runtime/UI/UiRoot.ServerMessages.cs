@@ -3,40 +3,41 @@ namespace Gopet.Runtime.UI
 {
     public sealed partial class UiRoot
     {
-        private ServerNoticeDialog _serverNotice;
-
+        /// <summary>
+        /// Báo lỗi từ server (opcode 10 — <c>Player.redDialog</c>), ví dụ "Không đủ tiền".
+        /// </summary>
         public void ShowServerError(string text)
         {
-            ShowServerNotice(text, true);
+            ShowServerNotice(text);
             RefreshAtmAfterNotice();
         }
 
         public void ShowServerSuccess(string text)
         {
-            ShowServerNotice(text, false);
+            ShowServerNotice(text);
             RefreshAtmAfterNotice();
         }
 
         private void RefreshAtmAfterNotice()
         {
-            // Dựng notice trước để response không bị che hoặc bị thay thế bởi
-            // lần request lại menu ATM. Request này chỉ cập nhật số dư/menu sau đó.
+            // Hiện thông báo trước để nó không bị lần request lại menu ATM nuốt mất.
+            // Request này chỉ cập nhật số dư/menu sau đó.
             if (_atmPopup != null) _atmPopup.RequestAtm();
         }
 
-        private void ShowServerNotice(string text, bool error)
+        /// <summary>
+        /// Thông báo một chiều của server đi ra <b>toast</b>, không phải dialog chặn.
+        ///
+        /// <para>Bản trước dựng <c>ServerNoticeDialog</c>: một tấm popup to có nút OK
+        /// cho mỗi câu "Không đủ tiền". Người chơi phải bấm tắt mới chơi tiếp được,
+        /// trong khi câu đó chỉ để BÁO chứ không chờ trả lời gì — đúng định nghĩa của
+        /// toast. Test <c>ServerMessages_AreNonBlockingToasts</c> đã đòi hành vi này
+        /// từ trước.</para>
+        /// </summary>
+        private void ShowServerNotice(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
-            if (_serverNotice != null) Close(_serverNotice);
-
-            var view = ServerNoticeDialog.Create(transform, text, error);
-            _serverNotice = view;
-            view.Closed += () =>
-            {
-                if (_serverNotice == view) _serverNotice = null;
-                Close(view);
-            };
-            Push(view, view.gameObject);
+            ShowToast(text);
         }
 
         private void ShowPopup(string text)

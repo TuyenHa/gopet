@@ -24,6 +24,18 @@ namespace Gopet.Runtime
             // màn đăng nhập đang hiện. OTP phải luôn thắng.
             canvas.sortingOrder = UI.PixelCanvas.SortingOrder + 1;
 
+            // Bám lưới điểm ảnh của màn hình.
+            //
+            // Canvas khớp CHIỀU RỘNG 720, nên với khung hình 16:9 chiều cao quy ra
+            // 405 ref-unit — số lẻ. Popup căn giữa vì thế rơi vào nửa đơn vị
+            // ((405−300)/2 = 52.5), và mọi cạnh ngang của nó nằm lệch nửa điểm ảnh.
+            // Quad vẽ ở toạ độ lẻ thì lấy mẫu bilinear giữa hai điểm ảnh — góc bo và
+            // chữ đều nhoè đi một nửa điểm ảnh, không sprite nào cứu được.
+            //
+            // Đánh đổi: phần tử UI đang DI CHUYỂN sẽ nhích theo từng điểm ảnh thay vì
+            // trôi mượt. Popup và dialog đều đứng yên nên không ảnh hưởng.
+            canvas.pixelPerfect = true;
+
             var scaler = go.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(720f, 1280f);

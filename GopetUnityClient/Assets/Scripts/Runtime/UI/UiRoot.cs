@@ -30,7 +30,6 @@ namespace Gopet.Runtime.UI
         private HeavenNpcTabsView _heavenNpcTabs;
         private BacSiNpcTabsView _bacSiNpcTabs;
         private GuildNpcTabsView _guildNpcTabs;
-        private GuildTopPopupView _guildTopPopup;
         private DailyCheckinView _dailyCheckin;
 
         // NPC "Sứ Giả Thiên Đình" (DB npcId=-25) — popup 2 tab riêng (opt 88 guide, 89 sacrifice).
@@ -107,8 +106,6 @@ namespace Gopet.Runtime.UI
 
             if (_guildNpcTabs != null && _guildNpcTabs.TryConsumeMenu(screen, _assets, _guider)) return;
 
-            if (_guildTopPopup != null && _guildTopPopup.TryConsumeMenu(screen, _assets, _guider)) return;
-
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
@@ -144,6 +141,9 @@ namespace Gopet.Runtime.UI
 
             _shopPopup = ShopPopupView.Create(transform, _font, _guider, _assets);
             _shopPopup.Closed += () => Close(_shopPopup);
+            // Mua hàng phải hỏi trước; không nối thì nút giá bấm vào im lặng.
+            _shopPopup.ConfirmRequested += ShowConfirm;
+            _shopPopup.Message += ShowToast;
 
             Push(_shopPopup, _shopPopup.gameObject);
         }
@@ -325,22 +325,10 @@ namespace Gopet.Runtime.UI
 
             var view = GuildNpcTabsView.Create(transform, _font, options);
             _guildNpcTabs = view;
-            view.OptionChosen += optionId =>
-            {
-                if (optionId == LinhThuCityNpcOptions.SuGiaTopLvlBangHoi)
-                    ShowGuildTopPopup();
-                _guider.SelectNpcOption(options.NpcId, optionId);
-            };
-            view.Closed += () => Close(view);
-            Push(view, view.gameObject);
-        }
-
-        private void ShowGuildTopPopup()
-        {
-            if (_guildTopPopup != null) Close(_guildTopPopup);
-
-            var view = GuildTopPopupView.Create(transform, _font);
-            _guildTopPopup = view;
+            // Bảng TOP LVL nay hiện ngay trong tab của popup, không mở popup riêng.
+            view.OptionChosen += optionId => _guider.SelectNpcOption(options.NpcId, optionId);
+            view.CreateClanSubmitted += name =>
+                _guider.SubmitInput(GuildNpcTabsView.CreateClanDialogId, new[] { name });
             view.Closed += () => Close(view);
             Push(view, view.gameObject);
         }
@@ -387,7 +375,6 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
             if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;
             if (ReferenceEquals(screen, _guildNpcTabs)) _guildNpcTabs = null;
-            if (ReferenceEquals(screen, _guildTopPopup)) _guildTopPopup = null;
             if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
         }
 

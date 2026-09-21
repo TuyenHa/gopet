@@ -6,7 +6,7 @@ nguyên để tránh trộn một đợt refactor giao diện/world diện rộn
 
 - Bootstrap/network lifecycle: `GopetBootstrap.cs`, `GopetClient.cs`.
 - UI cũ: `GenericMenuView.cs`, `LoginFormView.Actions.cs`, `LoginFormView.cs`,
-  `LoginScreens.cs`, `ShopPopupView.cs`, `UiRoot.cs`, `CharacterHud.cs`, `CurrencyBar.cs`.
+  `LoginScreens.cs`, `UiRoot.cs`, `CharacterHud.cs`, `CurrencyBar.cs`.
 - World cũ: `GameSession.cs`, `MapPortalView.cs`, `MapRenderer.cs`, `MapScene.cs`.
 - Test cũ: `LoginFormViewTests.cs`.
 - Thuật toán liền khối đã có ngoại lệ từ trước: `Tea.cs`.

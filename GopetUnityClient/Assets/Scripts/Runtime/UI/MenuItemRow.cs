@@ -14,7 +14,7 @@ namespace Gopet.Runtime.UI
     /// không cần asset nào — và để việc "dòng này trông thế nào" nằm trong tầm
     /// kiểm soát của test.</para>
     /// </summary>
-    public sealed class MenuItemRow : MonoBehaviour
+    public sealed partial class MenuItemRow : MonoBehaviour
     {
         public const float Height = 64f;
         private const float IconSize = 56f;
@@ -26,6 +26,7 @@ namespace Gopet.Runtime.UI
         private Image _attackBadge, _defenseBadge;
         private Text _attackText, _defenseText;
         private Image _background;
+        private GameObject _divider;
         private bool _compactCard;
         private bool _lightCard;
 
@@ -35,50 +36,6 @@ namespace Gopet.Runtime.UI
 
         /// <summary>Dòng có bấm được không. Dòng <c>canSelect = 0</c> hiện mờ và không nhận click.</summary>
         public bool Interactable => _button != null && _button.interactable;
-
-        public static MenuItemRow Create(Transform parent, Font font)
-        {
-            var go = new GameObject("MenuItemRow", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-
-            var row = go.AddComponent<MenuItemRow>();
-            row._background = go.GetComponent<Image>();
-            row._background.color = UiBuilder.Panel;
-            row._button = go.GetComponent<Button>();
-
-            // Neo trải ngang, ghim mép trên: chiều rộng bám theo vùng chứa, chiều
-            // cao cố định.
-            //
-            // Để anchor mặc định (giữa) với sizeDelta.x = 0 thì dòng RỘNG 0 — vẫn
-            // hiện chữ vì chữ tự vẽ, nhưng không nhận được click nào. Và test gọi
-            // thẳng OnRowClicked thì không đời nào phát hiện ra.
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.sizeDelta = new Vector2(0f, Height);
-
-            row._icon = MakeChild<RawImage>(go.transform, "Icon", new Vector2(IconSize, IconSize));
-            row._title = MakeText(go.transform, "Title", font, 20);
-            row._description = MakeText(go.transform, "Description", font, 14);
-            row._description.color = UiBuilder.TextMuted;
-            row._attackBadge = MakeBadge(go.transform, "Attack badge", font, out row._attackText,
-                new Color(0.29f, 0.52f, 0.16f, 1f));
-            row._defenseBadge = MakeBadge(go.transform, "Defense badge", font, out row._defenseText,
-                new Color(0.18f, 0.4f, 0.73f, 1f));
-
-            var iconRect = row._icon.rectTransform;
-            iconRect.anchorMin = iconRect.anchorMax = new Vector2(0f, 0.5f);
-            iconRect.pivot = new Vector2(0f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(4f, 0f);
-
-            PlaceText(row._title.rectTransform, 66f, 30f, -3f);
-            PlaceText(row._description.rectTransform, 66f, 24f, -32f);
-            row.PlaceBadges();
-            row.SetCompactCard(false);
-
-            return row;
-        }
 
         public void Bind(MenuItemInfo item, int index, RemoteAssetCache assets, Action<int> onClick,
             bool compactCard = false)
@@ -132,17 +89,42 @@ namespace Gopet.Runtime.UI
             }
         }
 
+        /// <summary>
+        /// Kiểu dòng cho danh sách nền sáng trong popup.
+        ///
+        /// <para>Dòng KHÔNG có nền riêng — khung chứa đã trắng sẵn. Tô nền đặc thì dòng
+        /// đầu và dòng cuối phủ vuông lên bốn góc bo của khung, và mép dòng cắt vụn
+        /// đường viền thành nét đứt. Phân tách nhau bằng vạch ngang ở chân dòng.</para>
+        /// </summary>
         public void SetLightCard(bool value)
         {
             _lightCard = value;
             if (_background == null) return;
 
-            RoundedUiSprite.Apply(_background);
-            _background.color = value
-                ? new Color(0.97f, 0.985f, 1f, 0.92f)
-                : (_compactCard ? new Color(0.14f, 0.15f, 0.18f, 0.96f) : UiBuilder.Panel);
-            if (_title != null) _title.color = value ? new Color(0.16f, 0.22f, 0.34f, 1f) : UiBuilder.TextMain;
-            if (_description != null) _description.color = UiBuilder.TextMuted;
+            if (value)
+            {
+                _background.sprite = null;
+                _background.type = Image.Type.Simple;
+                _background.color = Color.clear;
+            }
+            else
+            {
+                RoundedUiSprite.Apply(_background);
+                _background.color = _compactCard
+                    ? new Color(0.14f, 0.15f, 0.18f, 0.96f)
+                    : UiBuilder.Panel;
+            }
+
+            if (_divider != null) _divider.SetActive(value);
+            if (_title != null) _title.color = value ? PopupPalette.TextDark : UiBuilder.TextMain;
+            if (_description != null)
+                _description.color = value ? PopupPalette.TextMuted : UiBuilder.TextMuted;
+        }
+
+        /// <summary>Kẻ vạch ngăn dưới chân dòng. Dòng cuối không kẻ, nếu không thừa một nét lửng.</summary>
+        public void SetSeparatorVisible(bool visible)
+        {
+            if (_divider != null) _divider.SetActive(_lightCard && visible);
         }
 
         private void ApplyCompactStats(string description)
@@ -199,56 +181,6 @@ namespace Gopet.Runtime.UI
         private static Color Tint(Color color, float alpha)
         {
             return new Color(color.r, color.g, color.b, alpha);
-        }
-
-        private static T MakeChild<T>(Transform parent, string name, Vector2 size) where T : Component
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(T));
-            go.transform.SetParent(parent, false);
-            ((RectTransform)go.transform).sizeDelta = size;
-            return go.GetComponent<T>();
-        }
-
-        private static Text MakeText(Transform parent, string name, Font font, int size)
-        {
-            var text = MakeChild<Text>(parent, name, new Vector2(400f, 24f));
-            text.font = font;
-            text.fontSize = size;
-            text.alignment = TextAnchor.MiddleLeft;
-            return text;
-        }
-
-        private static Image MakeBadge(Transform parent, string name, Font font, out Text text, Color color)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var image = go.GetComponent<Image>();
-            RoundedUiSprite.Apply(image);
-            image.color = color;
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
-            rect.pivot = new Vector2(0f, 0f);
-            rect.sizeDelta = new Vector2(76f, 17f);
-            text = MakeText(go.transform, "Label", font, 9);
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
-            UiBuilder.Stretch(text.rectTransform);
-            return image;
-        }
-
-        private void PlaceBadges()
-        {
-            if (_attackBadge != null) _attackBadge.rectTransform.anchoredPosition = new Vector2(66f, 5f);
-            if (_defenseBadge != null) _defenseBadge.rectTransform.anchoredPosition = new Vector2(145f, 5f);
-        }
-
-        private static void PlaceText(RectTransform rect, float left, float height, float top)
-        {
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.offsetMin = new Vector2(left, -(height - top));
-            rect.offsetMax = new Vector2(-8f, top);
         }
     }
 }

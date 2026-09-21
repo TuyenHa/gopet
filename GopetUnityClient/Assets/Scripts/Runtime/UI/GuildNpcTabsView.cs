@@ -1,140 +1,148 @@
 using System;
 using Gopet.Net.Guider;
+using Gopet.Net.Npc;
 using Gopet.Runtime.Assets;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    /// <summary>Popup tab nhỏ cho NPC Sứ giả bang hội (npcId -15).</summary>
-    public sealed class GuildNpcTabsView : MonoBehaviour
+    /// <summary>
+    /// Popup <b>Bang hội</b> — NPC "Sứ giả bang hội" (npcId −15).
+    ///
+    /// <para>Số tab do server quyết: 5 tuỳ chọn cố định trong DB, cộng "Nhận nhiệm vụ
+    /// chính" mà <c>MenuController.showNpcOption</c> chèn thêm khi NPC đang có nhiệm
+    /// vụ cho người chơi. Vì thế nhãn tab đặt theo <b>option id</b>, không theo vị trí
+    /// — chèn thêm một tuỳ chọn là mọi vị trí lệch hết.</para>
+    ///
+    /// <para>Ba tab dựng nội dung ngay trong popup thay vì để server bơm dialog riêng
+    /// đè lên: xem <c>GuildNpcTabsView.Pages.cs</c>.</para>
+    /// </summary>
+    public sealed partial class GuildNpcTabsView : MonoBehaviour
     {
-        private const float Width = 380f;
+        private const float Width = 520f;
         private const float Height = 320f;
-        private const float Padding = 6f;
-        private const float Gap = 4f;
-        private const float TabHeight = 32f;
-        private const float TabWidth = 118f;
+        private const string Footer = "Chọn một mục của bang hội";
 
-        private static readonly Color PanelBg = new Color(0.96f, 0.98f, 1f, 1f);
-        private static readonly Color PanelBorder = new Color(0.28f, 0.6f, 1f, 1f);
-        private static readonly Color TabActive = new Color(1f, 0.85f, 0.2f, 1f);
-        private static readonly Color TabInactive = new Color(0.35f, 0.65f, 1f, 1f);
-        private static readonly Color TabText = new Color(0.14f, 0.24f, 0.44f, 1f);
+        /// <summary>Bảng TOP LVL bang hội server trả về với <c>listId = -1</c> (<c>showTop</c>).</summary>
+        private const int TopClanListId = -1;
+
+        /// <summary>
+        /// <c>MenuController.OP_MAIN_TASK</c> — tuỳ chọn server chèn thêm khi có nhiệm
+        /// vụ chính. GIỮ khớp server.
+        /// </summary>
+        private const int OpMainTask = 0;
 
         private NpcOptions.Option[] _options;
-        private Image[] _backgrounds;
         private Font _font;
-        private GenericMenuView _menuView;
-        private int _activeOptionId;
+        private GamePopupFrame _frame;
+        private PopupTabRail _rail;
+        private int _activeOptionId = -1;
 
         public event Action<int> OptionChosen;
+
+        /// <summary>Người chơi gửi tên bang mới từ tab "Tạo". Tham số là tên đã cắt khoảng trắng.</summary>
+        public event Action<string> CreateClanSubmitted;
+
         public event Action Closed;
 
         public static GuildNpcTabsView Create(Transform parent, Font font, NpcOptions options)
         {
-            var root = new GameObject("GuildNpcTabs", typeof(RectTransform), typeof(Image));
-            root.transform.SetParent(parent, false);
-            var rect = (RectTransform)root.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(Width, Height);
+            var frame = GamePopupFrame.Create(parent, font, "Bang hội", Width, Height,
+                footer: Footer);
+            frame.gameObject.name = "GuildNpcTabs";
 
-            var image = root.GetComponent<Image>();
-            RoundedUiSprite.Apply(image);
-            image.color = PanelBg;
-            var outline = root.AddComponent<Outline>();
-            outline.effectColor = PanelBorder;
-            outline.effectDistance = new Vector2(2f, 2f);
-
-            var view = root.AddComponent<GuildNpcTabsView>();
+            var view = frame.gameObject.AddComponent<GuildNpcTabsView>();
+            view._frame = frame;
             view._font = font;
             view._options = options?.Options ?? Array.Empty<NpcOptions.Option>();
-            view._activeOptionId = view._options.Length > 0 ? view._options[0].Id : -1;
-            view.BuildTabs(root.transform);
-            view.BuildBody(root.transform);
-            view.BuildClose(root.transform);
+            frame.Closed += () => view.Closed?.Invoke();
+
+            view.BuildTabs(frame);
+            view.BuildPages(frame.Content);
+            view.SelectFirstTab();
             return view;
         }
 
+        /// <summary>Bảng TOP LVL hiện ngay trong tab "Top Lvl", không mở popup riêng.</summary>
         public bool TryConsumeMenu(MenuScreen screen, RemoteAssetCache assets, GuiderHandler guider)
         {
-            // Bảng TOP được hiển thị trong GuildTopPopupView riêng.
-            return false;
+            if (screen == null || _topList == null) return false;
+            if (_activeOptionId != LinhThuCityNpcOptions.SuGiaTopLvlBangHoi) return false;
+            if (screen.ListId != TopClanListId) return false;
+
+            _topList.Bind(screen, assets, guider);
+            ShowPage(_topPage);
+            return true;
         }
 
-        private void BuildTabs(Transform parent)
+        private void BuildTabs(GamePopupFrame frame)
         {
-            _backgrounds = new Image[_options.Length];
-            for (var i = 0; i < _options.Length; i++)
+            if (_options.Length == 0) return;
+
+            var labels = new string[_options.Length];
+            for (var i = 0; i < _options.Length; i++) labels[i] = TabLabel(_options[i]);
+
+            // Nhãn đã gọn còn một từ nên khay giữ chiều cao thường, bằng các popup
+            // khác. Nhãn lạ (server gửi chuỗi khác) vẫn tự xuống dòng rồi cắt, không tràn.
+            _rail = PopupTabRail.Create(frame.Content, _font, frame.ContentWidth, labels);
+        }
+
+        /// <summary>
+        /// Nhãn tab gọn theo yêu cầu thiết kế. Chuỗi server dài dòng ("Cống hiến bang
+        /// hội") và lặp chữ "bang hội" ở mọi tab, trong khi tiêu đề popup đã nói rồi.
+        /// </summary>
+        private static string TabLabel(NpcOptions.Option option)
+        {
+            switch (option.Id)
             {
-                var go = new GameObject($"Tab_{_options[i].Id}", typeof(RectTransform), typeof(Image), typeof(Button));
-                go.transform.SetParent(parent, false);
-                var rect = (RectTransform)go.transform;
-                rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-                rect.pivot = new Vector2(0f, 1f);
-                rect.sizeDelta = new Vector2(TabWidth, TabHeight);
-                rect.anchoredPosition = new Vector2(Padding + (i % 3) * (TabWidth + Gap),
-                    -(Padding + (i / 3) * (TabHeight + Gap)));
-
-                var bg = go.GetComponent<Image>();
-                RoundedUiSprite.Apply(bg);
-                bg.color = TabInactive;
-                _backgrounds[i] = bg;
-
-                var label = UiBuilder.MakeText(go.transform, _font, "Label", 11, true);
-                label.text = _options[i].Text ?? string.Empty;
-                label.alignment = TextAnchor.MiddleCenter;
-                label.color = TabText;
-                label.fontStyle = FontStyle.Bold;
-                label.horizontalOverflow = HorizontalWrapMode.Wrap;
-                label.verticalOverflow = VerticalWrapMode.Truncate;
-
-                var captured = i;
-                go.GetComponent<Button>().onClick.AddListener(() => Choose(captured));
+                case LinhThuCityNpcOptions.SuGiaVaoKhuVucBang: return "Khu vực";
+                case LinhThuCityNpcOptions.SuGiaTopLvlBangHoi: return "Top Lvl";
+                case LinhThuCityNpcOptions.SuGiaTaoBangHoi: return "Tạo";
+                case LinhThuCityNpcOptions.SuGiaSuKienBangHoi: return "Sự kiện";
+                case LinhThuCityNpcOptions.SuGiaCongHienBangHoi: return "Cống hiến";
+                case OpMainTask: return "Nhiệm vụ";
+                default: return option.Text ?? string.Empty;
             }
         }
 
-        private void BuildClose(Transform parent)
+        /// <summary>
+        /// Chọn tab đầu KHÔNG báo server, rồi mới nối sự kiện của khay tab:
+        /// <c>Select</c> chỉ bắn khi tab đổi, nối trước là lần chọn đầu cũng gửi option.
+        /// </summary>
+        private void SelectFirstTab()
         {
-            var go = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(34f, 34f);
-            rect.anchoredPosition = new Vector2(5f, 5f);
-            var image = go.GetComponent<Image>();
-            image.sprite = HudSkin.Get(HudSkin.Close);
-            image.color = Color.white;
-            go.GetComponent<Button>().onClick.AddListener(() => Closed?.Invoke());
+            if (_options.Length == 0) return;
+
+            _rail.Select(0);
+            SelectTab(_options[0].Id, notify: false);
+            _rail.Selected += index => SelectTab(_options[index].Id);
         }
 
-        private void BuildBody(Transform parent)
+        private void SelectTab(int optionId, bool notify = true)
         {
-            var body = new GameObject("Body", typeof(RectTransform), typeof(Image));
-            body.transform.SetParent(parent, false);
-            var rect = (RectTransform)body.transform;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(Padding, Padding);
-            rect.offsetMax = new Vector2(-Padding, -(Padding + TabHeight * 2f + Gap));
-            RoundedUiSprite.Apply(body.GetComponent<Image>());
-            body.GetComponent<Image>().color = new Color(0.995f, 1f, 1f, 1f);
+            _activeOptionId = optionId;
 
-            _menuView = GenericMenuView.Create(body.transform, _font);
-            _menuView.SetLightCards(true);
-            _menuView.EnableEmbeddedScroll(Height - TabHeight * 2f - Padding * 2f - Gap);
-            _menuView.gameObject.SetActive(false);
-        }
+            // Hai tab có nội dung tự dựng và KHÔNG gửi gì khi chỉ mở ra xem:
+            //  - "Khu vực bang": vào khu vực là hành động thật, để nút lo.
+            //  - "Tạo": gửi option là server bơm hộp thoại nhập riêng đè lên popup;
+            //    form nhập đã nằm sẵn trong tab.
+            if (optionId == LinhThuCityNpcOptions.SuGiaVaoKhuVucBang)
+            {
+                ShowPage(_enterPage);
+                return;
+            }
 
-        private void Choose(int index)
-        {
-            _activeOptionId = _options[index].Id;
-            for (var i = 0; i < _backgrounds.Length; i++)
-                _backgrounds[i].color = i == index ? TabActive : TabInactive;
-            if (_menuView != null) _menuView.gameObject.SetActive(false);
-            OptionChosen?.Invoke(_options[index].Id);
+            if (optionId == LinhThuCityNpcOptions.SuGiaTaoBangHoi)
+            {
+                _createForm.Reset();
+                ShowPage(_createPage);
+                return;
+            }
+
+            // Tab còn lại: server tự bơm màn hình tiếp theo. Tab Top Lvl chờ gói
+            // MenuScreen rồi TryConsumeMenu mới hiện danh sách.
+            ShowPage(optionId == LinhThuCityNpcOptions.SuGiaTopLvlBangHoi ? _topPage : null);
+            if (notify) OptionChosen?.Invoke(optionId);
         }
     }
 }

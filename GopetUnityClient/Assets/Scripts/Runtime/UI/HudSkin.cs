@@ -21,6 +21,14 @@ namespace Gopet.Runtime.UI
         public const string Close = "close";
         public const string Coin = "coin";
 
+        // Icon của popup cửa hàng — sinh bằng tools/image-gen, nền trong suốt.
+        /// <summary>Dấu chân thú: badge tiêu đề và dòng gợi ý dưới đáy popup cửa hàng.</summary>
+        public const string Paw = "paw";
+        public const string StatAttack = "stat-attack";
+        public const string StatDefense = "stat-defense";
+        /// <summary>Đồng vàng trên nút giá. Khác <see cref="Coin"/> (24px, không alpha) của HUD cũ.</summary>
+        public const string CoinGold = "coin-gold";
+
         private static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
 
         public static Sprite Get(string name)

@@ -143,7 +143,7 @@ Step "10/10  Kich thuoc file (rule 200 dong)" {
         'Tea.cs',
         'GopetBootstrap.cs', 'GopetClient.cs', 'GenericMenuView.cs',
         'LoginFormView.Actions.cs', 'LoginFormView.cs', 'LoginScreens.cs',
-        'ShopPopupView.cs', 'UiRoot.cs', 'CharacterHud.cs', 'CurrencyBar.cs',
+        'UiRoot.cs', 'CharacterHud.cs', 'CurrencyBar.cs',
         'GameSession.cs', 'MapPortalView.cs', 'MapRenderer.cs', 'MapScene.cs',
         'LoginFormViewTests.cs'
     )

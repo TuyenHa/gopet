@@ -20,6 +20,9 @@ namespace Gopet.Runtime.UI
         /// <summary>Chừa hai bên cho chữ không dính mép nền.</summary>
         private const float TextPadding = 16f;
         private const float DurationSeconds = 2f;
+        /// <summary>Nền xanh đặc, chữ trắng — mã màu đo trên ảnh mẫu: rgb(75,131,228).</summary>
+        private static readonly Color BackgroundBlue = new Color(0.294f, 0.514f, 0.894f, 1f);
+        private const float CornerRadius = 6f;
         private const float FadeSeconds = 0.35f;
 
         public static ToastView Create(Transform parent, Font font, string text)
@@ -37,7 +40,8 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(Width, MinHeight);
 
             var bg = go.GetComponent<Image>();
-            bg.color = new Color(0.06f, 0.07f, 0.1f, 0.9f);
+            RoundedUiSprite.Apply(bg, CornerRadius);
+            bg.color = BackgroundBlue;
 
             // stretch: false — label phải có BỀ NGANG XÁC ĐỌNH ngay lúc này thì
             // preferredHeight mới tính đúng số dòng; anchor stretch phải đợi layout pass.
@@ -50,7 +54,7 @@ namespace Gopet.Runtime.UI
             labelRect.sizeDelta = new Vector2(Width - TextPadding, MinHeight);
             label.alignment = TextAnchor.MiddleCenter;
             label.text = text;
-            label.color = UiBuilder.TextMain;
+            label.color = Color.white;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Overflow;
             var height = Mathf.Max(MinHeight, label.preferredHeight + TextPadding);

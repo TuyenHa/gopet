@@ -8,7 +8,7 @@ namespace Gopet.Runtime.UI
 {
     /// <summary>
     /// Hộp thoại nhập liệu (<c>TYPE_DIALOG_INPUT</c>): tiêu đề + N ô nhập có nhãn,
-    /// hai nút Đồng ý / Thôi ở đáy và nút X đóng ở góc phải trên.
+    /// hai nút Đồng ý / Huỷ ở đáy và nút X đóng ở góc phải trên.
     ///
     /// <para>Số ô do server quyết định và câu trả lời phải gửi <b>đúng bấy nhiêu</b>
     /// chuỗi — server dựng <c>InputReader</c> theo số ô nó đã hỏi
@@ -48,7 +48,7 @@ namespace Gopet.Runtime.UI
         /// <summary>Người dùng xác nhận. Mảng trả về đúng số ô server đã hỏi.</summary>
         public event Action<int, string[]> Submitted;
 
-        /// <summary>Người dùng bấm Thôi hoặc X. UiRoot đóng view qua sự kiện này.</summary>
+        /// <summary>Người dùng bấm Huỷ hoặc X. UiRoot đóng view qua sự kiện này.</summary>
         public event Action Closed;
 
         public static InputDialogView Create(Transform parent, Font font)
@@ -162,7 +162,9 @@ namespace Gopet.Runtime.UI
             boxRect.anchorMax = new Vector2(1f, 1f);
             boxRect.offsetMin = new Vector2(LabelWidth + 8f, 4f);
             boxRect.offsetMax = new Vector2(0f, -4f);
-            box.GetComponent<Image>().color = new Color(0.78f, 0.8f, 0.84f, 1f);
+            // Bo góc 5 cho ô nhập; ô vuông cạnh sắc lạc hẳn giữa các panel bo tròn.
+            RoundedUiSprite.Apply(box.GetComponent<Image>(), 5f);
+            box.GetComponent<Image>().color = new Color(0.90f, 0.92f, 0.95f, 1f);
 
             var text = UiBuilder.MakeText(box.transform, _font, "Text", 16, true);
             text.color = new Color(0.12f, 0.14f, 0.18f, 1f);
@@ -190,7 +192,7 @@ namespace Gopet.Runtime.UI
             UiBuilder.PlaceRow((RectTransform)row.transform, top, ButtonRowHeight, PanelPadding);
 
             MakeButton(row.transform, "Đồng ý", 0, () => Submit());
-            MakeButton(row.transform, "Thôi", 1, RaiseClosed);
+            MakeButton(row.transform, "Huỷ", 1, RaiseClosed);
         }
 
         private void ClearActionButtons()

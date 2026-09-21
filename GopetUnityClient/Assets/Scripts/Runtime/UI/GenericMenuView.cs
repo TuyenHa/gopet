@@ -290,6 +290,7 @@ namespace Gopet.Runtime.UI
             row.gameObject.SetActive(true);
             row.Bind(_screen.Items[index], index, _assets, OnRowClicked, _compactCards);
             row.SetLightCard(_lightCards);
+            row.SetSeparatorVisible(index < _screen.Items.Length - 1);
 
             var rect = (RectTransform)row.transform;
             rect.sizeDelta = new Vector2(_compactCards ? -12f : 0f,

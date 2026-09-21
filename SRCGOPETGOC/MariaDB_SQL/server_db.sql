@@ -2094,7 +2094,7 @@ CREATE TABLE `map` (
 --
 
 INSERT INTO `map` (`mapId`, `name`, `npc`, `boss`, `numPetDie`, `enable`) VALUES
-(11, 'Thành Phố Linh Thú', '[-1,-7,-15, -24, -25]', '[]', '[150]', 1),
+(11, 'Thành Phố Linh Thú', '[-1,-7,-15, -25]', '[]', '[150]', 1),
 (12, 'ải  ', '[]', '[]', '[]', 1),
 (13, 'Linh Lâm', '[]', '[2]', '[600]', 1),
 (14, 'Linh Mộc', '[\n  -6\n]', '[4]', '[1000]', 1),

@@ -28,9 +28,36 @@ namespace Gopet.Manager
             _events.Add(DailyCheckinEvent.Instance);
         }
 
+        /// <summary>
+        /// Thêm sự kiện KHI MÁY CHỦ ĐANG CHẠY — tức là sự kiện vừa mở thật.
+        ///
+        /// <para>Các sự kiện cố định đăng ký thẳng bằng <c>_events.Add</c> trong static
+        /// constructor, KHÔNG đi qua đây. Nhờ vậy thư báo dưới đây không bị bắn lại mỗi
+        /// lần khởi động lại máy chủ.</para>
+        ///
+        /// <para>Cũng vì thế mà KHÔNG báo ở <c>EventBase.Init</c> hay khi
+        /// <c>Condition</c> bật: <c>Init</c> chạy lại mỗi lần khởi động, còn
+        /// <c>Condition</c> là cửa sổ lặp theo giờ (đấu trường mở 7 lần/ngày) — cả hai đều
+        /// biến hộp thư thành chỗ spam. Khung giờ lặp là việc của băng chữ chạy
+        /// (<c>BannerEvent</c>), không phải của thư.</para>
+        /// </summary>
         public static void AddEvent(EventBase eventBase)
         {
             _events.Add(eventBase);
+            AnnounceEventOpened(eventBase);
+        }
+
+        /// <summary>Báo cho toàn server biết sự kiện vừa mở. Sự kiện không đặt tên thì bỏ qua.</summary>
+        private static void AnnounceEventOpened(EventBase eventBase)
+        {
+            var name = eventBase?.Name;
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            SystemLetterService.SendToAll(
+                Gopet.Data.User.Letter.EVENT,
+                "Sự kiện",
+                $"Sự kiện {name} đã mở.",
+                $"Sự kiện {name} vừa bắt đầu. Vào game tham gia để nhận thưởng nhé!");
         }
 
         public static void Start()

@@ -756,6 +756,10 @@ public class GameController
 
             }
             PlayerData.create(player.user.user_id, name, gender);
+            // Thư chào mừng: tạo xong nhân vật là phiên đóng ngay (người chơi phải kết nối
+            // lại), nên người nhận chắc chắn đang offline — thư đi đường bảng `letter` và
+            // chờ sẵn trong hộp thư ở lần đăng nhập đầu tiên.
+            SystemLetterService.SendWelcome(player.user.user_id, name);
             UserData user = player.user;
             player.user = null;
             player.session.Close();

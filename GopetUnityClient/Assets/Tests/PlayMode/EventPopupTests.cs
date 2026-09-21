@@ -56,7 +56,7 @@ namespace Gopet.PlayModeTests
                 "lưới điểm danh phải ẩn, không nằm chồng dưới form");
             Assert.IsTrue(Page("Page_Gift").gameObject.activeSelf);
             Assert.IsNotNull(_view.GetComponentInChildren<PopupInputForm>(true));
-            Assert.AreEqual("Nhập GiftCode để nhận quà", FooterLabel.text,
+            Assert.AreEqual("Có GiftCode là có quà!", FooterLabel.text,
                 "băng chân phải nói về tab đang xem");
         }
 

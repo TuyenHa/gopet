@@ -31,10 +31,14 @@ namespace Gopet.Runtime.UI
         // thẳng cột với thanh tài nguyên nghĩa là loa thẳng cột, không phải viên thuốc.
         private const float LeftMargin = World.CurrencyBar.LeftMargin + SpeakerOverhang;
         /// <summary>
-        /// Lề phải. Ở khung chuẩn 960 băng dài 261px — bằng 3/4 độ dài cũ (348px): chữ
-        /// vẫn chạy thoải mái mà băng không kéo dài gần hết bề ngang màn.
+        /// Lề phải. Ở khung chuẩn 960 băng dài 174px — bằng 2/3 độ dài trước (261px),
+        /// vốn đã là 3/4 của bản gốc 348px. Chữ vẫn chạy được vì băng cuộn ngang, chỉ
+        /// là cửa sổ nhìn hẹp lại.
+        ///
+        /// <para>Cắt từ mép PHẢI: mép trái phải giữ thẳng cột với thanh tài nguyên
+        /// ngay trên nó.</para>
         /// </summary>
-        private const float RightMargin = 417f;
+        private const float RightMargin = 504f;
         private const float Height = 32f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài
         private const float SpeakerOverhang = 14f;  // px thò ra mép trái pill

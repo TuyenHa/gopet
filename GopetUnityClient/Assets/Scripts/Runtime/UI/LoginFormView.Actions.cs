@@ -136,9 +136,12 @@ namespace Gopet.Runtime.UI
 
             var labelObject = new GameObject("Label", typeof(RectTransform), typeof(Text), typeof(Shadow));
             labelObject.transform.SetParent(rect, false);
+            // Khung chữ lấy đúng tỉ lệ chữ ĐÃ IN SẴN trong sprite nút đăng nhập:
+            // đo button-login.png (277x100) thì chữ cao 32px (0.32) và rộng 0.60 mặt nút,
+            // nên nhãn mới hiện ra cùng cỡ với nút đăng nhập thay vì to hơn.
             var labelRect = (RectTransform)labelObject.transform;
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
+            labelRect.anchorMin = new Vector2(0.15f, 0.32f);
+            labelRect.anchorMax = new Vector2(0.85f, 0.68f);
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 
             var text = labelObject.GetComponent<Text>();

@@ -57,7 +57,7 @@ namespace Gopet.Runtime.UI
         private static readonly string[] FooterByTab =
         {
             "Điểm danh mỗi ngày để nhận quà",
-            "Nhập GiftCode để nhận quà",
+            "Có GiftCode là có quà!",
         };
 
         private Font _font;

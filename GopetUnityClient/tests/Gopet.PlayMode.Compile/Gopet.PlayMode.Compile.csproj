@@ -23,10 +23,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Assets\Scripts\Net\**\*.cs" />
-    <Compile Include="..\..\Assets\Scripts\UiLogic\**\*.cs" />
-    <Compile Include="..\..\Assets\Scripts\Runtime\**\*.cs" />
     <Compile Include="..\..\Assets\Tests\PlayMode\**\*.cs" />
+  </ItemGroup>
+
+  <!--
+    Tham chieu Runtime nhu mot ASSEMBLY RIENG, khong gop source vao day.
+
+    Gop source thi `internal` cua Runtime van thay duoc tu test, trong khi Unity coi
+    PlayMode test la assembly rieng va tu choi. Lo do tung lot luoi that: hang so
+    `HeavenNpcTabsView.MenuPetSacrificeListId` de `internal`, buoc nay bao OK con Unity
+    bao CS0117 - ma luc do nguoi dung da mo Editor len roi.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Gopet.Runtime.UnityCompat\Gopet.Runtime.UnityCompat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

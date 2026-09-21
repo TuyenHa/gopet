@@ -378,8 +378,8 @@ Nay `PetBattle.rollMiss()` gộp cả hai:
 randMiss(nonPetBattleInfo) || (petAttackMob && ActiveObject.IsMiss(PassiveObject))
 ```
 
-- Tỉ lệ cơ bản: `HitRate = AccuracyPercent − B.SkipPercent = (100 + agi/1000) − (15 + agiB/1000)`.
-  Với agi < 1000 thì phép chia nguyên ra 0 ⇒ `HitRate = 85` ⇒ **15% trượt**, và co giãn theo
+- Tỉ lệ cơ bản: `HitRate = AccuracyPercent − B.SkipPercent = (100 + agi/1000) − (8 + agiB/1000)`.
+  Với agi < 1000 thì phép chia nguyên ra 0 ⇒ `HitRate = 92` ⇒ **8% trượt**, và co giãn theo
   chênh lệch nhanh nhẹn hai bên. `NextFloatPer()` trả 0..100.
 - **Chỉ PvE** (`petAttackMob`) — PvP/PK/đấu trường giữ nguyên cân bằng cũ.
 - **Kỹ năng trượt không tốn gì**: roll đặt TRƯỚC khi trừ MP và `addSkillCoolDown`. Thứ tự cũ

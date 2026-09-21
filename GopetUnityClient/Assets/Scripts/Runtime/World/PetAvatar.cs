@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Images;
 using Gopet.Net.Pet;
 using Gopet.Runtime.Assets;
@@ -29,7 +28,6 @@ namespace Gopet.Runtime.World
         /// trùng trục owner, dấu của dx đảo liên tục và sprite lật qua lật lại.</summary>
         private const float FaceDeadZone = 5f;
 
-        private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
 
         private Transform _owner;
         private SpriteRenderer _renderer;
@@ -67,7 +65,7 @@ namespace Gopet.Runtime.World
             assets.Get(entry.FrameImagePath, ImagePackets.TypeNpc, texture =>
             {
                 if (view == null || texture == null) return;
-                view._frames = SliceFrames(entry.FrameImagePath, texture, frames);
+                view._frames = SpriteFrameCache.Slice(entry.FrameImagePath, texture, frames);
                 view._frame = 0;
                 view._renderer.sprite = view._frames[0];
                 view.PositionLabelAboveSprite();
@@ -158,21 +156,5 @@ namespace Gopet.Runtime.World
             _positionInitialized = true;
         }
 
-        private static Sprite[] SliceFrames(string path, Texture2D texture, int count)
-        {
-            var key = $"{path}|{texture.GetHashCode()}|{count}";
-            if (FrameCache.TryGetValue(key, out var cached) && cached != null) return cached;
-
-            if (texture.width < count) count = 1;
-            var width = texture.width / count;
-            var result = new Sprite[count];
-            for (var i = 0; i < count; i++)
-            {
-                result[i] = Sprite.Create(texture,
-                    new Rect(i * width, 0f, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            }
-            return FrameCache[key] = result;
-        }
     }
 }

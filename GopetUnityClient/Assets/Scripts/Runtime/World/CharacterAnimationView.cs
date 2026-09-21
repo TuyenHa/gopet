@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Images;
 using Gopet.Net.Player;
 using Gopet.Runtime.Assets;
@@ -11,7 +10,6 @@ namespace Gopet.Runtime.World
     public sealed class CharacterAnimationView : MonoBehaviour
     {
         private const float FrameInterval = 0.2f;
-        private static readonly Dictionary<string, Sprite[]> Cache = new Dictionary<string, Sprite[]>();
         private SpriteRenderer _renderer;
         private Sprite[] _frames = Array.Empty<Sprite>();
         private int _frame;
@@ -29,7 +27,7 @@ namespace Gopet.Runtime.World
             assets?.Get(animation.FrameImagePath, ImagePackets.TypeIcon, texture =>
             {
                 if (view == null || texture == null) return;
-                view._frames = Slice(animation.FrameImagePath, texture, animation.FrameCount);
+                view._frames = SpriteFrameCache.Slice(animation.FrameImagePath, texture, animation.FrameCount);
                 view._renderer.sprite = view._frames[0];
             });
             return view;
@@ -43,17 +41,5 @@ namespace Gopet.Runtime.World
             _renderer.sprite = _frames[_frame];
         }
 
-        private static Sprite[] Slice(string path, Texture2D texture, int count)
-        {
-            var key = $"{path}|{texture.GetHashCode()}|{count}";
-            if (Cache.TryGetValue(key, out var cached)) return cached;
-            if (count <= 0 || texture.width < count) count = 1;
-            var width = texture.width / count;
-            var sprites = new Sprite[count];
-            for (var i = 0; i < count; i++)
-                sprites[i] = Sprite.Create(texture, new Rect(i * width, 0f, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            return Cache[key] = sprites;
-        }
     }
 }

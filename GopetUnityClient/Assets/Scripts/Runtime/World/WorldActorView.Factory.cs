@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Images;
 using Gopet.Net.Map;
 using Gopet.Runtime.Assets;
@@ -12,8 +11,6 @@ namespace Gopet.Runtime.World
     /// instance/Update để mỗi file giữ dưới 200 dòng.</summary>
     public sealed partial class WorldActorView
     {
-        private static readonly Dictionary<string, Sprite[]> FrameCache = new Dictionary<string, Sprite[]>();
-
         public static WorldActorView CreateNpc(Transform parent, NpcSpawn npc, int mapHeight,
             RemoteAssetCache assets, Action<int> clicked)
         {
@@ -76,7 +73,7 @@ namespace Gopet.Runtime.World
             var localTexture = JarActorSprites.LoadLocalTexture(imagePath);
             if (localTexture != null)
             {
-                view._frames = Frames(imagePath, localTexture, Mathf.Max(1, frameCount));
+                view._frames = SpriteFrameCache.Slice(imagePath, localTexture, frameCount);
                 view._frame = 0;
                 view._renderer.sprite = view._frames[0];
                 view.ConfigureCollider(bounds);
@@ -87,7 +84,7 @@ namespace Gopet.Runtime.World
                 assets.Get(imagePath, ImagePackets.TypeNpc, texture =>
                 {
                     if (view == null || texture == null) return;
-                    view._frames = Frames(imagePath, texture, Mathf.Max(1, frameCount));
+                    view._frames = SpriteFrameCache.Slice(imagePath, texture, frameCount);
                     view._frame = 0;
                     view._renderer.sprite = view._frames[0];
                     view.ConfigureCollider(bounds);
@@ -95,19 +92,6 @@ namespace Gopet.Runtime.World
                 });
             }
             return view;
-        }
-
-        private static Sprite[] Frames(string path, Texture2D texture, int count)
-        {
-            if (texture.width < count) count = 1;
-            var key = $"{path}|{texture.GetHashCode()}|{count}";
-            if (FrameCache.TryGetValue(key, out var cached) && cached != null) return cached;
-            var width = texture.width / count;
-            var result = new Sprite[count];
-            for (var i = 0; i < count; i++)
-                result[i] = Sprite.Create(texture, new Rect(i * width, 0, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            return FrameCache[key] = result;
         }
     }
 }

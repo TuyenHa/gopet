@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Images;
 using Gopet.Runtime.Assets;
 using UnityEngine;
@@ -12,7 +11,6 @@ namespace Gopet.Runtime.World
         private const float CharacterHeight = 74f;
         private const float TicksPerSecond = 30f;
         private const int TicksPerFrame = 8;
-        private static readonly Dictionary<string, Sprite[]> Cache = new Dictionary<string, Sprite[]>();
         private SpriteRenderer _left;
         private SpriteRenderer _right;
         private Sprite[] _frames = Array.Empty<Sprite>();
@@ -83,14 +81,7 @@ namespace Gopet.Runtime.World
         {
             // JAR dùng phép chia nguyên getWidth() >> 1, kể cả khi chiều rộng lẻ.
             var count = texture.width >= FrameCount ? FrameCount : 1;
-            var key = $"{path}|{texture.GetHashCode()}|{count}";
-            if (Cache.TryGetValue(key, out var cached)) return cached;
-            var width = texture.width / count;
-            var frames = new Sprite[count];
-            for (var i = 0; i < count; i++)
-                frames[i] = Sprite.Create(texture, new Rect(i * width, 0f, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            return Cache[key] = frames;
+            return SpriteFrameCache.Slice(path, texture, count);
         }
     }
 }

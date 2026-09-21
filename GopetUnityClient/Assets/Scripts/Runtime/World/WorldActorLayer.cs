@@ -22,7 +22,6 @@ namespace Gopet.Runtime.World
         private Action<int> _attackMob;
         private int _promptNpcId = NpcProximity.None;
         private float _nextScan;
-        private float _nextDebugLog; // TODO(debug): xoá khối log này sau khi xác định xong lý do nút không hiện
 
         public static WorldActorLayer Attach(MapScene scene)
         {
@@ -95,20 +94,6 @@ namespace Gopet.Runtime.World
             // nhưng khi 1 người đứng "trên đầu" thì lệch. Đẩy cả 2 phía = thân-vs-thân chuẩn.
             var pickerY = selfPos.y + NpcBodyCenterOffset;
             var picked = NpcProximity.Pick(selfPos.x, pickerY, _points, _promptNpcId);
-            if (Time.time >= _nextDebugLog)
-            {
-                _nextDebugLog = Time.time + 1f;
-                var sb = new System.Text.StringBuilder();
-                sb.Append($"[TalkPromptDebug] player=({selfPos.x:F0},{pickerY:F0}) npcCount={_points.Count} picked={picked} current={_promptNpcId} show={NpcProximity.ShowRadius}");
-                foreach (var p in _points)
-                {
-                    var dx = selfPos.x - p.X;
-                    var dy = pickerY - p.Y;
-                    var d = Mathf.Sqrt(dx * dx + dy * dy);
-                    sb.Append($" | npc{p.Id}=({p.X:F0},{p.Y:F0}) d={d:F0}");
-                }
-                Debug.Log(sb.ToString());
-            }
             SetPrompt(picked);
             ScanMobs(selfPos);
         }
@@ -116,14 +101,13 @@ namespace Gopet.Runtime.World
         private void SetPrompt(int id)
         {
             if (id == _promptNpcId) return;
-            Debug.Log($"[TalkPromptDebug] SetPrompt {_promptNpcId} -> {id}");
             if (_promptNpcId != NpcProximity.None && _npcs.TryGetValue(_promptNpcId, out var previous)
                 && previous != null)
                 previous.SetTalkPromptVisible(false);
             if (id != NpcProximity.None && _npcs.TryGetValue(id, out var next) && next != null)
                 next.SetTalkPromptVisible(true);
             else if (id != NpcProximity.None)
-                Debug.LogWarning($"[TalkPromptDebug] picked id {id} khong co trong _npcs (khong tim thay view)");
+                Debug.LogWarning($"[Gopet] NPC {id} được chọn để hiện nút Nói chuyện nhưng không có trong _npcs.");
             _promptNpcId = id;
         }
 

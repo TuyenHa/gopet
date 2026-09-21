@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Gopet.Net.Images;
 using Gopet.Runtime.Assets;
 using UnityEngine;
@@ -9,7 +8,6 @@ namespace Gopet.Runtime.World
     /// <summary>Full-body two-frame skin used by the legacy anim_characters assets.</summary>
     public sealed class CharacterSkinView : MonoBehaviour
     {
-        private static readonly Dictionary<string, Sprite[]> Cache = new Dictionary<string, Sprite[]>();
         private SpriteRenderer _renderer;
         private Sprite[] _frames = Array.Empty<Sprite>();
         private bool _moving;
@@ -61,17 +59,10 @@ namespace Gopet.Runtime.World
 
         private static Sprite[] Slice(string path, Texture2D texture)
         {
-            var key = $"{path}|{texture.GetHashCode()}";
-            if (Cache.TryGetValue(key, out var cached)) return cached;
             // Skin templates do not send frameCount; legacy anim_characters sheets are two
             // equal horizontal movement frames. Odd-width/small assets safely fall back to one.
             var count = texture.width >= 2 && texture.width % 2 == 0 ? 2 : 1;
-            var width = texture.width / count;
-            var frames = new Sprite[count];
-            for (var i = 0; i < count; i++)
-                frames[i] = Sprite.Create(texture, new Rect(i * width, 0f, width, texture.height),
-                    new Vector2(0.5f, 0f), 1f);
-            return Cache[key] = frames;
+            return SpriteFrameCache.Slice(path, texture, count);
         }
     }
 }

@@ -18,6 +18,8 @@ namespace Gopet.Runtime.UI
         public const string Guild = "guild";
         public const string Service = "service";
         public const string Event = "event";
+        /// <summary>Hộp thư — sinh bằng tools/image-gen, cùng khuôn 128×128 nền trong.</summary>
+        public const string Mail = "mail";
         public const string Close = "close";
         public const string Coin = "coin";
 

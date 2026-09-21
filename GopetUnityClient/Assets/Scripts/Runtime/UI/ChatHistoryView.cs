@@ -15,7 +15,7 @@ namespace Gopet.Runtime.UI
 
         public static ChatHistoryView Create(Transform parent, string title, ChatTranscript transcript)
         {
-            var root = LetterDetailView.Overlay(parent, "Chat History");
+            var root = LegacyOverlayUi.Overlay(parent, "Chat History");
             var view = root.AddComponent<ChatHistoryView>();
             view.Build(title);
             view.Refresh(transcript);
@@ -33,14 +33,14 @@ namespace Gopet.Runtime.UI
 
         private void Build(string heading)
         {
-            var panel = LetterDetailView.Panel(transform, new Vector2(500f, 390f));
-            var title = LetterDetailView.Text(panel, "Title", heading, 18, 12f, 34f);
+            var panel = LegacyOverlayUi.Panel(transform, new Vector2(500f, 390f));
+            var title = LegacyOverlayUi.Text(panel, "Title", heading, 18, 12f, 34f);
             title.alignment = TextAnchor.MiddleCenter;
-            _history = LetterDetailView.Text(panel, "History", string.Empty, 13, 54f, 245f);
+            _history = LegacyOverlayUi.Text(panel, "History", string.Empty, 13, 54f, 245f);
             _history.alignment = TextAnchor.LowerLeft;
             _input = MakeInput(panel, 305f);
-            LetterDetailView.Button(panel, "Gửi", 220f, TrySend);
-            LetterDetailView.Button(panel, "Đóng", 360f, () => CloseRequested?.Invoke());
+            LegacyOverlayUi.Button(panel, "Gửi", 220f, TrySend);
+            LegacyOverlayUi.Button(panel, "Đóng", 360f, () => CloseRequested?.Invoke());
         }
 
         private void TrySend()

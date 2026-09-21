@@ -14,15 +14,15 @@ namespace Gopet.Runtime.UI
 
         public static TattooView Create(Transform parent, TattooScreen screen)
         {
-            var root = LetterDetailView.Overlay(parent, "Tattoo");
+            var root = LegacyOverlayUi.Overlay(parent, "Tattoo");
             var view = root.AddComponent<TattooView>();
-            var panel = LetterDetailView.Panel(root.transform, new Vector2(440f, 380f));
-            var title = LetterDetailView.Text(panel, "Title", "Hình xăm pet", 18, 10f, 34f);
+            var panel = LegacyOverlayUi.Panel(root.transform, new Vector2(440f, 380f));
+            var title = LegacyOverlayUi.Text(panel, "Title", "Hình xăm pet", 18, 10f, 34f);
             title.alignment = TextAnchor.MiddleCenter;
             for (var i = 0; i < screen.Slots.Length && i < 5; i++)
                 view.Row(panel, screen.Slots[i], 52f + i * 48f);
-            LetterDetailView.Button(panel, "Tạo hình xăm", 18f, () => view.GenerateRequested?.Invoke());
-            LetterDetailView.Button(panel, "Đóng", 298f, () => view.CloseRequested?.Invoke());
+            LegacyOverlayUi.Button(panel, "Tạo hình xăm", 18f, () => view.GenerateRequested?.Invoke());
+            LegacyOverlayUi.Button(panel, "Đóng", 298f, () => view.CloseRequested?.Invoke());
             return view;
         }
 

@@ -32,6 +32,22 @@ namespace Gopet.Runtime.UI
 
         public int RowCount => _rows.Count;
 
+        /// <summary>
+        /// Vùng đặt dòng, cho danh sách KHÔNG dùng thẻ item (hộp thư…). Bên gọi tự dựng và
+        /// tự dọn dòng của mình, rồi đóng chiều cao bằng <see cref="SetRowsHeight"/>.
+        /// Dùng chung khung/cuộn/mặt nạ ở đây thay vì dựng một khung cuộn thứ hai y hệt.
+        /// </summary>
+        public RectTransform Rows => _content;
+
+        /// <summary>Đóng chiều cao vùng cuộn. Xem <see cref="Rows"/>.</summary>
+        public void SetRowsHeight(float height)
+        {
+            // Chỉ đóng chiều CAO. Content neo trái-phải nên sizeDelta.x mang nghĩa
+            // "rộng hơn vùng chứa bao nhiêu" — gán 0 là xoá mất lề đặt bằng offset.
+            _content.sizeDelta = new Vector2(_content.sizeDelta.x, height);
+            _content.anchoredPosition = Vector2.zero;
+        }
+
         /// <param name="withPanel">
         /// <c>false</c> khi vùng chứa ĐÃ là khung trắng có viền — vẽ thêm một khung
         /// nữa là hai đường viền chồng lên nhau.
@@ -111,11 +127,7 @@ namespace Gopet.Runtime.UI
                 _rows.Add(row);
             }
 
-            // Chỉ đóng chiều CAO. Content neo trái-phải nên sizeDelta.x mang nghĩa
-            // "rộng hơn vùng chứa bao nhiêu" — gán 0 là xoá mất lề đặt bằng offset.
-            _content.sizeDelta = new Vector2(_content.sizeDelta.x,
-                screen.Items.Length * ShopItemRow.Height);
-            _content.anchoredPosition = Vector2.zero;
+            SetRowsHeight(screen.Items.Length * ShopItemRow.Height);
             ShowPlaceholder(screen.Items.Length == 0 ? "Chưa có gì để hiện." : null);
         }
 

@@ -5,6 +5,7 @@ using Gopet.Net.Bank;
 using Gopet.Net.Kiosk;
 using Gopet.Net.Pet;
 using Gopet.Net.Player;
+using Gopet.Net.Social;
 using Gopet.Runtime.Assets;
 using Gopet.Runtime.Audio;
 using Gopet.Runtime.Input;
@@ -111,7 +112,7 @@ namespace Gopet.Runtime
             // "chọn", nút này là đường thứ hai — xem UiRoot.KioskPet.cs.
             _ui.KioskPetTattooRequested += itemId => _client.Send(KioskPackets.ShowPetTattoo(itemId));
 
-            // HUD Cửa hàng / Dịch vụ / Sự kiện: ẩn cho tới khi vào map (sau LOGIN_SUCCES).
+            // HUD Cửa hàng / Dịch vụ / Sự kiện / Hộp thư: ẩn cho tới khi vào map (sau LOGIN_SUCCES).
             // Đặt SAU UiRoot để nằm trên nó — nút HUD phải bấm được cả khi có popup, và
             // Push popup của UiRoot đã tự SetActive(false) view dưới nên chồng thế này
             // không xung đột. Nếu popup shop đang mở thì nó ẩn view dưới nó (chỉ popup
@@ -121,6 +122,9 @@ namespace Gopet.Runtime
             hud.ShopClicked += () => _ui.OpenShopPopup();
             hud.ServiceClicked += () => _ui.OpenAtmPopup(() => _client.Send(BankPackets.OpenBankMenu()));
             hud.EventClicked += () => _ui.OpenDailyCheckin();
+            // Hộp thư mở theo đường của server y như mục "Hộp thư" trong menu nhân vật: gửi
+            // LETTER_BOX rồi chờ LetterHandler bắn MailboxReceived — GameSession mới dựng view.
+            hud.MailClicked += () => _client.Send(LetterPackets.RequestMailbox());
 
             WireFlow(auth);
             _login.Initialize(_flow, rememberAccount ? NewStore() : null, _sound);
@@ -129,6 +133,7 @@ namespace Gopet.Runtime
                 Debug.Log($"[Gopet] Đăng nhập xong: {_flow.Success}. Vào map…");
                 VerticalSplitRevealTransition.Create(transform, _login.CompleteReadyPresentation);
                 _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
+                _session.UnreadMailCountChanged += hud.SetMailCount;
                 _ui.MenuInterceptor = _session.TryConsumeHudMenu;
                 _session.LogoutRequested += LogoutToLogin;
                 // Bật HUD 3 nút góc-phải NGAY sau khi vào map — trước đó ẩn để không

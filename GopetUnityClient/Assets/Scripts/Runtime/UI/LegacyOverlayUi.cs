@@ -1,32 +1,24 @@
 using System;
-using Gopet.Net.Social;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    public sealed class LetterDetailView : MonoBehaviour
+    /// <summary>
+    /// Mấy mảnh dựng hình của lớp giao diện CŨ: nền tối phủ màn, panel xám đậm, dòng chữ
+    /// và nút chữ nhật. Tông này khác hẳn <see cref="GamePopupFrame"/> (nền sáng, viền
+    /// xanh) — màn nào còn dùng là còn lạc tông.
+    ///
+    /// <para>Trước đây nằm nhờ trong <c>LetterDetailView</c>. Hộp thư đã chuyển hẳn sang
+    /// khung popup chung nên lớp đó bị xoá, nhưng <see cref="ChatHistoryView"/> và
+    /// <see cref="TattooView"/> vẫn dùng mấy hàm này — tách ra đây để không phải giữ lại
+    /// một MonoBehaviour rỗng chỉ vì vài hàm tĩnh.</para>
+    ///
+    /// <para><b>Đừng dùng cho màn mới.</b> Màn mới dựng bằng <see cref="GamePopupFrame"/>.</para>
+    /// </summary>
+    internal static class LegacyOverlayUi
     {
-        public event Action CloseRequested;
-        public event Action<int> MarkRequested;
-        public event Action<int> RemoveRequested;
-
-        public static LetterDetailView Create(Transform parent, Letter letter)
-        {
-            var root = Overlay(parent, "Letter Detail");
-            var view = root.AddComponent<LetterDetailView>();
-            var panel = Panel(root.transform, new Vector2(440f, 330f));
-            var title = Text(panel, "Title", letter.Title, 16, 18f, 40f);
-            title.fontStyle = FontStyle.Bold;
-            var body = Text(panel, "Content", letter.Content, 14, 66f, 190f);
-            body.alignment = TextAnchor.UpperLeft;
-            Button(panel, "Đánh dấu", 18f, () => view.MarkRequested?.Invoke(letter.LetterId));
-            Button(panel, "Xoá", 158f, () => view.RemoveRequested?.Invoke(letter.LetterId));
-            Button(panel, "Đóng", 298f, () => view.CloseRequested?.Invoke());
-            return view;
-        }
-
-        internal static GameObject Overlay(Transform parent, string name)
+        public static GameObject Overlay(Transform parent, string name)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             go.transform.SetParent(parent, false);
@@ -35,7 +27,7 @@ namespace Gopet.Runtime.UI
             return go;
         }
 
-        internal static Transform Panel(Transform parent, Vector2 size)
+        public static Transform Panel(Transform parent, Vector2 size)
         {
             var go = new GameObject("Panel", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(parent, false);
@@ -47,7 +39,8 @@ namespace Gopet.Runtime.UI
             return go.transform;
         }
 
-        internal static Text Text(Transform parent, string name, string value, int size, float top, float height)
+        public static Text Text(Transform parent, string name, string value, int size,
+            float top, float height)
         {
             var text = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), name, size, false);
             text.text = value ?? string.Empty;
@@ -56,7 +49,7 @@ namespace Gopet.Runtime.UI
             return text;
         }
 
-        internal static void Button(Transform parent, string label, float left, Action action)
+        public static void Button(Transform parent, string label, float left, Action action)
         {
             var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
@@ -65,6 +58,7 @@ namespace Gopet.Runtime.UI
             rect.anchoredPosition = new Vector2(left, 18f);
             rect.sizeDelta = new Vector2(124f, 40f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
+            RoundedUiSprite.Apply(go.GetComponent<Image>());
             var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;

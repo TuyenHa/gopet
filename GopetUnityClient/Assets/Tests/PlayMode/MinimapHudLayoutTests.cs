@@ -55,8 +55,9 @@ namespace Gopet.PlayModeTests
         }
 
         /// <summary>
-        /// Minimap là ô ngoài cùng bên phải của hàng Cửa hàng/Dịch vụ/Sự kiện: cùng mép
-        /// trên, cùng chiều cao, nằm ngay bên phải "Sự kiện".
+        /// Minimap là ô ngoài cùng bên phải của hàng HUD: cùng mép trên, cùng chiều cao,
+        /// nằm bên phải mọi nút. Mốc canh hàng vẫn đo theo "Sự kiện" vì nhãn của nó là
+        /// mốc chiều cao chung của cả hàng.
         /// </summary>
         [UnityTest]
         public IEnumerator Minimap_CungHangVaBenPhaiSuKien()
@@ -75,6 +76,27 @@ namespace Gopet.PlayModeTests
                 "Đáy minimap phải ngang đáy chữ 'Sự kiện'.");
             Assert.GreaterOrEqual(map.xMin, events.xMax,
                 "Minimap phải nằm BÊN PHẢI 'Sự kiện'.");
+        }
+
+        /// <summary>
+        /// Hộp thư chèn vào GIỮA "Sự kiện" và minimap — không đè lên cái nào, không rơi
+        /// ra ngoài mép phải màn hình.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator HopThu_NamGiuaSuKienVaMinimap()
+        {
+            var minimap = MinimapWidget.Create(_root.transform, null);
+            var topRow = ShopServiceEventHud.Create(_root.transform, null);
+            yield return null;
+
+            var mail = WorldRect((RectTransform)topRow.transform.Find($"Hud_{HudSkin.Mail}"));
+            var events = WorldRect((RectTransform)topRow.transform.Find($"Hud_{HudSkin.Event}"));
+            var map = WorldRect((RectTransform)minimap.transform);
+
+            Assert.GreaterOrEqual(mail.xMin, events.xMax, "Hộp thư phải nằm BÊN PHẢI 'Sự kiện'.");
+            Assert.LessOrEqual(mail.xMax, map.xMin, "Hộp thư phải nằm BÊN TRÁI minimap.");
+            Assert.AreEqual(events.yMax, mail.yMax, 0.5f, "Hộp thư lệch hàng so với 'Sự kiện'.");
+            Assert.AreEqual(events.height, mail.height, 0.5f, "Hộp thư khác cỡ các nút còn lại.");
         }
 
         /// <summary>

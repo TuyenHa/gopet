@@ -216,6 +216,13 @@ namespace Gopet.Runtime.World
             s._letterHandler.RegisterOn(client.Router);
             s._letterHandler.MailboxReceived += s.OnMailboxReceived;
             s._letterHandler.HasLetterReceived += n => s._menuButton.SetMailUnread(n.HasUnread);
+            // HAS_LETTER chỉ nói CÓ hay KHÔNG. Có thì xin hộp thư về đếm để lên được con số
+            // trên huy hiệu; hết thư thì khỏi tốn round-trip, cho số 0 luôn.
+            s._letterHandler.HasLetterReceived += n =>
+            {
+                if (n.HasUnread) s.RefreshUnreadMailCount();
+                else s.UnreadMailCountChanged?.Invoke(0);
+            };
             s._letterHandler.HasLetterReceived += n =>
                 Debug.Log($"[Gopet] HAS_LETTER: {(n.HasUnread ? "có thư mới" : "hết thư mới")}");
 
@@ -634,11 +641,6 @@ namespace Gopet.Runtime.World
             _petRadial = PetActionRadial.Create(_hudParent);
             _petRadial.CloseRequested += ClosePetRadial;
             _petRadial.ActionSelected += OnPetAction;
-        }
-
-        private void OnMailboxReceived(Mailbox mailbox)
-        {
-            ShowMailbox(mailbox);
         }
 
         private void ClosePetRadial()

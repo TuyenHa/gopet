@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Thanh HUD góc trên-phải: <b>Cửa hàng</b>, <b>Dịch vụ</b>, <b>Sự kiện</b>.
+    /// Thanh HUD góc trên-phải: <b>Cửa hàng</b>, <b>Dịch vụ</b>, <b>Sự kiện</b>, <b>Hộp thư</b>.
     /// Bám góc màn hình thật trên canvas chung, không co theo letterbox của PixelCanvas.
     ///
     /// <para>Icon load từ <see cref="HudSkin"/>; thiếu file thì <b>lùi về nhãn chữ
@@ -43,6 +43,9 @@ namespace Gopet.Runtime.UI
         public event Action ShopClicked;
         public event Action ServiceClicked;
         public event Action EventClicked;
+        public event Action MailClicked;
+
+        private UnreadCountBadge _mailBadge;
 
         public static ShopServiceEventHud Create(Transform parent, Font font)
         {
@@ -58,9 +61,14 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<ShopServiceEventHud>();
 
-            // Xếp phải → trái: minimap (ô trống), Sự kiện, Dịch vụ, Cửa hàng.
+            // Xếp phải → trái: minimap (ô trống), Hộp thư, Sự kiện, Dịch vụ, Cửa hàng.
             // Bỏ Bang hội theo yêu cầu user.
             var right = ReservedRightFrac + MinimapSlotFrac + GapFrac;
+            var mail = MakeButton(go.transform, font, HudSkin.Mail, "Hộp thư", right,
+                () => view.MailClicked?.Invoke());
+            view._mailBadge = UnreadCountBadge.Attach(mail, font);
+            right += SizeFrac + GapFrac;
+
             MakeButton(go.transform, font, HudSkin.Event, "Sự kiện", right,
                 () => view.EventClicked?.Invoke());
             right += SizeFrac + GapFrac;
@@ -75,7 +83,10 @@ namespace Gopet.Runtime.UI
             return view;
         }
 
-        private static void MakeButton(Transform parent, Font font, string spriteName,
+        /// <summary>Số thư chưa đọc trên icon hộp thư; 0 là ẩn huy hiệu.</summary>
+        public void SetMailCount(int count) => _mailBadge?.SetCount(count);
+
+        private static Transform MakeButton(Transform parent, Font font, string spriteName,
             string label, float rightOffset, Action onClick)
         {
             var go = new GameObject($"Hud_{spriteName}", typeof(RectTransform),
@@ -125,6 +136,7 @@ namespace Gopet.Runtime.UI
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 
             go.GetComponent<Button>().onClick.AddListener(() => onClick?.Invoke());
+            return go.transform;
         }
     }
 }

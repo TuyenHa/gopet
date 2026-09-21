@@ -8,8 +8,8 @@ namespace Gopet.Runtime.UI
     public sealed class MinimapWidget : MonoBehaviour
     {
         /// <summary>
-        /// Minimap là Ô NGOÀI CÙNG BÊN PHẢI của hàng Cửa hàng/Dịch vụ/Sự kiện — cùng
-        /// chiều cao, cùng mép trên, ngay cạnh "Sự kiện". Mọi kích thước lấy từ
+        /// Minimap là Ô NGOÀI CÙNG BÊN PHẢI của hàng Cửa hàng/Dịch vụ/Sự kiện/Hộp thư —
+        /// cùng chiều cao, cùng mép trên, ngay cạnh "Hộp thư". Mọi kích thước lấy từ
         /// <see cref="ShopServiceEventHud"/> nên hai bên không thể lệch hàng nhau.
         /// </summary>
         private const float SizeFrac = ShopServiceEventHud.MinimapSlotFrac;

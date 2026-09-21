@@ -5,136 +5,146 @@ using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    public sealed class MailboxView : MonoBehaviour
+    /// <summary>
+    /// Hộp thư, dựng trên <see cref="GamePopupFrame"/> nên cùng một khung, cùng badge
+    /// tiêu đề và cùng bảng màu với popup cửa hàng.
+    ///
+    /// <para>Hàng tab lọc theo loại thư, cộng thêm tab "Soạn thư" đổi luôn nội dung của
+    /// popup thành form soạn — không mở hộp thoại thứ hai đè lên.</para>
+    /// </summary>
+    public sealed partial class MailboxView : MonoBehaviour
     {
-        public event Action CloseRequested;
-        public event Action<Letter> LetterSelected;
-        public event Action ComposeRequested;
-
-        public static MailboxView Create(Transform parent, Mailbox mailbox)
-        {
-            var root = new GameObject("Mailbox", typeof(RectTransform), typeof(Image), typeof(Button));
-            root.transform.SetParent(parent, false);
-            UiBuilder.Stretch((RectTransform)root.transform);
-            root.GetComponent<Image>().color = new Color(0f, 0f, 0f, .5f);
-            var view = root.AddComponent<MailboxView>();
-            root.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
-            view.Build(mailbox);
-            return view;
-        }
-
         /// <summary>Loại thư của server (<c>Data/User/Letter.cs:13-15</c>). 0 là "tất cả",
         /// không phải một loại thật — jar cũng chia đúng ba nhóm này.</summary>
         private const sbyte TypeAll = 0, TypeFriend = 1, TypeAdmin = 2, TypeEvent = 3;
 
-        private Mailbox _mailbox;
-        private Transform _listPanel;
-        private Text _title;
-        private sbyte _filter = TypeAll;
+        /// <summary>Tab cuối không lọc thư mà đổi nội dung sang form soạn.</summary>
+        private const int ComposeTab = 4;
 
-        private void Build(Mailbox mailbox)
+        private static readonly sbyte[] TabFilters = { TypeAll, TypeAdmin, TypeEvent, TypeFriend };
+        private static readonly string[] TabLabels = { "Tất cả", "Admin", "Sự kiện", "Bạn bè", "Soạn thư" };
+
+        // To hơn mặc định 400×300 của khung: hộp thư là màn đọc, cần bề ngang cho tiêu đề
+        // thư và chiều cao cho nhiều dòng. Trần chiều cao là ~405 ref-unit (chiều cao khả
+        // kiến ở 16:9, xem GamePopupFrame) — 350 cộng nửa badge nhô lên vẫn còn dư.
+        private const float Width = 520f;
+        private const float Height = 350f;
+
+        /// <summary>Phần bề ngang vùng nội dung dành cho danh sách; phần còn lại là ô đọc thư.</summary>
+        private const float ListWidthFraction = 0.44f;
+
+        /// <summary>Khe giữa danh sách và ô đọc thư.</summary>
+        private const float SplitGap = 8f;
+
+        private const string ListFooter = "Chạm vào thư để đọc nội dung.";
+        private const string ComposeFooter = "Điền người nhận và nội dung rồi bấm Gửi.";
+
+        private Mailbox _mailbox;
+        private Font _font;
+        private GamePopupFrame _frame;
+        private PopupTabRail _rail;
+        private PopupItemList _list;
+        private LetterDetailPane _detail;
+        private ComposeLetterView _compose;
+
+        public event Action CloseRequested;
+
+        /// <summary>Người chơi bấm "Đánh dấu đã đọc" trong ô đọc thư.</summary>
+        public event Action<int> MarkRequested;
+
+        /// <summary>Người chơi bấm "Xoá". Mang cả lá thư để bên nhận hỏi xác nhận cho đúng loại.</summary>
+        public event Action<Letter> RemoveRequested;
+
+        /// <summary>Người chơi gửi thư từ tab soạn: (người nhận, nội dung).</summary>
+        public event Action<string, string> SendRequested;
+
+        public static MailboxView Create(Transform parent, Mailbox mailbox)
+        {
+            var font = UiBuilder.BuiltinFont();
+
+            // Nền mờ + bấm ra ngoài để đóng. Component nằm ở ĐÂY chứ không ở khung popup:
+            // người gọi huỷ một object là mất cả nền lẫn khung.
+            var root = new GameObject("Mailbox", typeof(RectTransform), typeof(Image),
+                typeof(Button));
+            root.transform.SetParent(parent, false);
+            UiBuilder.Stretch((RectTransform)root.transform);
+            root.GetComponent<Image>().color = new Color(0f, 0f, 0f, .5f);
+
+            var view = root.AddComponent<MailboxView>();
+            view._mailbox = mailbox;
+            view._font = font;
+            root.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
+
+            view._frame = GamePopupFrame.Create(root.transform, font, "Hộp thư",
+                Width, Height, ListFooter);
+            view._frame.Closed += () => view.CloseRequested?.Invoke();
+
+            view._rail = PopupTabRail.Create(view._frame.Content, font,
+                view._frame.ContentWidth, TabLabels);
+            view._rail.Selected += view.SelectTab;
+
+            view.BuildList();
+            view.BuildDetail();
+            view.BuildCompose();
+            view._rail.Select(0);
+            return view;
+        }
+
+        /// <summary>Thay dữ liệu và dựng lại danh sách, giữ nguyên tab đang xem.</summary>
+        public void Bind(Mailbox mailbox)
         {
             _mailbox = mailbox;
-            _listPanel = LetterDetailView.Panel(transform, new Vector2(480f, 380f));
-            _title = LetterDetailView.Text(_listPanel, "Title", string.Empty, 18, 10f, 34f);
-            _title.alignment = TextAnchor.MiddleCenter;
-            MakeTopButton(_listPanel, "Soạn thư", () => ComposeRequested?.Invoke(), 12f);
-            MakeTopButton(_listPanel, "Tất cả", () => SetFilter(TypeAll), 132f, 68f);
-            MakeTopButton(_listPanel, "Admin", () => SetFilter(TypeAdmin), 206f, 68f);
-            MakeTopButton(_listPanel, "Sự kiện", () => SetFilter(TypeEvent), 280f, 68f);
-            MakeTopButton(_listPanel, "Bạn bè", () => SetFilter(TypeFriend), 354f, 68f);
-            Rebuild();
+            if (_rail.ActiveIndex != ComposeTab) RebuildList();
         }
 
-        private void SetFilter(sbyte type)
+        private void SelectTab(int index)
         {
-            if (_filter == type) return;
-            _filter = type;
-            Rebuild();
+            var composing = index == ComposeTab;
+            _list.gameObject.SetActive(!composing);
+            _detail.gameObject.SetActive(!composing);
+            _compose.gameObject.SetActive(composing);
+            _frame.SetFooter(composing ? ComposeFooter : ListFooter);
+
+            if (composing)
+            {
+                _compose.Reset();
+                return;
+            }
+            RebuildList();
+            // Đổi tab là đổi tập thư — thư đang mở có thể không còn trong danh sách nữa.
+            _detail.Show(null);
         }
 
-        /// <summary>Dựng lại danh sách theo bộ lọc. Xoá cả vùng cuộn cũ chứ không chỉ các dòng:
-        /// chiều cao vùng cuộn tính theo SỐ dòng, giữ lại là cuộn hụt hoặc thừa.</summary>
-        private void Rebuild()
+        /// <summary>
+        /// Ô đọc thư chiếm NỬA PHẢI vùng nội dung. Soạn thư thì chiếm trọn bề ngang, nên
+        /// nó không dùng chung cách chia này.
+        /// </summary>
+        private void BuildDetail()
         {
-            var old = _listPanel.Find("Letters");
-            if (old != null) Destroy(old.gameObject);
+            _detail = LetterDetailPane.Create(_frame.Content, _font);
+            var rect = (RectTransform)_detail.transform;
+            rect.offsetMin = new Vector2(_frame.ContentWidth * ListWidthFraction + SplitGap, 0f);
+            rect.offsetMax = new Vector2(0f, -(PopupTabRail.Height + PopupTabRail.Gap));
 
-            var letters = Filtered();
-            _title.text = _filter == TypeAll
-                ? $"Hộp thư ({letters.Count})"
-                : $"Hộp thư ({letters.Count}/{_mailbox.Letters.Length})";
-            var content = MakeScrollArea(_listPanel, letters.Count);
-            for (var i = 0; i < letters.Count; i++) MakeRow(content, letters[i], i * 52f);
+            _detail.MarkRequested += id => MarkRequested?.Invoke(id);
+            _detail.RemoveRequested += letter => RemoveRequested?.Invoke(letter);
         }
 
-        private System.Collections.Generic.List<Letter> Filtered()
+        private void BuildCompose()
         {
-            var result = new System.Collections.Generic.List<Letter>();
-            foreach (var letter in _mailbox.Letters)
-                if (_filter == TypeAll || letter.Type == _filter) result.Add(letter);
-            return result;
-        }
+            _compose = ComposeLetterView.Create(_frame.Content, _font);
+            // Chừa chỗ khay tab y như danh sách, nếu không form chui lên dưới hàng tab.
+            ((RectTransform)_compose.transform).offsetMax =
+                new Vector2(0f, -(PopupTabRail.Height + PopupTabRail.Gap));
 
-        private static Transform MakeScrollArea(Transform panel, int count)
-        {
-            var viewport = new GameObject("Letters", typeof(RectTransform), typeof(Image),
-                typeof(Mask), typeof(ScrollRect));
-            viewport.transform.SetParent(panel, false);
-            var rect = (RectTransform)viewport.transform;
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.offsetMin = new Vector2(0f, 10f);
-            rect.offsetMax = new Vector2(0f, -84f);
-            viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, .01f);
-            viewport.GetComponent<Mask>().showMaskGraphic = false;
-
-            var content = new GameObject("Content", typeof(RectTransform));
-            content.transform.SetParent(viewport.transform, false);
-            var contentRect = (RectTransform)content.transform;
-            contentRect.anchorMin = new Vector2(0f, 1f);
-            contentRect.anchorMax = new Vector2(1f, 1f);
-            contentRect.pivot = new Vector2(.5f, 1f);
-            contentRect.anchoredPosition = Vector2.zero;
-            contentRect.sizeDelta = new Vector2(0f, Mathf.Max(rect.rect.height, count * 52f));
-
-            var scroll = viewport.GetComponent<ScrollRect>();
-            scroll.viewport = rect;
-            scroll.content = contentRect;
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            return content.transform;
-        }
-
-        private void MakeRow(Transform panel, Letter letter, float top)
-        {
-            var go = new GameObject($"Letter:{letter.LetterId}", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(panel, false);
-            UiBuilder.PlaceRow((RectTransform)go.transform, top, 46f, 12f);
-            go.GetComponent<Image>().color = letter.IsMark ? new Color(.32f, .28f, .18f, 1f) : UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 13, true);
-            text.text = $"{letter.Title}\n{letter.ShortContent}";
-            text.alignment = TextAnchor.MiddleLeft;
-            text.rectTransform.offsetMin = new Vector2(10f, 2f);
-            text.rectTransform.offsetMax = new Vector2(-10f, -2f);
-            go.GetComponent<Button>().onClick.AddListener(() => LetterSelected?.Invoke(letter));
-        }
-
-        private static void MakeTopButton(Transform parent, string label, Action action,
-            float x, float width = 112f)
-        {
-            var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(x, -48f);
-            rect.sizeDelta = new Vector2(width, 32f);
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
-            text.text = label;
-            text.alignment = TextAnchor.MiddleCenter;
-            go.GetComponent<Button>().onClick.AddListener(() => action());
+            _compose.SendRequested += (recipient, content) =>
+            {
+                SendRequested?.Invoke(recipient, content);
+                _rail.Select(0); // gửi xong quay về danh sách, đồng thời xoá ô đã gõ
+            };
+            // Huỷ = quay lại danh sách, KHÔNG đóng cả popup.
+            _compose.Cancelled += () => _rail.Select(0);
+            _compose.gameObject.SetActive(false);
         }
     }
 }

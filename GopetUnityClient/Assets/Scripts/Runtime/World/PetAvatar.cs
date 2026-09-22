@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Gopet.Net.Images;
 using Gopet.Net.Pet;
 using Gopet.Runtime.Assets;
@@ -41,6 +41,9 @@ namespace Gopet.Runtime.World
         private bool _positionInitialized;
 
         public int OwnerUserId { get; private set; }
+
+        /// <summary>Lớp vẽ hiện tại của pet — hiệu ứng tương tác cần để nằm trên pet.</summary>
+        public int SortingOrder => _renderer != null ? _renderer.sortingOrder : 0;
 
         public static PetAvatar Create(Transform parent, Transform owner, PetZoneEntry entry, RemoteAssetCache assets)
         {
@@ -118,6 +121,8 @@ namespace Gopet.Runtime.World
             FaceOwner();
             // Sau khi đã bám đuôi chủ xong mới đè vị trí lao — xem PetAvatar.Lunge.cs.
             ApplyLunge();
+            // Thế đứng cạnh chủ đè lên cả hai — xem PetAvatar.Interact.cs.
+            ApplyInteractPose();
 
             if (_frames.Length > 1 && Time.time >= _nextFrameTime)
             {

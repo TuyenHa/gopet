@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Gopet.Net.Chat;
 using Gopet.Net.Map;
 using Gopet.Runtime.Assets;
@@ -218,11 +218,11 @@ namespace Gopet.Runtime.World
         public void SubscribeChat(ChatHandler chat) => chat.ChatReceived += OnChatReceived;
         public void UnsubscribeChat(ChatHandler chat) => chat.ChatReceived -= OnChatReceived;
 
-        /// <summary>NPC/quái tách sang <see cref="WorldActorLayer"/>; pet-interact ở lại vì đụng avatar.</summary>
+        /// <summary>NPC/quái tách sang <see cref="WorldActorLayer"/>; hiệu ứng tương tác pet
+        /// do <c>GameSession.PetInteract.cs</c> lo vì nó cần cả pet lẫn quyền khoá di chuyển.</summary>
         public void SubscribeWorld(WorldObjectHandler handler, RemoteAssetCache assets,
             System.Action<int> talkToNpc, System.Action<int> attackMob = null)
         {
-            handler.PetInteractionReceived += OnPetInteraction;
             _actors = WorldActorLayer.Attach(this);
             _actors.Subscribe(handler, assets, talkToNpc, attackMob);
             _actors.NearestMobChanged += mobId => NearestMobChanged?.Invoke(mobId);
@@ -235,12 +235,6 @@ namespace Gopet.Runtime.World
         public event System.Action<int> NearestMobChanged;
 
         public void ApplyBossHp(BossHpUpdate update) => _actors?.ApplyBossHp(update);
-
-        private void OnPetInteraction(PetInteraction evt)
-        {
-            if (_avatars.TryGetValue(evt.UserId, out var avatar))
-                PetInteractionEffect.Attach(avatar, evt.Type);
-        }
 
         private void OnChatReceived(PlaceChat evt)
         {

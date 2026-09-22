@@ -1,4 +1,4 @@
-using Gopet.Net;
+﻿using Gopet.Net;
 using Gopet.Net.Pet;
 using Xunit;
 
@@ -20,14 +20,17 @@ namespace Gopet.Net.Tests
             Assert.Equal(expected, r.ReadSByte());
         }
 
-        [Fact]
-        public void Heal_Wire_Envelope81_Sub45_Then1()
+        /// <summary>Hồi phục là CÔNG TẮC: jar dc.a(boolean) gửi 1 để bật, 0 để tắt.</summary>
+        [Theory]
+        [InlineData(true, (sbyte)1)]
+        [InlineData(false, (sbyte)0)]
+        public void Heal_Wire_Envelope81_Sub45_ThenOnOff(bool on, sbyte expected)
         {
-            using var msg = PetActionPackets.Heal();
+            using var msg = PetActionPackets.Heal(on);
             Assert.Equal(GopetCmd.PET_SERVICE, msg.Id);
             var r = Message.FromWire(msg.ToWire(), false).Reader;
             Assert.Equal((sbyte)45, r.ReadSByte());
-            Assert.Equal((sbyte)1, r.ReadSByte());
+            Assert.Equal(expected, r.ReadSByte());
         }
 
         [Fact]

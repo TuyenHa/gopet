@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    /// <summary>Nút 🐾 cạnh <see cref="CharacterMenuButton"/> — mở <see cref="PetActionRadial"/>.</summary>
+    /// <summary>Nút 🐾 góc phải-dưới HUD — mở <see cref="PetActionRadial"/>.</summary>
     public sealed class PetActionButton : MonoBehaviour
     {
         public event Action Clicked;

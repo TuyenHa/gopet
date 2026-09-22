@@ -275,19 +275,21 @@ public class GameController
                         string text = message.reader().readUTF();
                         switch (text)
                         {
+                            // Lối tắt bằng chat: phải đi qua petInteract() y như opcode 17,
+                            // nếu gọi thẳng place.petInteract() thì cửa chặn spam bị vòng qua.
                             case "kiss":
                                 {
-                                    place.petInteract(GopetCMD.ON_PET_INTERACT_KISS, player.playerData.user_id);
+                                    petInteract(GopetCMD.ON_PET_INTERACT_KISS);
                                     return;
                                 }
                             case "play":
                                 {
-                                    place.petInteract(GopetCMD.ON_PET_INTERACT_PLAY, player.playerData.user_id);
+                                    petInteract(GopetCMD.ON_PET_INTERACT_PLAY);
                                     return;
                                 }
                             case "poke":
                                 {
-                                    place.petInteract(GopetCMD.ON_PET_INTERACT_POKE, player.playerData.user_id);
+                                    petInteract(GopetCMD.ON_PET_INTERACT_POKE);
                                     return;
                                 }
                             default:
@@ -1029,6 +1031,9 @@ public class GameController
                     }
                     break;
                 }
+            case GopetCMD.ON_PET_INTERACT:
+                petInteract(message.readsbyte());
+                break;
             case GopetCMD.PET_RECOVERY_HP:
                 setRecovery(message.readsbyte() == 1);
                 break;
@@ -1733,6 +1738,33 @@ public class GameController
             {
                 place.sendListPet(player);
             }
+        }
+    }
+
+    /// <summary>
+    /// Giãn cách tối thiểu giữa hai lần hôn/chơi/xoa đầu pet. Gói này phát lại cho TOÀN
+    /// khu vực nên không chặn là một client tự động hoá có thể làm ngập màn hình mọi
+    /// người trong map.
+    /// </summary>
+    private const long PET_INTERACT_DELAY = 500L;
+
+    private long timePetInteractDelay = 0L;
+
+    /// <summary>
+    /// Hôn / chơi / xoa đầu pet — client gửi <c>PET_SERVICE 17 / sbyte type</c>
+    /// (jar <c>dc.a(int)</c>). Server chỉ phát lại cho khu vực, hoạt ảnh do client dựng.
+    ///
+    /// <para>Cửa vào DUY NHẤT cho tương tác pet: lối tắt gõ chat "kiss"/"play"/"poke"
+    /// (<c>ON_PLACE_CHAT</c>) cũng gọi vào đây để dùng chung cửa chặn spam.</para>
+    /// </summary>
+    private void petInteract(sbyte type)
+    {
+        if (type < GopetCMD.ON_PET_INTERACT_KISS || type > GopetCMD.ON_PET_INTERACT_POKE) return;
+        if (Utilities.CurrentTimeMillis < timePetInteractDelay) return;
+        timePetInteractDelay = Utilities.CurrentTimeMillis + PET_INTERACT_DELAY;
+        if (player.getPlace() is GopetPlace place)
+        {
+            place.petInteract(type, player.playerData.user_id);
         }
     }
 

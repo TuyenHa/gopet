@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Gopet.Net;
 using Gopet.Net.Battle;
 using Gopet.Net.Guider;
@@ -37,12 +37,18 @@ namespace Gopet.Net.LiveSmoke
         // gopet_mob_location. Map 11 (hub) không có quái nào.
         private const int MapWithMobs = 13;
 
-        public static void Run(GopetSocket socket, MessageRouter router, GuiderHandler guider,
+        /// <returns>
+        /// Handler thế giới đã đăng ký, cho <see cref="PetInteractChecks"/> dùng lại —
+        /// <c>MessageRouter</c> cấm hai handler cùng một sub-command.
+        /// </returns>
+        public static WorldObjectHandler Run(GopetSocket socket, MessageRouter router, GuiderHandler guider,
             MapHandler mapHandler, int userId)
         {
-            // Đăng ký TRƯỚC mọi send — quái/battle push không đợi client xin.
-            var world = new WorldObjectHandler();
+            // Đăng ký TRƯỚC mọi send — quái/battle push không đợi client xin. Đăng ký SỚM hơn
+            // nữa (ở check chạy trước) lại hỏng: SEND_LIST_MOB_ZONE tới trong lúc check đó đang
+            // bơm, handler chưa có ai nghe MobsReceived nên danh sách quái rơi mất.
             MobSpawn[] mobs = null;
+            var world = new WorldObjectHandler();
             world.MobsReceived += m => mobs = m;
             world.RegisterOn(router);
 
@@ -61,13 +67,15 @@ namespace Gopet.Net.LiveSmoke
                 else if (m.ListId == MenuPetInventory) petInventory = m;
             };
 
-            if (!AcquireFreePet(socket, router, guider, () => freePetMenu)) return;
-            if (!SelectPetToFollow(socket, router, () => petInventory)) return;
+            if (!AcquireFreePet(socket, router, guider, () => freePetMenu)) return world;
+            if (!SelectPetToFollow(socket, router, () => petInventory)) return world;
             RemainingParityChecks.Run(socket, router);
-            if (!WarpToMobMap(socket, router, mapHandler)) return;
-            if (!WaitForMobs(socket, router, () => mobs)) return;
+            PetRecoveryChecks.Run(socket, router);
+            if (!WarpToMobMap(socket, router, mapHandler)) return world;
+            if (!WaitForMobs(socket, router, () => mobs)) return world;
 
             RunOneTurn(socket, router, battle, () => started, () => turn, mobs[0].Id);
+            return world;
         }
 
         /// <summary>Nói chuyện NPC free-pet, chọn dòng đầu. Dùng chung cho PvE lẫn PvP (2 tài khoản).</summary>

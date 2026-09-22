@@ -1,4 +1,4 @@
-namespace Gopet.Net.Pet
+﻿namespace Gopet.Net.Pet
 {
     /// <summary>
     /// 4 gói tương tác pet cho SELF (jar <c>fr.java:150-183, 295-298</c>).
@@ -26,14 +26,20 @@ namespace Gopet.Net.Pet
         }
 
         /// <summary>
-        /// Wire: <c>PET_SERVICE 45 / sbyte 1</c>. Jar <c>dc.a(true)</c>.
-        /// Server hồi HP pet đầy, có thể trừ thóc tuỳ config.
+        /// Bật/tắt chế độ hồi phục pet. Wire: <c>PET_SERVICE 45 / sbyte (1|0)</c>,
+        /// jar <c>dc.a(boolean)</c>.
+        ///
+        /// <para>Đây là CÔNG TẮC, không phải lệnh một nhát: server giữ cờ
+        /// <c>isPetRecovery</c> và cứ 3 giây cộng 20% HP/MP pet
+        /// (<c>Player.cs</c>), tới khi nhận <c>0</c>. Jar tắt ngay khi người chơi
+        /// bấm phím di chuyển (<c>ew.java:424</c>) — không gửi tắt thì cờ kẹt bật
+        /// cả phiên.</para>
         /// </summary>
-        public static Message Heal()
+        public static Message Heal(bool on)
         {
             return Message.Create(GopetCmd.PET_SERVICE)
                 .PutSByte(45)
-                .PutSByte(1);
+                .PutSByte(on ? (sbyte)1 : (sbyte)0);
         }
     }
 }

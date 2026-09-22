@@ -26,6 +26,7 @@ namespace Gopet.Runtime.UI
         private Font _font;
         private ShopPopupView _shopPopup;
         private AtmPopupView _atmPopup;
+        private TaskListPopupView _taskPopup;
         private TranChanTabsView _tranChanTabs;
         private HeavenNpcTabsView _heavenNpcTabs;
         private BacSiNpcTabsView _bacSiNpcTabs;
@@ -108,6 +109,12 @@ namespace Gopet.Runtime.UI
 
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
+            if (TaskListPopupView.IsTaskMenu(screen))
+            {
+                ShowTaskPopup(screen);
+                return;
+            }
+
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
             // tự bind. Không thì cả hai view chồng nhau và người chơi tưởng bug.
             if (_shopPopup != null && _shopPopup.TryConsumeMenu(screen)) return;
@@ -146,6 +153,19 @@ namespace Gopet.Runtime.UI
             _shopPopup.Message += ShowToast;
 
             Push(_shopPopup, _shopPopup.gameObject);
+        }
+
+        /// <summary>Danh sách nhiệm vụ dùng khung popup chung; đang mở thì chỉ bind lại.</summary>
+        private void ShowTaskPopup(MenuScreen screen)
+        {
+            if (_taskPopup == null)
+            {
+                _taskPopup = TaskListPopupView.Create(transform, _font, _guider);
+                _taskPopup.Closed += () => Close(_taskPopup);
+                _taskPopup.ConfirmRequested += ShowConfirm;
+                Push(_taskPopup, _taskPopup.gameObject);
+            }
+            _taskPopup.Bind(screen);
         }
 
         /// <summary>Mở popup ATM và yêu cầu đúng menu 1039 của server.</summary>
@@ -371,6 +391,7 @@ namespace Gopet.Runtime.UI
             // vẫn cố gọi TryConsumeMenu trên view đã Destroy.
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
+            if (ReferenceEquals(screen, _taskPopup)) _taskPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
             if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;

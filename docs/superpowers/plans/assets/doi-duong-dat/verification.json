@@ -1,0 +1,333 @@
+{
+  "scope": "Offline tile layers only; no Unity import, objects, animation or gameplay validation",
+  "baseline_count": 295,
+  "baseline_mismatches": [],
+  "maps": [
+    {
+      "map_id": 11,
+      "size": [
+        576,
+        480
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/11.png",
+      "after": "after/11.png"
+    },
+    {
+      "map_id": 12,
+      "size": [
+        360,
+        360
+      ],
+      "changed_pixels": 65883,
+      "expected_change": true,
+      "changed_bounds": [
+        0,
+        4,
+        360,
+        360
+      ],
+      "before": "before/12.png",
+      "after": "after/12.png"
+    },
+    {
+      "map_id": 13,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/13.png",
+      "after": "after/13.png"
+    },
+    {
+      "map_id": 14,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 216971,
+      "expected_change": true,
+      "changed_bounds": [
+        0,
+        0,
+        768,
+        524
+      ],
+      "before": "before/14.png",
+      "after": "after/14.png"
+    },
+    {
+      "map_id": 15,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/15.png",
+      "after": "after/15.png"
+    },
+    {
+      "map_id": 16,
+      "size": [
+        576,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/16.png",
+      "after": "after/16.png"
+    },
+    {
+      "map_id": 17,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 347448,
+      "expected_change": true,
+      "changed_bounds": [
+        0,
+        0,
+        768,
+        576
+      ],
+      "before": "before/17.png",
+      "after": "after/17.png"
+    },
+    {
+      "map_id": 18,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 340479,
+      "expected_change": true,
+      "changed_bounds": [
+        0,
+        0,
+        768,
+        576
+      ],
+      "before": "before/18.png",
+      "after": "after/18.png"
+    },
+    {
+      "map_id": 19,
+      "size": [
+        480,
+        432
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/19.png",
+      "after": "after/19.png"
+    },
+    {
+      "map_id": 20,
+      "size": [
+        432,
+        432
+      ],
+      "changed_pixels": 71048,
+      "expected_change": true,
+      "changed_bounds": [
+        27,
+        52,
+        405,
+        380
+      ],
+      "before": "before/20.png",
+      "after": "after/20.png"
+    },
+    {
+      "map_id": 21,
+      "size": [
+        864,
+        576
+      ],
+      "changed_pixels": 275770,
+      "expected_change": true,
+      "changed_bounds": [
+        24,
+        0,
+        840,
+        576
+      ],
+      "before": "before/21.png",
+      "after": "after/21.png"
+    },
+    {
+      "map_id": 22,
+      "size": [
+        720,
+        480
+      ],
+      "changed_pixels": 134540,
+      "expected_change": true,
+      "changed_bounds": [
+        0,
+        0,
+        720,
+        395
+      ],
+      "before": "before/22.png",
+      "after": "after/22.png"
+    },
+    {
+      "map_id": 23,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/23.png",
+      "after": "after/23.png"
+    },
+    {
+      "map_id": 24,
+      "size": [
+        672,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/24.png",
+      "after": "after/24.png"
+    },
+    {
+      "map_id": 25,
+      "size": [
+        720,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/25.png",
+      "after": "after/25.png"
+    },
+    {
+      "map_id": 26,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/26.png",
+      "after": "after/26.png"
+    },
+    {
+      "map_id": 27,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/27.png",
+      "after": "after/27.png"
+    },
+    {
+      "map_id": 28,
+      "size": [
+        768,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/28.png",
+      "after": "after/28.png"
+    },
+    {
+      "map_id": 29,
+      "size": [
+        672,
+        480
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/29.png",
+      "after": "after/29.png"
+    },
+    {
+      "map_id": 30,
+      "size": [
+        648,
+        576
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/30.png",
+      "after": "after/30.png"
+    },
+    {
+      "map_id": 31,
+      "size": [
+        528,
+        480
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/31.png",
+      "after": "after/31.png"
+    },
+    {
+      "map_id": 32,
+      "size": [
+        768,
+        672
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/32.png",
+      "after": "after/32.png"
+    },
+    {
+      "map_id": 33,
+      "size": [
+        792,
+        624
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/33.png",
+      "after": "after/33.png"
+    },
+    {
+      "map_id": 34,
+      "size": [
+        792,
+        600
+      ],
+      "changed_pixels": 0,
+      "expected_change": false,
+      "changed_bounds": null,
+      "before": "before/34.png",
+      "after": "after/34.png"
+    }
+  ],
+  "errors": [],
+  "unity_playmode": "NOT RUN: Unity Editor 6000.5.4f1 unavailable",
+  "interactive_gameplay": "NOT RUN: requires Unity Editor and game session"
+}

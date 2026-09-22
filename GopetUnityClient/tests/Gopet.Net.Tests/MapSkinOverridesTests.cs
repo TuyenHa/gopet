@@ -122,15 +122,15 @@ namespace Gopet.Net.Tests
             Assert.Equal(pineTree, MapSkinOverrides.ResolveImageId(map, pineTree));
         }
 
-        /// <summary>Map 14/17/18 cũng dùng dải 151 nhưng KHÔNG đổi — giữ tuyết.</summary>
+        /// <summary>Linh Mộc dùng cùng bộ đường đất với Linh Lâm.</summary>
         [Fact]
-        public void MapRungKhac_GiuNguyenMatTuyet()
+        public void LinhMoc_DungChungDuongDatLinhLam()
         {
             const int snowPath = 151;
             const int linhMocMapId = 14;
 
-            Assert.Equal(snowPath, MapSkinOverrides.ResolveImageId(linhMocMapId, snowPath));
-            Assert.Equal(SnowGrassA, MapSkinOverrides.ResolveImageId(linhMocMapId, SnowGrassA));
+            Assert.Equal(12151, MapSkinOverrides.ResolveImageId(linhMocMapId, snowPath));
+            Assert.Equal(12161, MapSkinOverrides.ResolveImageId(linhMocMapId, SnowGrassA));
         }
 
         /// <summary>Dải ngoài ba dải lối đi thì map 13/15 cũng không đụng tới.</summary>
@@ -159,10 +159,10 @@ namespace Gopet.Net.Tests
         [Fact]
         public void MapKhac_GiuNguyenBoTileGoc()
         {
-            const int loiDaiMapId = 20;
+            const int unknownMapId = 999;
 
-            Assert.Equal(SnowBorder, MapSkinOverrides.ResolveImageId(loiDaiMapId, SnowBorder));
-            Assert.Equal(SnowGrassA, MapSkinOverrides.ResolveImageId(loiDaiMapId, SnowGrassA));
+            Assert.Equal(SnowBorder, MapSkinOverrides.ResolveImageId(unknownMapId, SnowBorder));
+            Assert.Equal(SnowGrassA, MapSkinOverrides.ResolveImageId(unknownMapId, SnowGrassA));
         }
 
         /// <summary>Dải không nằm trong bảng đổi thì trả về chính nó.</summary>

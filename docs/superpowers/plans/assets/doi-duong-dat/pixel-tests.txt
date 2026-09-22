@@ -1,0 +1,8 @@
+test_geometry_and_alpha_preserved (test_dirt_map_assets.DirtMapAssetTests.test_geometry_and_alpha_preserved) ... ok
+test_only_snow_changes_and_road_stays_dirt (test_dirt_map_assets.DirtMapAssetTests.test_only_snow_changes_and_road_stays_dirt) ... ok
+test_water_and_gray_cells_kept_in_forest_strip (test_dirt_map_assets.DirtMapAssetTests.test_water_and_gray_cells_kept_in_forest_strip) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.040s
+
+OK

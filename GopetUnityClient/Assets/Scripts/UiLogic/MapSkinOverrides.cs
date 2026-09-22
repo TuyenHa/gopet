@@ -71,8 +71,18 @@ namespace Gopet.UiLogic
                 if (imageId == SnowCliffImageId) return GreenCliffImageId;
             }
 
-            // Hai map rừng dùng CHUNG bộ đất: cùng một dải lối đi, cùng một tông cát.
-            if (mapId == SpiritForestMapId || mapId == GreatSpiritViewMapId)
+            // Chỉ các map đất liền đã kiểm tra; biển/sông/băng và mây giữ nguyên.
+            // Nền/vách núi đổi đồng bộ, không để viền tuyết cạnh đường đất.
+            if (mapId == 17 || mapId == 18 || mapId == 21 || mapId == 22)
+            {
+                if (imageId == SnowGroundImageId || imageId == SnowCliffImageId)
+                    return DirtVariantPrefix + imageId;
+            }
+
+            // Thạch Động (21) chỉ dùng bộ núi; không nhận bộ đường rừng.
+            if (mapId == 12 || mapId == 14 || mapId == 17 || mapId == 18 ||
+                mapId == 20 || mapId == 22 ||
+                mapId == SpiritForestMapId || mapId == GreatSpiritViewMapId)
                 return DirtPathReskin(imageId);
 
             if (!UsesSummerSkin(mapId)) return imageId;

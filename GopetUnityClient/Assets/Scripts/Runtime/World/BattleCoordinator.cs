@@ -43,9 +43,8 @@ namespace Gopet.Runtime.World
 
         public BattleView View => _view;
 
-        /// <summary>Gọi khi <c>MapHandler.MapUpdated</c> báo player đã sang place mới.
-        /// Server LUÔN gọi <c>petBattle.Close(player)</c> trước khi chuyển place
-        /// (<c>GopetPlace.cs:48,76</c>) nên đây là tín hiệu "trận cũ hết đời" đáng tin.</summary>
+        /// <summary>Map cập nhật thì dọn trận đang diễn. Kết quả thắng đã nhận phải
+        /// giữ đến OK; map vẫn cập nhật bên dưới lớp chiến đấu.</summary>
         public void OnPlaceChanged()
         {
             if (_view != null) Close();
@@ -56,6 +55,8 @@ namespace Gopet.Runtime.World
             // Server broadcast mọi trận trong zone. JAR vẽ trận người khác ngay trong world;
             // overlay toàn màn hình chỉ dành cho trận có người chơi hiện tại tham gia.
             if (!start.IsParticipant) return;
+            // Không thay thế popup hoặc trả điều khiển map khi chưa xác nhận OK.
+            if (_view != null && _view.AwaitingVictoryConfirmation) return;
             Close();
             _view = BattleView.Create(_parent, start, handler, _assets, _playerStats?.Snapshot);
             _view.Closed += Close;
@@ -82,7 +83,7 @@ namespace Gopet.Runtime.World
             // Khi THẮNG, server gửi PET_BATTLE_STATE rồi sendFastRemove() ngay sau đó
             // (PetBattle.cs:951-955) vì quái đã chết. Đóng ngay ở đây sẽ giết panel kết quả
             // trong cùng frame — thắng thì panel loé rồi biến mất, thua thì panel ở lại.
-            // Hai đằng phải giống nhau: có panel thì để nó tự hết giờ rồi về map.
+            // Kết quả tự quản lý đóng: thắng PvE phải chờ người chơi bấm OK.
             if (_view.HasResult) return;
             // PvP có 2 gói FAST_REMOVE với battleId khác nhau (một cho mỗi bên) từ khi
             // phase-01 sửa server. Client vẫn phải khớp cả OpponentActorId để bền với
@@ -92,6 +93,9 @@ namespace Gopet.Runtime.World
 
         private void Close()
         {
+            // Chốt chung cho mọi đường đóng, kể cả MapUpdated từ server.
+            // RequestClose chỉ bỏ cờ chờ xác nhận khi người chơi bấm OK.
+            if (_view != null && _view.AwaitingVictoryConfirmation) return;
             if (_view != null)
             {
                 var go = _view.gameObject;
@@ -113,7 +117,7 @@ namespace Gopet.Runtime.World
         /// MonoBehaviour riêng chỉ để đo thời gian.</summary>
         private void CheckStalled()
         {
-            if (_view == null || _timeoutSeconds <= 0f) return;
+            if (_view == null || _view.HasResult || _timeoutSeconds <= 0f) return;
             if (Time.unscaledTime - _lastPacketAt < _timeoutSeconds) return;
             _toast?.Invoke("Trận đấu đã kết thúc.");
             Close();

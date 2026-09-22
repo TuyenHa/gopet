@@ -66,14 +66,6 @@ namespace Gopet.Runtime.World
             RefreshLocks();
         }
 
-        /// <summary>Hàng đợi vừa cạn — giờ mới dựng băng kết quả đang chờ.</summary>
-        private void ShowPendingResult()
-        {
-            var result = _pendingResult;
-            _pendingResult = null;
-            if (result != null) ShowResult(result);
-        }
-
         private void OnHitExp(BattleExpGain gain)
         {
             if (gain == null || gain.BattleId != BattleId || gain.Amount <= 0) return;
@@ -93,29 +85,7 @@ namespace Gopet.Runtime.World
         private BattlePetCard Card(int actorId) =>
             _left.ActorId == actorId ? _left : _right.ActorId == actorId ? _right : null;
 
-        /// <summary>Gói kết thúc trận tới gần như cùng lúc với gói lượt cuối. Nếu dựng băng
-        /// chữ ngay thì phải FlushImmediate, tức áp sát thương lập tức và pet gục TRƯỚC khi
-        /// hiệu ứng kịp rơi tới. Nên chờ hàng đợi diễn xong rồi mới hiện kết quả.</summary>
-        public void ShowResult(BattleResult result)
-        {
-            if (result.BattleId != BattleId || _result != null) return;
-            if (_animator != null && !_animator.Idle)
-            {
-                _pendingResult = result;
-                return;
-            }
-            if (_actionBar != null) _actionBar.gameObject.SetActive(false);
-            // Panel kết quả chỉ che phần giữa màn hình; panel kỹ năng nằm sát mép trái vẫn
-            // lộ ra nên phải khoá tay, nếu không người chơi bấm được kỹ năng sau khi trận xong.
-            _skillPopup?.SetOpen(false);
-            _skillPopup?.RefreshState(_left.Mp, true);
-            _result = BattleResultBanner.Create(transform, result,
-                _start.LocalPet.ActorId, IsParticipant);
-            ShowRewards(result);
-            _resultShownAt = Time.unscaledTime;
-        }
-
-        /// <summary>Phần thưởng bay thành số trên đầu pet thay vì nằm trong popup —
+        /// <summary>Nhánh kết quả dùng banner vẫn giữ phần thưởng bay trên đầu pet —
         /// đúng cách jar gốc làm (<c>e.java:57-63</c>: "N (ngoc)" rồi "N EXP" so le 1s),
         /// và chỉ hiện khi &gt; 0 y như bản gốc.</summary>
         private void ShowRewards(BattleResult result)
@@ -126,15 +96,6 @@ namespace Gopet.Runtime.World
             {
                 BattleFloatText.CreateExp(_left.transform, result.Experience, 1f, withUnit: true);
             }
-        }
-
-        /// <summary>Trận xong thì tự trả người chơi về map, thắng hay thua đều vậy.
-        /// Nút "Tiếp tục" chỉ để đóng sớm hơn.</summary>
-        private void RequestClose()
-        {
-            if (_closeRequested) return;
-            _closeRequested = true;
-            Closed?.Invoke();
         }
     }
 }

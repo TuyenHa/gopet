@@ -6,6 +6,7 @@ using Gopet.Net.Battle;
 using Gopet.Runtime;
 using Gopet.Runtime.Assets;
 using Gopet.Runtime.World;
+using Gopet.Runtime.World.Battle;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -26,11 +27,11 @@ namespace Gopet.PlayModeTests
             var handler = new BattleHandler(value => sent = value, 7);
             var start = StartData();
             var view = BattleView.Create(root.transform, start, handler, cache);
-            yield return null;
+            yield return new WaitForSecondsRealtime(1.6f);
 
-            var buttons = view.GetComponentsInChildren<Button>();
-            Assert.AreEqual(3, buttons.Length, "JAR có đúng Đánh/Kỹ năng/Vật phẩm ở thanh chính.");
-            buttons[0].onClick.Invoke();
+            var bar = view.GetComponentInChildren<BattleActionBar>();
+            Assert.AreEqual(3, bar.GetComponentsInChildren<Button>().Length);
+            bar.transform.Find("Tấn công").GetComponent<Button>().onClick.Invoke();
             Assert.IsNotNull(sent);
             var round = Message.FromWire(sent.ToWire(), false);
             Assert.AreEqual(GopetCmd.PET_SERVICE, round.Id);
@@ -49,11 +50,13 @@ namespace Gopet.PlayModeTests
                 Messages = new[] { "Nhận thưởng" }
             });
             view.ShowResult(new BattleResult { BattleId = 7, WinnerId = 99 });
+            view.GetComponent<BattleTurnAnimator>().FlushImmediate();
             yield return null;
-            Assert.IsNotNull(view.transform.Find("Kết quả"));
-            Assert.AreEqual(1, view.transform.Cast<Transform>().Count(child => child.name == "Kết quả"),
+            var popup = view.GetComponentInChildren<BattleVictoryPopup>();
+            Assert.IsNotNull(popup);
+            Assert.AreEqual(1, view.GetComponentsInChildren<BattleVictoryPopup>().Length,
                 "Gói kết quả lặp không được dựng hai panel.");
-            Assert.AreEqual(1, view.GetComponentsInChildren<Button>().Length);
+            Assert.AreEqual(1, popup.GetComponentsInChildren<Button>().Length);
             cache.Dispose();
             Object.Destroy(root);
         }
@@ -67,7 +70,7 @@ namespace Gopet.PlayModeTests
             BattleEffectView.Play(root.transform, target, 101);
             BattleEffectView.Play(root.transform, target, 125);
             yield return null;
-            Assert.IsNotNull(root.transform.Find("Hiệu ứng voanh"));
+            Assert.IsNotNull(root.transform.Find("Hiệu ứng SongKich"));
             Assert.IsNotNull(root.transform.Find("Hiệu ứng ANU 125"));
             Object.Destroy(root);
         }
@@ -75,7 +78,7 @@ namespace Gopet.PlayModeTests
         private static BattleStart StartData() => new BattleStart
         {
             BattleId = 7, Kind = BattleKind.Mob, RemainingMs = 5000,
-            TurnDurationMs = 15000, IsParticipant = true,
+            TurnDurationMs = 15000, IsParticipant = true, LocalStarts = true,
             LocalPet = Pet(7, "Mèo", 100, new[]
             {
                 new BattleSkill { Id = 101, Name = "Cào Lv.1", MpCost = 5 }

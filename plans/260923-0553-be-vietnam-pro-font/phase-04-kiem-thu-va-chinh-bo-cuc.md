@@ -30,6 +30,12 @@ Không có kiến trúc mới. Checklist màn hình (ref 720×1280, kiểm thêm
 | HUD, minimap, nút tấn công/pet action | chữ cỡ 9–10, nút tròn |
 | Popup tổng kết thắng quái, daily checkin | tiêu đề 18 Bold |
 
+### Rủi ro đã xảy ra: `VerticalWrapMode.Truncate` làm MẤT HẲN chữ
+Be Vietnam Pro: hộp dòng 1.26 em (Arial 1.15), ascent 1.0 / descent 0.265. Nhãn `Truncate` có khung thấp hơn hộp dòng → Unity bỏ cả dòng, không báo lỗi. Đã gặp + sửa ở huy hiệu hộp thư (`UnreadCountBadge`: khung nhãn cao 160% đường kính, đối xứng; test `MailBadgeTests.CoThu_SoThatSuDuocVe` dùng `TextGenerator.characterCountVisible`).
+
+Soát nốt các chỗ `Truncate` còn lại (khung 1 dòng sát cỡ chữ là nguy hiểm nhất):
+`ChoiceDialogView:64`, `LetterDetailPane:91`, `LoginFormView.Fields:68`, `PetGridView:215`, `PopupTabRail:121`, `PopupTextRow:129,137`, `ShopItemRow.Build:135`, `BattleSkillPopup.Row:42`, `GameHud.Chat:52`.
+
 ## Related Code Files
 - Modify (tùy kết quả soát): các view trong `GopetUnityClient/Assets/Scripts/Runtime/UI/` bị tràn.
 - Modify (nếu test fail do đo kích thước): `GopetUnityClient/Assets/Tests/PlayMode/*LayoutTests.cs` — chỉ khi assert phụ thuộc metric Arial, KHÔNG nới cho qua lỗi thật.

@@ -46,8 +46,8 @@ namespace Gopet.Runtime.World
             var go = new GameObject(name, typeof(RectTransform), typeof(Text));
             go.transform.SetParent(parent, false);
             var value = go.GetComponent<Text>();
-            value.font = UiBuilder.BuiltinFont(); value.fontSize = 24;
-            value.fontStyle = FontStyle.Bold; value.alignment = TextAnchor.MiddleCenter;
+            value.font = UiBuilder.DefaultFont(); value.fontSize = 24;
+            UiBuilder.SetFontStyle(value, FontStyle.Bold); value.alignment = TextAnchor.MiddleCenter;
             value.text = label; value.color = color;
             value.raycastTarget = false;
             var rect = value.rectTransform;

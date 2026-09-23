@@ -119,7 +119,7 @@ namespace Gopet.Runtime.UI
             text.alignment = TextAnchor.LowerCenter;
             text.text = label;
             text.color = Color.white;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
 

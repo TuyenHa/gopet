@@ -73,8 +73,8 @@ namespace Gopet.Runtime.World
             hud.TaskTracker = TaskTrackerWidget.Create(hud.Character.transform);
             hud.Joystick = VirtualJoystick.Create(go.transform);
             hud.Ticker = NotificationTicker.Create(go.transform);
-            hud.BuildChat(go.transform, UiBuilder.BuiltinFont());
-            hud.BuildStatusOverlays(go.transform, UiBuilder.BuiltinFont());
+            hud.BuildChat(go.transform, UiBuilder.DefaultFont());
+            hud.BuildStatusOverlays(go.transform, UiBuilder.DefaultFont());
             hud.SubscribeChat();
             return hud;
         }

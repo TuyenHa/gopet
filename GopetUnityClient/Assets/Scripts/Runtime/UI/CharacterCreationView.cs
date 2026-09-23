@@ -78,7 +78,7 @@ namespace Gopet.Runtime.UI
             var nameTitle = MakeText(panel, font, "NameTitle", 18, Navy);
             SetRect(nameTitle.rectTransform, 0.20f, 0.33f, 0.80f, 0.40f);
             nameTitle.text = "◆ ──  Tên nhân vật  ── ◆";
-            nameTitle.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(nameTitle, FontStyle.Bold);
 
             NameInput = CharacterNameInput.Create(panel, font);
             SetRect((RectTransform)NameInput.transform, 0.12f, 0.19f, 0.88f, 0.32f);
@@ -148,7 +148,7 @@ namespace Gopet.Runtime.UI
             var title = MakeText(go.transform, font, "Title", 28, Color.white);
             UiBuilder.Stretch(title.rectTransform);
             title.text = "Chọn nhân vật";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
         }
 
         private static Button MakeButton(Transform parent, Font font, string label, float left, float right,
@@ -169,7 +169,7 @@ namespace Gopet.Runtime.UI
             var text = MakeText(go.transform, font, "Label", 18, textColor);
             UiBuilder.Stretch(text.rectTransform);
             text.text = label;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             var button = go.GetComponent<Button>();
             button.onClick.AddListener(() => click());
             return button;

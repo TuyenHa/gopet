@@ -66,7 +66,7 @@ namespace Gopet.Runtime.World
             var hud = go.AddComponent<CharacterHud>();
             go.GetComponent<Button>().transition = Selectable.Transition.None;
             go.GetComponent<Button>().onClick.AddListener(() => hud.Clicked?.Invoke());
-            hud.Build(UiBuilder.BuiltinFont());
+            hud.Build(UiBuilder.DefaultFont());
             hud.SetName(playerName);
             return hud;
         }
@@ -148,7 +148,7 @@ namespace Gopet.Runtime.World
 
             _name = UiBuilder.MakeText(transform, font, "Player Name", 12, false);
             SetRect(_name.rectTransform, BarLeft, NameTop, BarWidth, 14f);
-            _name.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_name, FontStyle.Bold);
             _name.color = new Color(0.95f, 0.95f, 0.95f, 1f);
             var shadow = _name.gameObject.AddComponent<Shadow>();
             shadow.effectColor = new Color(0f, 0f, 0f, 0.9f);
@@ -185,7 +185,7 @@ namespace Gopet.Runtime.World
 
             _levelBadge = UiBuilder.MakeText(inner.transform, font, "Level", 13, true);
             _levelBadge.text = "--";
-            _levelBadge.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_levelBadge, FontStyle.Bold);
             _levelBadge.alignment = TextAnchor.MiddleCenter;
             _levelBadge.color = new Color(0.15f, 0.08f, 0.02f, 1f);
         }

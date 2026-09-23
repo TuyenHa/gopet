@@ -35,7 +35,7 @@ namespace Gopet.Runtime.World.Battle
             nRect.offsetMin = new Vector2(Pad + IconBox + 6f, 0f);
             nRect.offsetMax = new Vector2(-Pad, -3f);
             name.alignment = TextAnchor.LowerLeft;
-            name.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(name, FontStyle.Bold);
             name.text = skill.Name;
             // MakeText mặc định Overflow — tên dài sẽ tràn ra khỏi popup nếu không chặn.
             name.horizontalOverflow = HorizontalWrapMode.Wrap;

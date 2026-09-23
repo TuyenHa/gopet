@@ -83,7 +83,7 @@ namespace Gopet.Runtime.World
             go.transform.SetParent(parent, false);
             _textTransform = go.transform;
             _mesh = go.GetComponent<TextMesh>();
-            _mesh.font = UiBuilder.BuiltinFont();
+            _mesh.font = UiBuilder.DefaultFont();
             _mesh.fontSize = 32;
             _mesh.anchor = TextAnchor.MiddleCenter;
             _mesh.alignment = TextAlignment.Center;

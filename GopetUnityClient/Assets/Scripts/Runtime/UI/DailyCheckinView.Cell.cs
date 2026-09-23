@@ -27,7 +27,7 @@ namespace Gopet.Runtime.UI
             var num = UiBuilder.MakeText(cell.transform, _font, "Num", 9, false);
             num.text = day.Day.ToString();
             num.alignment = TextAnchor.UpperCenter;
-            num.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(num, FontStyle.Bold);
             num.color = NumColor(day.State);
             var nr = (RectTransform)num.transform;
             nr.anchorMin = new Vector2(0f, 1f); nr.anchorMax = new Vector2(1f, 1f);
@@ -61,7 +61,7 @@ namespace Gopet.Runtime.UI
             t.text = "✓";
             t.alignment = TextAnchor.MiddleCenter;
             t.color = CheckGreen;
-            t.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(t, FontStyle.Bold);
             var r = (RectTransform)t.transform;
             r.anchorMin = new Vector2(0f, 0f); r.anchorMax = new Vector2(1f, 1f);
             r.offsetMin = new Vector2(2f, 10f); r.offsetMax = new Vector2(-2f, -10f);

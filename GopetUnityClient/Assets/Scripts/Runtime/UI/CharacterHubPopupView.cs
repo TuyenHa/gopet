@@ -156,7 +156,7 @@ namespace Gopet.Runtime.UI
             var current = left ? _leftMenu : _rightMenu;
             if (current == null)
             {
-                current = GenericMenuView.Create(host, UiBuilder.BuiltinFont());
+                current = GenericMenuView.Create(host, UiBuilder.DefaultFont());
                 current.CloseRequested += _ => ClearMenu(left);
                 current.ConfirmRequested += ShowEmbeddedConfirm;
                 current.EnableEmbeddedScroll(Mathf.Max(80f, ((RectTransform)host).rect.height));

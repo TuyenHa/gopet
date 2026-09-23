@@ -31,7 +31,7 @@ namespace Gopet.Runtime.World
         /// 40 của màn này nên bắn ra đó là người chơi không thấy gì.
         /// </summary>
         public void ShowNotice(string text) =>
-            ToastView.Create(transform, UiBuilder.BuiltinFont(), text);
+            ToastView.Create(transform, UiBuilder.DefaultFont(), text);
 
         /// <summary>Nút tròn mở/đóng popup. Không gate theo lượt — xem được kỹ năng lúc nào
         /// cũng được, chỉ từng dòng mới khoá khi chưa tới lượt hoặc thiếu MP.</summary>

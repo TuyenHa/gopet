@@ -75,7 +75,7 @@ namespace Gopet.Runtime.World.Battle
             var nr = panel._nameLabel.rectTransform;
             nr.anchorMin = new Vector2(0f, 1f); nr.anchorMax = new Vector2(1f, 1f); nr.pivot = new Vector2(0f, 1f);
             nr.offsetMin = new Vector2(4f, -16f); nr.offsetMax = new Vector2(-4f, -2f);
-            panel._nameLabel.fontStyle = FontStyle.Bold; panel._nameLabel.alignment = TextAnchor.MiddleLeft;
+            UiBuilder.SetFontStyle(panel._nameLabel, FontStyle.Bold); panel._nameLabel.alignment = TextAnchor.MiddleLeft;
             panel._petName = pet.Name; panel.SetNameText(pet.Level);
 
             panel._hpBar = BattleStatBar.Create(content, font, "HP", HpColor, 24f, 0f); panel._hpBar.Set(pet.Hp, pet.MaxHp);

@@ -21,7 +21,7 @@ namespace Gopet.Runtime.World
                 return;
             }
 
-            var dialog = ChoiceDialogView.Create(_hudParent, UiBuilder.BuiltinFont());
+            var dialog = ChoiceDialogView.Create(_hudParent, UiBuilder.DefaultFont());
             _channelDialog = dialog;
             dialog.Bind("Chọn khu vực", labels);
             dialog.Chosen += index =>

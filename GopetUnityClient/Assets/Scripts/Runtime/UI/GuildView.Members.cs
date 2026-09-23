@@ -14,7 +14,7 @@ namespace Gopet.Runtime.UI
         {
             _membersTitle = UiBuilder.MakeText(page, _font, "MembersTitle", 14, false);
             _membersTitle.text = "Thành viên";
-            _membersTitle.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_membersTitle, FontStyle.Bold);
             _membersTitle.alignment = TextAnchor.UpperCenter;
             _membersTitle.color = GuildText;
             var tr = _membersTitle.rectTransform;
@@ -91,7 +91,7 @@ namespace Gopet.Runtime.UI
             var kLabel = UiBuilder.MakeText(kickGo.transform, _font, "KickLabel", 10, true);
             kLabel.text = "Đuổi";
             kLabel.alignment = TextAnchor.MiddleCenter;
-            kLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(kLabel, FontStyle.Bold);
 
             var userId = member.UserId;
             kickGo.GetComponent<Button>().onClick.AddListener(() => KickRequested?.Invoke(userId));

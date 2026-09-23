@@ -103,7 +103,7 @@ namespace Gopet.Runtime.UI
                 label.alignment = TextAnchor.MiddleCenter;
                 label.text = "×";
                 label.color = Color.white;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
             }
             go.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke());
         }
@@ -113,7 +113,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(_nodeLayer, _font, $"Region{regionId}", 15, false);
             label.text = WorldMapLayout.RegionNames[regionId];
             label.color = RegionText;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.alignment = TextAnchor.MiddleCenter;
             label.raycastTarget = false;
             AddShadow(label.gameObject);

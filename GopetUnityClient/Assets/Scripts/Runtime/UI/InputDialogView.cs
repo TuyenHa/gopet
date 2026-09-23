@@ -254,7 +254,7 @@ namespace Gopet.Runtime.UI
                 label.text = "×";
                 label.alignment = TextAnchor.MiddleCenter;
                 label.color = Color.white;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
             }
 
             go.GetComponent<Button>().onClick.AddListener(RaiseClosed);

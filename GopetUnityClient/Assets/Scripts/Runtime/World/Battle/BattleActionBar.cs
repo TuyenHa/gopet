@@ -76,7 +76,7 @@ namespace Gopet.Runtime.World.Battle
             text.text = "Xin thua";
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             return go.GetComponent<Button>();
         }
 
@@ -97,7 +97,7 @@ namespace Gopet.Runtime.World.Battle
             text.text = "Thuốc";
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.gameObject.SetActive(img.sprite == null);
             return go.GetComponent<Button>();
         }
@@ -119,7 +119,7 @@ namespace Gopet.Runtime.World.Battle
             text.text = "Tấn công";
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.gameObject.SetActive(img.sprite == null);
             return go.GetComponent<Button>();
         }

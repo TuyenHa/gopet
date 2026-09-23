@@ -46,7 +46,7 @@ namespace Gopet.Runtime.UI
             lbl.text = "Hồi sinh ngay";
             lbl.alignment = TextAnchor.MiddleCenter;
             lbl.color = Color.white;
-            lbl.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(lbl, FontStyle.Bold);
             btnGo.GetComponent<Button>().onClick.AddListener(() => OptionRequested?.Invoke(OpReviveAfterPk));
 
             return panel;

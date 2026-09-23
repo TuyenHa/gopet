@@ -18,7 +18,7 @@ namespace Gopet.Runtime.World
                 return;
             }
 
-            _worldMapView = WorldMapView.Create(_hudParent, UiBuilder.BuiltinFont());
+            _worldMapView = WorldMapView.Create(_hudParent, UiBuilder.DefaultFont());
             _worldMapView.Bind(options, _scene.MapId);
             _worldMapView.Chosen += mapId => OnWorldMapChosen(options, mapId);
             // Câu chữ đến TỪ SERVER (TELE_MENU gửi kèm lý do khoá), client không tự chế:

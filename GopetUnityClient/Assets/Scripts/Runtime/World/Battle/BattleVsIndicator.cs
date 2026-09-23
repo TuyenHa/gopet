@@ -106,7 +106,7 @@ namespace Gopet.Runtime.World.Battle
             text.offsetMin = new Vector2(left, 0f);
             text.offsetMax = new Vector2(-left, 0f);
             _turnLabel.alignment = TextAnchor.MiddleCenter;
-            _turnLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_turnLabel, FontStyle.Bold);
             _turnLabel.color = Color.white;
         }
 

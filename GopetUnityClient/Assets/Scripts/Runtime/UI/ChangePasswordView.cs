@@ -45,11 +45,11 @@ namespace Gopet.Runtime.UI
 
         private void BuildContent(Transform panel)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
 
             var title = UiBuilder.MakeText(panel, font, "Title", 16, false);
             title.text = "Đổi mật khẩu";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             title.color = UiBuilder.TextMain;
             SetRect(title.rectTransform, 8f, 24f);
@@ -103,7 +103,7 @@ namespace Gopet.Runtime.UI
 
             var label = UiBuilder.MakeText(go.transform, font, "Label", 15, true);
             label.text = "Đổi mật khẩu";
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
 

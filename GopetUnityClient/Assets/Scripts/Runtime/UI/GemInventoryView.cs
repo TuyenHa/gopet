@@ -36,7 +36,7 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = UiBuilder.Panel;
 
             var view = backdrop.AddComponent<GemInventoryView>();
-            view.Build(panel.transform, font ?? UiBuilder.BuiltinFont());
+            view.Build(panel.transform, font ?? UiBuilder.DefaultFont());
             return view;
         }
 
@@ -68,7 +68,7 @@ namespace Gopet.Runtime.UI
         private void Build(Transform panel, Font font)
         {
             _title = UiBuilder.MakeText(panel, font, "Title", 18, false);
-            _title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
             _title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(_title.rectTransform, 10f, 34f, 52f);
             MakeButton(panel, font, "Đóng", 10f, 36f, 8f, 350f, () => CloseRequested?.Invoke());
@@ -111,7 +111,7 @@ namespace Gopet.Runtime.UI
             for (var i = first; i < last; i++) MakeGemRow(_items[i], i - first);
             if (_items.Count == 0)
             {
-                var empty = UiBuilder.MakeText(_rows, UiBuilder.BuiltinFont(), "Empty", 14, false);
+                var empty = UiBuilder.MakeText(_rows, UiBuilder.DefaultFont(), "Empty", 14, false);
                 empty.text = "Bạn chưa có ngọc.";
                 empty.alignment = TextAnchor.MiddleCenter;
                 UiBuilder.PlaceRow(empty.rectTransform, 100f, 40f, 8f);
@@ -120,7 +120,7 @@ namespace Gopet.Runtime.UI
 
         private void MakeGemRow(GemItemInfo item, int row)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             var go = new GameObject($"Gem:{item.ItemId}", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(_rows, false);
             UiBuilder.PlaceRow((RectTransform)go.transform, row * 54f, 48f, 0f);

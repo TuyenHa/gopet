@@ -77,7 +77,7 @@ namespace Gopet.Runtime
 
             var assets = new RemoteAssetCache(_client, _client.Router);
 
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
 
             _flow = new LoginFlow();
             _client.Ticked += _flow.Tick;

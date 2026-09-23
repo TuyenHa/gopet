@@ -32,7 +32,7 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(parent, false);
             UiBuilder.PlaceRow((RectTransform)go.transform, top, 40f, 18f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = $"Ô {slot.Position}: {slot.Name}";
             text.alignment = TextAnchor.MiddleLeft;
             text.rectTransform.offsetMin = new Vector2(10f, 0f);
@@ -53,7 +53,7 @@ namespace Gopet.Runtime.UI
             rect.anchoredPosition = new Vector2(right, 0f);
             rect.sizeDelta = new Vector2(60f, 30f);
             go.GetComponent<Image>().color = new Color(.25f, .45f, .65f, 1f);
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 12, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 12, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             go.GetComponent<Button>().onClick.AddListener(() => action());

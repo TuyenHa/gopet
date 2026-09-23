@@ -45,13 +45,13 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
             RoundedUiSprite.Apply(panel.GetComponent<Image>());
 
-            var title = UiBuilder.MakeText(panel.transform, UiBuilder.BuiltinFont(), "Title", 20, false);
+            var title = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Title", 20, false);
             UiBuilder.PlaceRow(title.rectTransform, 12f, 34f, 16f);
             title.alignment = TextAnchor.MiddleCenter;
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.text = value.Name ?? "Pet";
 
-            var body = UiBuilder.MakeText(panel.transform, UiBuilder.BuiltinFont(), "Details", 15, false);
+            var body = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Details", 15, false);
             UiBuilder.PlaceRow(body.rectTransform, 54f, 150f, 24f);
             body.alignment = TextAnchor.UpperLeft;
             body.text = Describe(value);
@@ -77,16 +77,16 @@ namespace Gopet.Runtime.UI
         /// nút "Thay" riêng, mà nút thì không gắn vào giữa một đoạn văn bản được.</summary>
         private void BuildSkillRows(Transform panel, PetProfile value, bool editable)
         {
-            var header = UiBuilder.MakeText(panel, UiBuilder.BuiltinFont(), "SkillsHeader", 15, false);
+            var header = UiBuilder.MakeText(panel, UiBuilder.DefaultFont(), "SkillsHeader", 15, false);
             UiBuilder.PlaceRow(header.rectTransform, 208f, 22f, 24f);
             header.alignment = TextAnchor.MiddleLeft;
-            header.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(header, FontStyle.Bold);
             header.text = value.Skills.Length > 0 ? "Kỹ năng:" : "Kỹ năng: (chưa có)";
 
             for (var i = 0; i < value.Skills.Length && i < MaxSkillRows; i++)
             {
                 var skill = value.Skills[i];
-                var row = UiBuilder.MakeText(panel, UiBuilder.BuiltinFont(), $"Skill{i}", 14, false);
+                var row = UiBuilder.MakeText(panel, UiBuilder.DefaultFont(), $"Skill{i}", 14, false);
                 UiBuilder.PlaceRow(row.rectTransform, 232f + i * SkillRowHeight, SkillRowHeight, 24f);
                 row.alignment = TextAnchor.MiddleLeft;
                 row.text = $"• {skill.Name} (MP {skill.MpCost}) — {skill.Description}";
@@ -139,7 +139,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(170f, 42f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             return go.GetComponent<Button>();

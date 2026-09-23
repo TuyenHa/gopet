@@ -101,7 +101,7 @@ namespace Gopet.Runtime.UI
             iconImage.sprite = FriendsIcon(1);
             iconImage.preserveAspect = true;
 
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Empty label", 16, true);
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Empty label", 16, true);
             label.text = "Danh sách bạn bè";
             label.alignment = TextAnchor.MiddleCenter;
             label.color = new Color(0.48f, 0.60f, 0.82f, 1f);
@@ -146,13 +146,13 @@ namespace Gopet.Runtime.UI
             var input = inputGo.GetComponent<InputField>();
             input.contentType = InputField.ContentType.Standard;
             input.lineType = InputField.LineType.SingleLine;
-            input.textComponent = UiBuilder.MakeText(inputGo.transform, UiBuilder.BuiltinFont(), "Text", 13, false);
+            input.textComponent = UiBuilder.MakeText(inputGo.transform, UiBuilder.DefaultFont(), "Text", 13, false);
             input.textComponent.color = new Color(0.14f, 0.2f, 0.3f, 1f);
             input.textComponent.alignment = TextAnchor.MiddleLeft;
             UiBuilder.Stretch(input.textComponent.rectTransform);
             input.textComponent.rectTransform.offsetMin = new Vector2(12f, 0f);
             input.textComponent.rectTransform.offsetMax = new Vector2(-44f, 0f);
-            var placeholder = UiBuilder.MakeText(inputGo.transform, UiBuilder.BuiltinFont(), "Placeholder", 13, false);
+            var placeholder = UiBuilder.MakeText(inputGo.transform, UiBuilder.DefaultFont(), "Placeholder", 13, false);
             placeholder.text = "Nhập tên bạn bè...";
             placeholder.color = UiBuilder.TextMuted;
             placeholder.alignment = TextAnchor.MiddleLeft;
@@ -260,9 +260,9 @@ namespace Gopet.Runtime.UI
             labelRect.sizeDelta = Vector2.zero;
             labelText.alignment = TextAnchor.MiddleLeft;
 
-            var state = UiBuilder.MakeText(button.transform, UiBuilder.BuiltinFont(), "State", 13, false);
+            var state = UiBuilder.MakeText(button.transform, UiBuilder.DefaultFont(), "State", 13, false);
             state.text = value();
-            state.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(state, FontStyle.Bold);
             state.alignment = TextAnchor.MiddleRight;
             state.color = UiBuilder.TextMuted;
             var stateRect = state.rectTransform;
@@ -277,7 +277,7 @@ namespace Gopet.Runtime.UI
             }
             else
             {
-                var arrow = UiBuilder.MakeText(button.transform, UiBuilder.BuiltinFont(), "Arrow", 26, true);
+                var arrow = UiBuilder.MakeText(button.transform, UiBuilder.DefaultFont(), "Arrow", 26, true);
                 arrow.text = "›";
                 arrow.alignment = TextAnchor.MiddleCenter;
                 var arrowRect = arrow.rectTransform;
@@ -409,7 +409,7 @@ namespace Gopet.Runtime.UI
             var image = go.GetComponent<Image>();
             RoundedUiSprite.Apply(image);
             image.color = UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 11, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 11, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = UiBuilder.TextMain;

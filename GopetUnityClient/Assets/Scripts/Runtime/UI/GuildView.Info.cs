@@ -36,7 +36,7 @@ namespace Gopet.Runtime.UI
             var dl = UiBuilder.MakeText(_donateBtn.transform, _font, "Label", 12, true);
             dl.text = "Cống hiến";
             dl.alignment = TextAnchor.MiddleCenter;
-            dl.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(dl, FontStyle.Bold);
             dl.color = new Color(0.1f, 0.08f, 0.02f, 1f);
             _donateBtn.GetComponent<Button>().onClick.AddListener(() => DonateRequested?.Invoke());
             _donateBtn.SetActive(false);
@@ -166,7 +166,7 @@ namespace Gopet.Runtime.UI
             jLabel.text = "Gia nhập";
             jLabel.alignment = TextAnchor.MiddleCenter;
             jLabel.color = new Color(0.1f, 0.08f, 0.02f, 1f);
-            jLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(jLabel, FontStyle.Bold);
 
             var clanId = entry.ClanId;
             joinGo.GetComponent<Button>().onClick.AddListener(() => JoinRequested?.Invoke(clanId));

@@ -207,7 +207,7 @@ namespace Gopet.Runtime.World
             // Camera phụ chụp trọn map cho minimap — con của scene nên đổi map/thoát
             // game là nó đi theo, không để lại camera mồ côi.
             s._minimapCamera = MinimapCamera.Attach(s._scene.transform);
-            s._minimap = MinimapWidget.Create(s._hudParent, UiBuilder.BuiltinFont());
+            s._minimap = MinimapWidget.Create(s._hudParent, UiBuilder.DefaultFont());
             s._minimap.Clicked += () => s._mapTeleportHandler.RequestOptions();
             // Map khởi đầu đã nạp xong TỪ TRƯỚC khi HUD dựng (LoadMap gọi ở đầu Start),
             // nên chỉ nghe MapLoaded thôi thì minimap trống trơn cho tới lần warp đầu tiên.

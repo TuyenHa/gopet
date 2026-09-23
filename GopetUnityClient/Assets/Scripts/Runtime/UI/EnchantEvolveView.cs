@@ -48,10 +48,10 @@ namespace Gopet.Runtime.UI
 
         private void BuildContent(Transform panel, Mode mode, string itemName)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             var title = UiBuilder.MakeText(panel, font, "Title", 16, false);
             title.text = mode == Mode.Enchant ? $"Cường hoá {itemName}" : $"Tiến hoá {itemName}";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             title.color = UiBuilder.TextMain;
             SetRect(title.rectTransform, 8f, 24f);
@@ -108,7 +108,7 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(img);
             var t = UiBuilder.MakeText(go.transform, font, "Label", 15, true);
             t.text = label;
-            t.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(t, FontStyle.Bold);
             t.alignment = TextAnchor.MiddleCenter;
             t.color = Color.white;
             go.GetComponent<Button>().onClick.AddListener(TrySubmit);

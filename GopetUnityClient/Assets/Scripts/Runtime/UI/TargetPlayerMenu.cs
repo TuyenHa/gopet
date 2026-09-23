@@ -37,10 +37,10 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(img);
             img.color = new Color(0.11f, 0.14f, 0.2f, 0.98f);
 
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             var header = UiBuilder.MakeText(panel.transform, font, "Header", 15, false);
             header.text = string.IsNullOrEmpty(targetName) ? $"#{targetUserId}" : targetName;
-            header.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(header, FontStyle.Bold);
             header.alignment = TextAnchor.MiddleCenter;
             header.color = UiBuilder.TextMain;
             var hRect = header.rectTransform;
@@ -76,10 +76,10 @@ namespace Gopet.Runtime.UI
             img.color = color;
             RoundedUiSprite.Apply(img);
 
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.color = Color.white;
 
             go.GetComponent<Button>().onClick.AddListener(() => Chosen?.Invoke(action));

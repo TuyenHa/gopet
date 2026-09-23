@@ -38,7 +38,7 @@ namespace Gopet.Runtime.World.Battle
             lblRect.anchoredPosition = Vector2.zero;
             lblText.text = label;
             lblText.alignment = TextAnchor.MiddleLeft;
-            lblText.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(lblText, FontStyle.Bold);
             lblText.color = Color.white;
 
             var barGo = new GameObject("Bar", typeof(RectTransform));
@@ -73,7 +73,7 @@ namespace Gopet.Runtime.World.Battle
             bar._label = UiBuilder.MakeText(barGo.transform, font, "Value", 12, true);
             bar._label.alignment = TextAnchor.MiddleCenter;
             bar._label.color = Color.white;
-            bar._label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(bar._label, FontStyle.Bold);
             return bar;
         }
 

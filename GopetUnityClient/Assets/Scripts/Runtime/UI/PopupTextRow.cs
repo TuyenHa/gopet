@@ -79,7 +79,7 @@ namespace Gopet.Runtime.UI
             _subtitle.text = subtitle ?? string.Empty;
             // Thư chưa đọc: tiêu đề navy đậm + chấm đỏ. Đã đọc thì chìm xuống màu mờ.
             _title.color = unread ? PopupPalette.TextDark : PopupPalette.TextMuted;
-            _title.fontStyle = unread ? FontStyle.Bold : FontStyle.Normal;
+            UiBuilder.SetFontStyle(_title, unread ? FontStyle.Bold : FontStyle.Normal);
             _unreadDot.SetActive(unread);
         }
 
@@ -166,7 +166,7 @@ namespace Gopet.Runtime.UI
 
             _badgeLabel = UiBuilder.MakeText(_badge.transform, font, "Label", 9, true);
             _badgeLabel.alignment = TextAnchor.MiddleCenter;
-            _badgeLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_badgeLabel, FontStyle.Bold);
             _badgeLabel.raycastTarget = false;
             _badge.SetActive(false);
 

@@ -12,12 +12,16 @@ namespace Gopet.Runtime.UI
 {
     public enum CharacterHubTab { Character, Pet, Settings, Friends }
 
-    /// <summary>Popup hồ sơ mở từ avatar/HP/MP, dùng chung phong cách tab với Cửa hàng.</summary>
+    /// <summary>
+    /// Popup "Hành lý" mở từ avatar/HP/MP. Khung, badge tiêu đề và nút X lấy từ
+    /// <see cref="GamePopupFrame"/> — cùng khung với Cửa hàng.
+    /// </summary>
     public sealed partial class CharacterHubPopupView : MonoBehaviour
     {
         private const float PopupWidth = 780f;
-        private const float PopupHeight = 440f;
-        private const float HeaderHeight = 58f;
+        // Thấp hơn bản cũ đúng phần header đã bỏ, để thân popup giữ nguyên chiều cao.
+        private const float PopupHeight = 395f;
+        private const string Title = "Hành lý";
         private const float TabHeight = 38f;
         private static readonly Color TabActive = new Color(1f, 0.85f, 0.2f, 1f);
         private static readonly Color TabInactive = new Color(0.88f, 0.93f, 1f, 1f);
@@ -63,30 +67,19 @@ namespace Gopet.Runtime.UI
         public static CharacterHubPopupView Create(Transform parent, GuiderHandler guider,
             RemoteAssetCache assets, SoundManager sound, bool autoAttack, WingHandler wings = null)
         {
-            var frame = new GameObject("CharacterHubPopup", typeof(RectTransform), typeof(Image));
-            frame.transform.SetParent(parent, false);
-            var rect = (RectTransform)frame.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(PopupWidth, PopupHeight);
+            var frame = GamePopupFrame.Create(parent, UiBuilder.DefaultFont(), Title,
+                PopupWidth, PopupHeight);
+            frame.gameObject.name = "CharacterHubPopup";
 
-            var bg = frame.GetComponent<Image>();
-            RoundedUiSprite.Apply(bg);
-            bg.color = new Color(0.96f, 0.98f, 1f, 1f);
-            var outline = frame.AddComponent<Outline>();
-            outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
-            outline.effectDistance = new Vector2(2f, -2f);
-
-            var view = frame.AddComponent<CharacterHubPopupView>();
+            var view = frame.gameObject.AddComponent<CharacterHubPopupView>();
             view._guider = guider;
             view._assets = assets;
             view._sound = sound;
             view._autoAttack = autoAttack;
             view._wings = wings;
-            view.BuildHeader();
-            view.BuildTabs();
-            view.BuildBody();
-            view.BuildClose();
+            frame.Closed += () => view.Closed?.Invoke();
+            view.BuildTabs(frame.Content, frame.ContentWidth);
+            view.BuildBody(frame.Content);
             return view;
         }
 

@@ -29,6 +29,7 @@ namespace Gopet.Runtime.World
             _petProfileHandler.TattooMaterialSelected += ApplyTattooMaterial;
             _petProfileHandler.TattooScreenReceived += ShowTattooScreen;
             _petEquipHandler.EquipChanged += _ => RefreshOwnPetEquipment();
+            _petEquipHandler.EquipChanged += OnUnequipResult;
             _petEquipHandler.EquipItemRefreshed += _ => RefreshOwnPetEquipment();
             _petEquipHandler.EnchantMaterialSelected += value =>
                 _enchantView?.ApplyServerMaterial(value);

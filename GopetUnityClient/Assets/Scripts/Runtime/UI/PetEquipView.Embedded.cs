@@ -50,7 +50,13 @@ namespace Gopet.Runtime.UI
             AddEmbeddedSlot(EquipSlot.Weapon, "Vũ khí", 10f, 130f);
             AddEmbeddedSlot(EquipSlot.Armor, "Giáp", 326f, 50f);
             AddEmbeddedSlot(EquipSlot.Glove, "Bao tay", 326f, 130f);
-            AddEmbeddedSlot(EquipSlot.Boot, "Giày", 168f, 230f);
+            AddEmbeddedSlot(EquipSlot.Boot, "Giày", 0f, 0f);
+            // Giày neo GIỮA MÉP DƯỚI thay vì toạ độ cứng từ đỉnh: panel thấp hơn 294 là ô
+            // tràn ra ngoài popup. Host đã thụt 4 so với panel "Trang bị pet" → +1 = cách 5.
+            var boot = (RectTransform)_slots[EquipSlot.Boot].transform;
+            boot.anchorMin = boot.anchorMax = new Vector2(0.5f, 0f);
+            boot.pivot = new Vector2(0.5f, 0f);
+            boot.anchoredPosition = new Vector2(0f, 1f);
 
             var hidden = MakeEmbeddedButton("Kích ẩn", 1f, 8f);
             hidden.onClick.AddListener(() => HiddenStatsRequested?.Invoke());

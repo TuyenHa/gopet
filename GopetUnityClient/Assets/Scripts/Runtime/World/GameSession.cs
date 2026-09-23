@@ -514,7 +514,7 @@ namespace Gopet.Runtime.World
             switch (action)
             {
                 case PetSlotActionsView.Action.Unequip:
-                    _client.Send(PetEquipPackets.Unequip(item.ItemId));
+                    OpenUnequipConfirm(item);
                     break;
 
                 case PetSlotActionsView.Action.MountGem:
@@ -536,7 +536,6 @@ namespace Gopet.Runtime.World
         }
 
         private EnchantEvolveView _enchantView;
-        private YesNoDialog _destroyDialog;
         private TargetPlayerMenu _targetMenu;
 
         /// <summary>
@@ -599,22 +598,12 @@ namespace Gopet.Runtime.World
 
         private void OpenDestroyConfirm(PetEquipItem item)
         {
-            if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-            _destroyDialog = YesNoDialog.Create(_hudParent,
-                $"Xác nhận HUỶ {item.DisplayName}?\nHành động không thể hoàn tác.",
-                "Huỷ đồ", "Không");
-            _destroyDialog.Confirmed += () =>
-            {
-                _client.Send(PetEquipPackets.RequestDestroyEquip(item.ItemId));
-                Debug.Log($"[Gopet] Huỷ item #{item.ItemId} — chờ server YN dialog xác nhận lần 2.");
-                if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-                _destroyDialog = null;
-            };
-            _destroyDialog.Cancelled += () =>
-            {
-                if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-                _destroyDialog = null;
-            };
+            ShowEquipConfirm($"Xác nhận HUỶ {ItemName(item)}?\nHành động không thể hoàn tác.",
+                "Huỷ đồ", "Không", () =>
+                {
+                    _client.Send(PetEquipPackets.RequestDestroyEquip(item.ItemId));
+                    Debug.Log($"[Gopet] Huỷ item #{item.ItemId} — chờ server YN dialog xác nhận lần 2.");
+                });
         }
 
         private ChangePasswordView _passwordView;

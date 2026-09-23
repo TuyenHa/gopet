@@ -18,7 +18,8 @@ namespace Gopet.Runtime.UI
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(0f, -94f);
+            // Panel HUD cao 70 (CharacterHud.PanelHeight) → cách mép dưới HUD đúng 5.
+            rect.anchoredPosition = new Vector2(0f, -75f);
             rect.sizeDelta = new Vector2(240f, 34f);
             RoundedUiSprite.Apply(go.GetComponent<Image>());
             go.GetComponent<Image>().color = new Color(0.08f, 0.11f, 0.16f, 0.88f);

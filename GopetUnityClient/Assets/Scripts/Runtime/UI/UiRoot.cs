@@ -115,6 +115,12 @@ namespace Gopet.Runtime.UI
                 return;
             }
 
+            if (ItemSelectPopupView.Handles(screen))
+            {
+                ShowItemSelectPopup(screen);
+                return;
+            }
+
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
             // tự bind. Không thì cả hai view chồng nhau và người chơi tưởng bug.
             if (_shopPopup != null && _shopPopup.TryConsumeMenu(screen)) return;
@@ -395,6 +401,7 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
             if (ReferenceEquals(screen, _taskPopup)) _taskPopup = null;
+            if (ReferenceEquals(screen, _itemSelectPopup)) _itemSelectPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
             if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;

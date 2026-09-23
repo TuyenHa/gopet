@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -61,11 +62,18 @@ namespace Gopet.Runtime.UI
             _footer.gameObject.AddComponent<LayoutElement>().preferredHeight = FooterHeight;
         }
 
-        private void BuildCloseButton(Font font)
+        private void BuildCloseButton(Font font) =>
+            CreateCloseButton(transform, font, () => Closed?.Invoke());
+
+        /// <summary>
+        /// Nút X đỏ sát góc trên-phải của <paramref name="popup"/>. Công khai để popup không
+        /// dựng qua khung này (hộp xác nhận…) vẫn có nút X y hệt, không tự vẽ bản nhoè riêng.
+        /// </summary>
+        public static Button CreateCloseButton(Transform popup, Font font, Action onClick)
         {
             var go = new GameObject("Close", typeof(RectTransform), typeof(Image),
                 typeof(Button));
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(popup, false);
 
             // Tâm nút NẰM TRONG popup, sát góc trên-phải: đo trên ảnh mẫu là lùi vào 6
             // và xuống 2 so với góc. Đẩy tâm ra ngoài góc thì hai phần ba nút lơ lửng
@@ -96,7 +104,9 @@ namespace Gopet.Runtime.UI
                 UiBuilder.SetFontStyle(xLabel, FontStyle.Bold);
             }
 
-            go.GetComponent<Button>().onClick.AddListener(() => Closed?.Invoke());
+            var button = go.GetComponent<Button>();
+            button.onClick.AddListener(() => onClick());
+            return button;
         }
     }
 }

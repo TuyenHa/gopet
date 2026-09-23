@@ -77,12 +77,17 @@ namespace Gopet.Runtime.UI
             rect.anchorMin = rect.anchorMax = new Vector2(anchorX, 0f);
             rect.pivot = new Vector2(anchorX, 0f);
             rect.anchoredPosition = new Vector2(anchorX == 1f ? -offsetX : offsetX, 6f);
-            rect.sizeDelta = new Vector2(80f, 28f);
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 11, true);
+            rect.sizeDelta = new Vector2(92f, 32f);
+            // Kiểu nút chung (khung vàng, mặt xanh). Thiếu ảnh thì về nút bo góc cũ.
+            var image = go.GetComponent<Image>();
+            if (!GameButtonSkin.Apply(image, rect.sizeDelta.y))
+            {
+                image.color = UiBuilder.ButtonFace;
+                RoundedUiSprite.Apply(image);
+            }
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 12, true);
             text.text = label;
-            text.alignment = TextAnchor.MiddleCenter;
+            GameButtonSkin.StyleLabel(text);
             return go.GetComponent<Button>();
         }
 

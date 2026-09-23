@@ -5,7 +5,7 @@ namespace Gopet.Runtime.UI
 {
     /// <summary>
     /// Ba thẻ chỉ số STR/AGI/INT của <see cref="PetGymView"/>: chip tên màu riêng, mô tả,
-    /// giá trị lớn và nút cộng xanh lá kiểu nút giá của Cửa hàng.
+    /// giá trị lớn và nút cộng xanh dương.
     /// </summary>
     public sealed partial class PetGymView
     {
@@ -93,9 +93,9 @@ namespace Gopet.Runtime.UI
             rect.pivot = new Vector2(0.5f, 0f);
             rect.offsetMin = new Vector2(10f, 10f);
             rect.offsetMax = new Vector2(-10f, 10f + StatButtonHeight);
-            // Viền dày 2 màu sẫm làm "gờ" nút, giống nút giá của Cửa hàng.
+            // Nút xanh dương như nút chính "Tạo hình xăm"; viền dày 2 sẫm hơn một nấc làm "gờ".
             _buttonFills[index] = RoundedBorder.Apply(go, StatButtonHeight * 0.5f,
-                PopupPalette.PriceGreen, PopupPalette.PriceGreenEdge, 2f);
+                PopupPalette.ButtonBlue, PopupPalette.HeaderBlue, 2f);
             _buttonEdges[index] = go.GetComponent<Image>();
 
             var label = UiBuilder.MakeText(go.transform, font, "Label", 15, true);
@@ -130,8 +130,8 @@ namespace Gopet.Runtime.UI
             {
                 if (_buttons[i] == null) continue;
                 _buttons[i].interactable = enabled;
-                _buttonFills[i].color = enabled ? PopupPalette.PriceGreen : PopupPalette.PriceLocked;
-                _buttonEdges[i].color = enabled ? PopupPalette.PriceGreenEdge : PopupPalette.PriceLockedEdge;
+                _buttonFills[i].color = enabled ? PopupPalette.ButtonBlue : PopupPalette.PriceLocked;
+                _buttonEdges[i].color = enabled ? PopupPalette.HeaderBlue : PopupPalette.PriceLockedEdge;
             }
         }
     }

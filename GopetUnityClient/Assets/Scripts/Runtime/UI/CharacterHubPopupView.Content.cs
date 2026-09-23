@@ -57,6 +57,10 @@ namespace Gopet.Runtime.UI
             _embeddedEquip.ActionChosen += (item, action) => PetEquipActionChosen?.Invoke(item, action);
             _embeddedEquip.HiddenStatsRequested += () => PetHiddenStatsRequested?.Invoke();
             _embeddedEquip.EmptySlotTapped += slot => EmptyPetSlotTapped?.Invoke(slot);
+
+            // Mở tab là tự nạp trang bị của pet đang chọn, như tab Nhân vật tự nạp rương đồ —
+            // không bắt người chơi bấm "Trang bị pet" mới thấy.
+            Request(CharacterMenuAction.PetEquipment);
         }
 
         private static Button MakePetAction(Transform parent, string label, int column, float top)

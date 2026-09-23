@@ -19,6 +19,10 @@ namespace Gopet.Runtime.World
         /// <summary>Đổi bộ tile theo map nằm ở <see cref="MapSkinOverrides"/>.</summary>
         private const int BeastCityMapId = MapSkinOverrides.BeastCityMapId;
         private const int GreatSpiritViewMapId = MapSkinOverrides.GreatSpiritViewMapId;
+        /// <summary>Đấu trường — bỏ cửa hàng Thức ăn (công trình loại 30), thay bằng hồ sen (MapRenderer.Decor).</summary>
+        private const int ArenaMapId = 19;
+        /// <summary>Loại công trình "Thức ăn" (BuildingDispatcher case 30).</summary>
+        private const int FoodShopBuildingType = 30;
         private const int ShopBuildingAnimationId = 190;
         private const int ShopBuildingBaseImageId = 189;
         private const int PineTreeImageId = 158;
@@ -67,6 +71,7 @@ namespace Gopet.Runtime.World
             BuildObjects(map);
             if (_mapId == BeastCityMapId) BuildBeastCityGarden(map);
             if (_mapId == GreatSpiritViewMapId) BuildGreatSpiritViewPond();
+            if (_mapId == ArenaMapId) BuildArenaPond();
             BuildMapEntities(map);
         }
 
@@ -174,6 +179,8 @@ namespace Gopet.Runtime.World
                 // Đại Linh Cảnh: hai cụm mây tuyết nằm ngay trên mái nhà. Map đã chuyển
                 // sang nhiệt đới nên chúng thành đống tuyết đọng trên mái tranh — bỏ.
                 if (_mapId == GreatSpiritViewMapId && isCloud) continue;
+                // Đấu trường: cửa hàng Thức ăn và vài vật quanh nó nhường chỗ cho hồ sen.
+                if (IsHiddenArenaObject(id, item)) continue;
                 var footY = item.Y - item.YOffset;
                 var order = MapPlacement.ObjectSortingOrder(i);
                 if (map.ResourceTypes[idx] == JarMapLayout.TypeAnimation)
@@ -198,6 +205,8 @@ namespace Gopet.Runtime.World
                 if (entity.Kind == 0)
                 {
                     if (_mapId == BeastCityMapId && entity.BuildingType >= 27 && entity.BuildingType <= 30)
+                        continue;
+                    if (_mapId == ArenaMapId && entity.BuildingType == FoodShopBuildingType)
                         continue;
                     // Nhà/shop: có buildingType (0-32), không có Name. Dựng MapBuildingView để bấm.
                     var building = MapBuildingView.Create(transform, entity, map.HeightPixels);

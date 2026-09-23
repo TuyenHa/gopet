@@ -99,7 +99,7 @@ namespace Gopet.Runtime.World
         public void SetPetPortrait(string frameImagePath)
         {
             if (_assets == null || string.IsNullOrEmpty(frameImagePath)) return;
-            _assets.Get(frameImagePath, ImagePackets.TypeNpc, tex =>
+            _assets.Get(frameImagePath, ImagePackets.TypeNpc, _portrait, tex =>
             {
                 if (tex == null || _portrait == null) return;
                 // Sprite strip: chỉ lấy frame đầu (width / frameCount) — nhưng đây HUD

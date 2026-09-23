@@ -64,7 +64,7 @@ namespace Gopet.Runtime.UI
             _chestImage.color = new Color(1f, 1f, 1f, 0f);
             if (_assets != null)
             {
-                _assets.Get(ChestIconPath, ImagePackets.TypeIcon, tex =>
+                _assets.Get(ChestIconPath, ImagePackets.TypeIcon, _chestImage, tex =>
                 {
                     if (_chestImage == null) return;
                     _chestImage.texture = tex;

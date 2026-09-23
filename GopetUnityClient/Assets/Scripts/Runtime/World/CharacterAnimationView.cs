@@ -24,7 +24,7 @@ namespace Gopet.Runtime.World
             var view = go.AddComponent<CharacterAnimationView>();
             view._renderer = go.GetComponent<SpriteRenderer>();
             view._renderer.sortingOrder = animation.DrawAtEnd ? 32010 : 31990;
-            assets?.Get(animation.FrameImagePath, ImagePackets.TypeIcon, texture =>
+            assets?.Get(animation.FrameImagePath, ImagePackets.TypeIcon, view, texture =>
             {
                 if (view == null || texture == null) return;
                 view._frames = SpriteFrameCache.Slice(animation.FrameImagePath, texture, animation.FrameCount);

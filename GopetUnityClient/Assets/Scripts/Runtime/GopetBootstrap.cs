@@ -37,6 +37,7 @@ namespace Gopet.Runtime
         [SerializeField] private bool rememberAccount = true;
 
         private GopetClient _client;
+        private RemoteAssetCache _assets;
         private LoginFlow _flow;
         private UiRoot _ui;
         private LoginScreens _login;
@@ -75,7 +76,7 @@ namespace Gopet.Runtime
             var guider = new GuiderHandler(_client.Send);
             guider.RegisterOn(_client.Router);
 
-            var assets = new RemoteAssetCache(_client, _client.Router);
+            var assets = _assets = new RemoteAssetCache(_client, _client.Router);
 
             var font = UiBuilder.DefaultFont();
 
@@ -144,6 +145,12 @@ namespace Gopet.Runtime
             WireKeyboard();
 
             StartSplashConnection(canvas.transform, font);
+        }
+
+        private void OnDestroy()
+        {
+            _assets?.Dispose();
+            SpriteFrameCache.Clear();
         }
 
         private void LogoutToLogin()

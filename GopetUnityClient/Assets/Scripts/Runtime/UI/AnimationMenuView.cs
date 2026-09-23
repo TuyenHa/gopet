@@ -103,7 +103,7 @@ namespace Gopet.Runtime.UI
             if (element.FrameCount > 1)
                 image.uvRect = new Rect(0f, 0f, 1f / element.FrameCount, 1f);
             if (assets != null)
-                assets.Get(element.TextOrPath, ImagePackets.TypeIcon, texture =>
+                assets.Get(element.TextOrPath, ImagePackets.TypeIcon, image, texture =>
                 {
                     if (image != null) image.texture = texture;
                 });

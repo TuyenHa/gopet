@@ -83,7 +83,7 @@ namespace Gopet.Runtime.UI
         private void LoadEmbeddedPortrait(PetEquipInfo info)
         {
             if (_embeddedPortrait == null || _assets == null || string.IsNullOrEmpty(info.FrameImage)) return;
-            _assets.Get(info.FrameImage, ImagePackets.TypeNpc, texture =>
+            _assets.Get(info.FrameImage, ImagePackets.TypeNpc, _embeddedPortrait, texture =>
             {
                 if (texture == null || _embeddedPortrait == null) return;
                 var frameCount = Mathf.Max(1, info.FrameNumber);

@@ -10,14 +10,13 @@ namespace Gopet.Net
     /// Opcode giao thức, phản chiếu nguyên văn <c>GopetCMD.cs</c> của server.
     /// Nhiều hằng số trùng giá trị vì chúng là sub-command trong ngữ cảnh khác nhau.
     /// </summary>
-    public static class GopetCmd
+    public static partial class GopetCmd
     {
         public const sbyte COMMAND_GUIDER = 122;
         public const sbyte ON_UPDATE_PLAYER_IN_MAP = 29;
         public const sbyte ON_OTHER_USER_MOVE = 27;
         public const sbyte INIT_PLAYER = 31;
         public const sbyte ON_PLAYER_ENTER_MAP = 24;
-        public const sbyte ON_PLACE_CHAT = 9;
         public const sbyte ON_PLAYER_WARPING = 25;
         public const sbyte ON_PLAYER_EXIT_PLACE = 30;
         public const sbyte ON_PLAYER_GET_CHANNEL_INFO = 7;
@@ -25,7 +24,6 @@ namespace Gopet.Net
         public const sbyte MGO_COMMAND = 42;
         public const sbyte TELE_MENU = 12;
         public const sbyte PET_SERVICE = 81;
-        public const sbyte CHAT_PUBLIC = 66;
         public const sbyte PET_INVENTORY = 5;
         public const sbyte CHANGE_NEW_PASSWORD = 93;
         public const sbyte GAME_OBJECT = 34;
@@ -76,10 +74,6 @@ namespace Gopet.Net
         public const sbyte TATTOO_ENCHANT = 5;
         public const sbyte TATTOO_ENCHANT_SELECT_MATERIAL1 = 1;
         public const sbyte TATTOO_ENCHANT_SELECT_MATERIAL2 = 2;
-        public const sbyte CLAN = 91;
-        public const sbyte CLAN_INFO_MEMBER = 3;
-        public const sbyte CLAN_INFO = 14;
-        public const sbyte DONATE_CLAN = 9;
         public const sbyte REQUEST_SHOP = 2;
         public const sbyte GUIDER_TYPE_PAY = 9;
         public const sbyte CHARGE_MONEY_INFO = 44;
@@ -142,27 +136,7 @@ namespace Gopet.Net
         public const sbyte UP_TIER_GEM_ITEM = 79;
         public const sbyte ON_UNQUIP_GEM = 82;
         public const sbyte FAST_UNQUIP_GEM = 78;
-        public const sbyte GUILD_LIST = 1;
-        public const sbyte GUILD_JOIN = 2;
-        public const sbyte GUILD_LIST_MEMBER = 3;
-        public const sbyte GUILD_KICK_MEMBER = 6;
-        public const sbyte SEARCH_GUILD = 13;
-        public const sbyte PLAYER_DONATE_CLAN = 10;
-        public const sbyte GUILD_TOP_FUND = 16;
-        public const sbyte GUILD_TOP_GROWTH_POINT = 15;
-        public const sbyte GUILD_NAME_IN_PLACE = 23;
-        public const sbyte GUILD_REQUEST_JOIN = 2;
         public const sbyte GUIDER_LIST_OPTION = 3;
-        public const sbyte GUILD_CHAT = 20;
-        public const sbyte GUILD_PLAYER_CHAT = 21;
-        public const sbyte GUILD_ON_PLAYER_CHAT = 22;
-        public const sbyte GUILD_CLAN_SKILL = 24;
-        public const sbyte GUILD_CLAN_UNLOCK_SKILL = 25;
-        public const sbyte GUILD_CLAN_RENT_SKILL = 26;
-        public const sbyte GUILD_SHOW_OHTER_PLAYER_CLAN_SKILL = 27;
-        public const sbyte SKILL_CLAN_LOCK = -1;
-        public const sbyte SKILL_CLAN_RENT = 0;
-        public const sbyte SKILL_CLAN_CHANGE = 1;
         public const sbyte SHOW_LIST_TASK = 54;
         public const sbyte INVITE_MATCH = 12;
         public const sbyte PET_UNFOLLOW = 3;
@@ -181,17 +155,6 @@ namespace Gopet.Net
         public const sbyte SERVER_LIST = 64;
         public const sbyte SEND_ANIMATION_CHARACTER = 4;
         public const sbyte SEND_LIST_ANIMATION_CHARACTER = 5;
-        public const sbyte LETTER_COMMAND = 121;
-        public const sbyte LETTER_COMMAND_LIST_FRIEND = 1;
-        public const sbyte LETTER_COMMAND_LIST_REQUEST_ADD_FRIEND = 2;
-        public const sbyte LETTER_COMMAND_REQUEST_ADD_FRIEND = 3;
-        public const sbyte LETTER_COMMAND_REQUEST_ADD_FRIEND_WITH_NAME = 4;
-        public const sbyte LETTER_COMMAND_LIST_BLOCK_FRIEND = 10;
-        public const sbyte LETTER_COMMAND_SEND_LETTER = 15;
-        public const sbyte LETTER_COMMAND_SET_MARK = 16;
-        public const sbyte LETTER_COMMAND_REMOVE_LETTER = 17;
-        public const sbyte LETTER_COMMAND_HAS_LETTER = 18;
-        public const sbyte LETTER_BOX = 13;
         public const sbyte FAST_REMOVE_MOB = 99;
         public const sbyte ENERGY_INFO = 102;
         public const sbyte CHECK_SPEED = 103;
@@ -199,7 +162,6 @@ namespace Gopet.Net
         public const sbyte UPDATE_HP_BOSS = 89;
         public const sbyte ADMIN_GET_ITEM = 6;
         public const sbyte ADMIN_GIVE_ITEM = 7;
-        public const sbyte CHAT_GLOBAL = 10;
         public const sbyte AUTO_ATTACK_SUPPORT = 22;
     }
 }

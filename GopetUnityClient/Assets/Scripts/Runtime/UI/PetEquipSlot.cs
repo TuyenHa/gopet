@@ -104,7 +104,7 @@ namespace Gopet.Runtime.UI
             _levelBadge.text = item.Level > 0 ? "+" + item.Level : string.Empty;
             _gemDot.gameObject.SetActive(item.HasGem);
             _icon.color = new Color(1f, 1f, 1f, 0.4f);
-            _assets?.Get(item.FrameImagePath, ImagePackets.TypeIcon, tex =>
+            _assets?.Get(item.FrameImagePath, ImagePackets.TypeIcon, _icon, tex =>
             {
                 if (tex == null || _icon == null) return;
                 _icon.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),

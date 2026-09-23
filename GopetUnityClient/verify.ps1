@@ -26,6 +26,15 @@ $env:DOTNET_NOLOGO = 1
 $root = $PSScriptRoot
 $failed = $false
 
+# A repository-local SDK is used by development tooling on machines without
+# dotnet in PATH. Prefer an explicitly configured/system SDK when available.
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    $localSdk = Join-Path (Split-Path $root -Parent) '.superpowers\dotnet'
+    if (Test-Path (Join-Path $localSdk 'dotnet.exe')) {
+        $env:PATH = "$localSdk;$env:PATH"
+    }
+}
+
 function Step($name, $block) {
     Write-Host ""
     Write-Host "--- $name" -ForegroundColor Cyan
@@ -35,6 +44,16 @@ function Step($name, $block) {
     } catch {
         Write-Host "    FAIL: $_" -ForegroundColor Red
         $script:failed = $true
+    }
+}
+
+function RequireUnityReferences {
+    $managedDir = $env:UNITY_MANAGED_DIR
+    if (-not $managedDir) {
+        $managedDir = 'D:\Unity Editor\6000.5.4f1\Editor\Data\Managed\UnityEngine'
+    }
+    if (-not (Test-Path (Join-Path $managedDir 'UnityEngine.CoreModule.dll'))) {
+        throw "Missing Unity assemblies at $managedDir. Install the project Editor or set UNITY_MANAGED_DIR."
     }
 }
 
@@ -92,6 +111,7 @@ Step "5/10  Unit test" {
 }
 
 Step "6/10  Tang Runtime compile voi DLL Unity that" {
+    RequireUnityReferences
     # Gopet.Net.UnityCompat chi phu Assets/Scripts/Net. Runtime/ dung UnityEngine
     # nen nam ngoai tam no - RemoteAssetCache.cs tung khong duoc THU GI compile
     # cho toi khi nguoi dung focus vao Editor. Buoc nay bit lo do.
@@ -103,6 +123,7 @@ Step "6/10  Tang Runtime compile voi DLL Unity that" {
 }
 
 Step "7/10  Tang Editor compile voi DLL Unity that" {
+    RequireUnityReferences
     # Assets/Editor dung UnityEditor (AssetPostprocessor, TextureImporter,
     # AudioImporter...) - khong asmdef nao trong Assets/Scripts phu toi. Bit lo
     # cung ly do voi buoc Runtime: sai ten API (vd assetTarget thay vi
@@ -115,6 +136,7 @@ Step "7/10  Tang Editor compile voi DLL Unity that" {
 }
 
 Step "8/10  PlayMode test compile duoc" {
+    RequireUnityReferences
     # PlayMode test chi CHAY duoc khi Editor da dong. Neu chung khong compile
     # duoc thi ca lan chay hong - ma luc do nguoi dung da dong Editor roi.
     Push-Location "$root\tests\Gopet.PlayMode.Compile"

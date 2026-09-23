@@ -32,7 +32,7 @@ namespace Gopet.Runtime.World.Battle
             r.pivot = new Vector2(0f, 0.5f);
             r.anchoredPosition = new Vector2(8f, 0f);
             r.sizeDelta = new Vector2(AvatarBox, AvatarBox);
-            assets.Get(pet.ImagePath, ImagePackets.TypeNpc, panel.SetAvatarTexture);
+            assets.Get(pet.ImagePath, ImagePackets.TypeNpc, panel, panel.SetAvatarTexture);
         }
 
         private void SetAvatarTexture(Texture2D texture)

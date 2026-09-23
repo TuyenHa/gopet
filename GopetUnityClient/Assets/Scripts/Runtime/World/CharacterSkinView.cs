@@ -20,7 +20,7 @@ namespace Gopet.Runtime.World
             go.transform.SetParent(parent, false);
             var view = go.AddComponent<CharacterSkinView>();
             view._renderer = go.GetComponent<SpriteRenderer>();
-            assets?.Get(path, ImagePackets.TypeIcon, texture =>
+            assets?.Get(path, ImagePackets.TypeIcon, view, texture =>
             {
                 if (view == null || texture == null) return;
                 view._frames = Slice(path, texture);

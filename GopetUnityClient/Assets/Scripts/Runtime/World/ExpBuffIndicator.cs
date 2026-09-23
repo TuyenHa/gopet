@@ -60,7 +60,7 @@ namespace Gopet.Runtime.World
             _expiresAt = status.ExpiresAtUnixSeconds;
             gameObject.SetActive(_expiresAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             if (assets != null && !string.IsNullOrEmpty(status.IconPath))
-                assets.Get(status.IconPath, ImagePackets.TypeIcon, texture =>
+                assets.Get(status.IconPath, ImagePackets.TypeIcon, _icon, texture =>
                 {
                     if (_icon != null) _icon.texture = texture;
                 });

@@ -62,7 +62,7 @@ namespace Gopet.Runtime.World
         private void LoadIcon(RemoteAssetCache assets, string iconPath)
         {
             if (assets == null || string.IsNullOrEmpty(iconPath)) return;
-            assets.Get(iconPath, ImagePackets.TypeIcon, texture =>
+            assets.Get(iconPath, ImagePackets.TypeIcon, _icon, texture =>
             {
                 if (texture == null || _icon == null) return;
                 _icon.sprite = Sprite.Create(texture,

@@ -61,7 +61,7 @@ namespace Gopet.Runtime.World
 
         private void CreateNameLabel()
         {
-            // Bitmap font jar (JarFont/JarNameLabel): đáy tên tại NameBottomY (sát đỉnh đầu), mọc lên,
+            // World-space name label (JarNameLabel): đáy tên tại NameBottomY (sát đỉnh đầu), mọc lên,
             // canh giữa, màu xanh 0x3B5998 như cp.d() — giống y hệt jar, không viền/nhân đôi.
             _nameLabel = JarNameLabel.Create(transform, new Vector3(0f, NameBottomY, 0f), NameScale, PlayerName);
         }

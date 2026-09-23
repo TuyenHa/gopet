@@ -138,7 +138,7 @@ namespace Gopet.Runtime.UI
             if (assets != null && !string.IsNullOrEmpty(item.ImagePath))
             {
                 var expected = item.ImagePath;
-                assets.Get(expected, ImagePackets.TypeIcon, texture =>
+                assets.Get(expected, ImagePackets.TypeIcon, avatarImage, texture =>
                 {
                     if (this != null && avatarImage != null && item.ImagePath == expected) avatarImage.texture = texture;
                 });

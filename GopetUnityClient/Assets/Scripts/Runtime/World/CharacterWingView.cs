@@ -26,7 +26,7 @@ namespace Gopet.Runtime.World
             view._phase = UnityEngine.Random.Range(0, 1000);
             view._left = CreateHalf(go.transform, "Left wing", false);
             view._right = CreateHalf(go.transform, "Right wing", true);
-            assets?.Get(path, ImagePackets.TypeIcon, texture =>
+            assets?.Get(path, ImagePackets.TypeIcon, view, texture =>
             {
                 if (view == null || texture == null) return;
                 view.ApplyTexture(path, texture, verticalOffset);
@@ -58,6 +58,7 @@ namespace Gopet.Runtime.World
             var halfWidth = texture.width / (float)FrameCount;
             _left.transform.localPosition = new Vector3(-halfWidth * 0.5f, bottomY, 0f);
             _right.transform.localPosition = new Vector3(halfWidth * 0.5f, bottomY, 0f);
+            _frame = -1; // The texture changed even when the frame index is still zero.
             SetFrame(0);
         }
 

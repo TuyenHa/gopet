@@ -18,7 +18,7 @@ namespace Gopet.Runtime.World
         private const float NameScale = 0.75f; // nhỏ hơn cho khớp jar; đồng bộ WorldActorView
 
         /// <summary>Khoảng cách từ đỉnh nhãn tên tới đáy danh hiệu (px game).</summary>
-        public const float TitleGap = 3f;
+        public const float TitleGap = 1f;
         private AvatarAppearance _appearance;
         private CharacterSkinView _skin;
         private CharacterWingView _wing;

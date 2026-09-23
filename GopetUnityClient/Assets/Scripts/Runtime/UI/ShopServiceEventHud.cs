@@ -89,14 +89,24 @@ namespace Gopet.Runtime.UI
         private static Transform MakeButton(Transform parent, Font font, string spriteName,
             string label, float rightOffset, Action onClick)
         {
-            var go = new GameObject($"Hud_{spriteName}", typeof(RectTransform),
-                typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-
-            var rect = (RectTransform)go.transform;
+            var rect = MakeIconButton(parent, font, spriteName, label, onClick);
             rect.anchorMin = new Vector2(1f - rightOffset - SizeFrac, 1f - TopMarginFrac - SizeFrac);
             rect.anchorMax = new Vector2(1f - rightOffset, 1f - TopMarginFrac);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
+            return rect;
+        }
+
+        /// <summary>
+        /// Dựng một nút HUD (icon + nhãn chữ trắng viền đen thò dưới đáy) — CHƯA neo vị
+        /// trí; người gọi tự đặt anchor. Dùng chung cho hàng nút góc phải và nút Pet dưới
+        /// minimap để mọi icon HUD cùng một kiểu.
+        /// </summary>
+        internal static RectTransform MakeIconButton(Transform parent, Font font, string spriteName,
+            string label, Action onClick)
+        {
+            var go = new GameObject($"Hud_{spriteName}", typeof(RectTransform),
+                typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
 
             var icon = go.GetComponent<Image>();
             icon.preserveAspect = true;
@@ -136,7 +146,7 @@ namespace Gopet.Runtime.UI
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 
             go.GetComponent<Button>().onClick.AddListener(() => onClick?.Invoke());
-            return go.transform;
+            return (RectTransform)go.transform;
         }
     }
 }

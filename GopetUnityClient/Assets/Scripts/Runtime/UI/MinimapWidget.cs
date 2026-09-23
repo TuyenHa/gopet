@@ -14,7 +14,7 @@ namespace Gopet.Runtime.UI
         /// </summary>
         private const float SizeFrac = ShopServiceEventHud.MinimapSlotFrac;
         /// <summary>Lề phải của minimap — sát mép màn hình, bằng lề trên <see cref="TopFrac"/>.</summary>
-        private const float MarginFrac = 0.003f;
+        public const float MarginFrac = 0.003f;
         private const float TopRowFrac = ShopServiceEventHud.TopMarginFrac;
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Gopet.Runtime.UI
         /// Đáy minimap ngang ĐÁY CHỮ "Sự kiện" bên cạnh, không phải ngang đáy icon — nhìn
         /// mới thành một hàng liền khối. Mép trên kéo lên sát lề (<see cref="TopFrac"/>).
         /// </summary>
-        private const float BottomFrac = TopRowFrac + SizeFrac * (1f + ShopServiceEventHud.LabelBottomFrac);
+        public const float BottomFrac = TopRowFrac + SizeFrac * (1f + ShopServiceEventHud.LabelBottomFrac);
         /// <summary>Viền mảnh thôi — viền dày ăn mất phần map vốn đã bé tí.</summary>
         private const float BorderPx = 2f;
 

@@ -228,8 +228,16 @@ namespace Gopet.App
 
         }
 
+        private static int _shutdownStarted;
+
+        /// <summary>
+        /// Lưu market, clan, người chơi rồi dừng các cổng. Chạy đúng MỘT lần: lệnh
+        /// console <c>shutdown</c> và tín hiệu dừng (<see cref="GracefulShutdown"/>) có thể
+        /// cùng tới — chạy hai lần là đóng/lưu chồng lên nhau.
+        /// </summary>
         public static void shutdown()
         {
+            if (Interlocked.Exchange(ref _shutdownStarted, 1) == 1) return;
             MapManager.stopUpdate();
             GopetManager.saveMarket();
             server.StopServer();

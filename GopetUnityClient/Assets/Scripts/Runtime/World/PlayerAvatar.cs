@@ -16,7 +16,10 @@ namespace Gopet.Runtime.World
         private readonly Queue<Vector2Int> _path = new Queue<Vector2Int>();
         private readonly PositionInterpolator _interp = new PositionInterpolator();
         private const float NameScale = 0.75f; // nhỏ hơn cho khớp jar; đồng bộ WorldActorView
-        private const float NameBottomY = 60f;  // đáy tên ~ đỉnh đầu; giảm để kéo tên xuống sát/đè đầu
+        private const float NameHeight = JarNameLabel.Height * NameScale;
+
+        /// <summary>Khoảng cách từ đỉnh nhãn tên tới đáy danh hiệu (px game).</summary>
+        public const float TitleGap = 10f;
         private AvatarAppearance _appearance;
         private CharacterSkinView _skin;
         private CharacterWingView _wing;
@@ -30,6 +33,15 @@ namespace Gopet.Runtime.World
         // (không dùng frameCount vì thứ tự Update giữa các component không xác định).
         private const float CommandHoldSeconds = 0.12f;
         private float _commandedMovingUntil;
+
+        /// <summary>
+        /// Đỉnh đầu THẬT tính từ chân, đo theo hình đang hiện (skin hoặc avatar mặc định) —
+        /// skin cao/thấp khác nhau nên tên và danh hiệu phải bám theo, không đặt cứng.
+        /// </summary>
+        public float HeadTopY { get; private set; }
+
+        /// <summary>Mốc đáy danh hiệu: đầu → tên → <see cref="TitleGap"/> → danh hiệu.</summary>
+        public Transform TitleAnchor { get; private set; }
 
         public int UserId { get; private set; }
         public string PlayerName { get; private set; }
@@ -55,15 +67,26 @@ namespace Gopet.Runtime.World
             avatar._mapHeightPixels = mapHeightPixels;
             avatar._appearance = AvatarAppearance.Create(go.transform, gender);
             avatar.CreateNameLabel();
+            avatar.TitleAnchor = new GameObject("Title Anchor").transform;
+            avatar.TitleAnchor.SetParent(go.transform, false);
+            avatar.RefreshHeadTop();
             avatar.SnapTo(jarX, jarY);
             return avatar;
         }
 
         private void CreateNameLabel()
         {
-            // World-space name label (JarNameLabel): đáy tên tại NameBottomY (sát đỉnh đầu), mọc lên,
+            // World-space name label (JarNameLabel): đáy tên sát đỉnh đầu (RefreshHeadTop), mọc lên,
             // canh giữa, màu xanh 0x3B5998 như cp.d() — giống y hệt jar, không viền/nhân đôi.
-            _nameLabel = JarNameLabel.Create(transform, new Vector3(0f, NameBottomY, 0f), NameScale, PlayerName);
+            _nameLabel = JarNameLabel.Create(transform, Vector3.zero, NameScale, PlayerName);
+        }
+
+        /// <summary>Đo lại đỉnh đầu rồi xếp tên và mốc danh hiệu lên trên nó.</summary>
+        private void RefreshHeadTop()
+        {
+            HeadTopY = _skin != null && _skin.HasSprite ? _skin.TopY : _appearance.TopY;
+            _nameLabel.transform.localPosition = new Vector3(0f, HeadTopY, 0f);
+            TitleAnchor.localPosition = new Vector3(0f, HeadTopY + NameHeight + TitleGap, 0f);
         }
 
         public void SnapTo(int jarX, int jarY)
@@ -106,10 +129,15 @@ namespace Gopet.Runtime.World
             _skin = null;
             var equipped = !string.IsNullOrEmpty(path);
             if (_appearance != null) _appearance.gameObject.SetActive(!equipped);
-            if (!equipped) return;
-            _skin = CharacterSkinView.Create(transform, path, assets);
-            _skin.SetFacing(_facingLeft);
-            _skin.SetMoving(_moving);
+            if (equipped)
+            {
+                _skin = CharacterSkinView.Create(transform, path, assets);
+                _skin.SetFacing(_facingLeft);
+                _skin.SetMoving(_moving);
+                // Ảnh skin tải bất đồng bộ: có ảnh rồi mới biết skin cao bao nhiêu.
+                _skin.Loaded += RefreshHeadTop;
+            }
+            RefreshHeadTop();
         }
 
         public void ApplyWing(string path, int verticalOffset, RemoteAssetCache assets)

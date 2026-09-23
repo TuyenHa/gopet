@@ -14,6 +14,12 @@ namespace Gopet.Runtime.World
         private float _nextFrame;
         private int _frame;
 
+        /// <summary>Bắn khi ảnh skin tải xong — lúc này mới đo được chiều cao thật.</summary>
+        public event Action Loaded;
+        public bool HasSprite => _frames.Length > 0;
+        /// <summary>Đỉnh skin tính từ chân (pivot đáy), px game.</summary>
+        public float TopY => HasSprite ? _frames[0].bounds.max.y : 0f;
+
         public static CharacterSkinView Create(Transform parent, string path, RemoteAssetCache assets)
         {
             var go = new GameObject("Equipped character skin", typeof(SpriteRenderer));
@@ -25,6 +31,7 @@ namespace Gopet.Runtime.World
                 if (view == null || texture == null) return;
                 view._frames = Slice(path, texture);
                 view._renderer.sprite = view._frames[0];
+                view.Loaded?.Invoke();
             });
             return view;
         }

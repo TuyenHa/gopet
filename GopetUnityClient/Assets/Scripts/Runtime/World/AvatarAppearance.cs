@@ -153,6 +153,19 @@ namespace Gopet.Runtime.World
 
         public void SetMoving(bool moving) => _moving = moving;
 
+        /// <summary>Đỉnh cao nhất của các bộ phận tính từ chân (lúc đứng yên), px game.</summary>
+        public float TopY
+        {
+            get
+            {
+                var top = 0f;
+                foreach (var (renderer, _) in _renderers)
+                    if (renderer != null && renderer.sprite != null)
+                        top = Mathf.Max(top, renderer.transform.localPosition.y + renderer.sprite.bounds.max.y);
+                return top;
+            }
+        }
+
         public void SetSortingOrder(int order)
         {
             foreach (var item in _renderers) item.renderer.sortingOrder = order + item.layer;

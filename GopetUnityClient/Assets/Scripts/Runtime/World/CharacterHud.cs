@@ -22,7 +22,8 @@ namespace Gopet.Runtime.World
     {
         // Ngắn hơn bản cũ 20 px; portrait giữ nguyên, chỉ thu phần tên và thanh HP/MP.
         private const float PanelWidth = 240f;
-        private const float PanelHeight = 88f;
+        // Tên map đã chuyển lên đầu minimap nên panel chỉ còn cao vừa portrait + 2 thanh.
+        private const float PanelHeight = 70f;
         private const float PortraitSize = 56f;
         private const float PortraitLeft = 6f;
         private const float PortraitTop = 6f;
@@ -33,7 +34,6 @@ namespace Gopet.Runtime.World
         private const float NameTop = 2f;
 
         private Text _name;
-        private Text _mapName;
         private Text _levelBadge;
         private Image _portrait;
         private RemoteAssetCache _assets;
@@ -45,7 +45,6 @@ namespace Gopet.Runtime.World
         /// <summary>Deprecated — pet EXP chưa có realtime; property giữ để tương thích, không dùng.</summary>
         public StatBar Experience { get; private set; }
         public string PlayerName => _name == null ? string.Empty : _name.text;
-        public string MapName => _mapName == null ? string.Empty : _mapName.text;
 
         public static CharacterHud Create(Transform parent, string playerName)
         {
@@ -81,11 +80,6 @@ namespace Gopet.Runtime.World
         {
             if (_levelBadge == null) return;
             _levelBadge.text = level.ToString();
-        }
-
-        public void SetMapName(string mapName)
-        {
-            _mapName.text = string.IsNullOrWhiteSpace(mapName) ? "Bản đồ chưa xác định" : mapName;
         }
 
         public void SetPortrait(Sprite sprite)
@@ -161,12 +155,6 @@ namespace Gopet.Runtime.World
                 new Color(0.22f, 0.55f, 0.95f, 1f), 42f, x: BarLeft, width: BarWidth);
             Hp.SetUnavailable();
             Mp.SetUnavailable();
-
-            _mapName = UiBuilder.MakeText(transform, font, "Map Name", 11, false);
-            SetRect(_mapName.rectTransform, BarLeft, 66f, BarWidth, 17f);
-            _mapName.alignment = TextAnchor.MiddleLeft;
-            _mapName.color = Color.white;
-            _mapName.text = "Bản đồ chưa xác định";
         }
 
         private void BuildLevelBadge(Font font, Transform frame)

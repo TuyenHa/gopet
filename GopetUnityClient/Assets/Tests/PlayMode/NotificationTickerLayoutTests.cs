@@ -41,14 +41,20 @@ namespace Gopet.PlayModeTests
                 "Mép trái băng thông báo phải trùng mép trái thanh tài nguyên.");
         }
 
-        /// <summary>Băng dài 3/4 so với bản cũ (348px ở khung chuẩn 960) — 261px.</summary>
+        /// <summary>
+        /// Băng rộng cố định, KHÔNG co theo bề ngang màn: màn hẹp hơn 16:9 từng làm băng
+        /// co tới mức vùng chữ rộng ~0px, thông báo chạy mà không thấy chữ.
+        /// </summary>
         [Test]
-        public void BangThongBao_DaiBangBaPhanTuBanCu()
+        public void BangThongBao_RongCoDinh_VungChuLuonDuRong()
         {
-            var pill = (RectTransform)NotificationTicker.Create(_root.transform).transform;
+            var ticker = NotificationTicker.Create(_root.transform);
+            var pill = (RectTransform)ticker.transform;
+            var viewport = (RectTransform)ticker.transform.Find("Text Viewport");
 
-            var width = 960f + pill.offsetMax.x - pill.offsetMin.x;
-            Assert.AreEqual(348f * 0.75f, width, 1f, "Băng thông báo sai độ dài.");
+            Assert.AreEqual(NotificationTicker.Width, pill.rect.width, 0.01f, "Băng thông báo sai độ dài.");
+            Assert.AreEqual(pill.anchorMin.x, pill.anchorMax.x, "Băng không được giãn theo bề ngang màn.");
+            Assert.Greater(viewport.rect.width, 100f, "Vùng chữ quá hẹp, thông báo sẽ không thấy chữ.");
         }
 
         /// <summary>Băng phải nằm HẲN dưới thanh tài nguyên, không đè lên nó.</summary>

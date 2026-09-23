@@ -10,6 +10,13 @@ namespace Gopet.Runtime.World
     public sealed class CharacterAnimationView : MonoBehaviour
     {
         private const float FrameInterval = 0.2f;
+
+        /// <summary>
+        /// Ảnh danh hiệu gốc rộng ~140px — gấp đôi nhân vật, nhìn to và lơ lửng xa đầu.
+        /// Thu nhỏ còn một nửa.
+        /// </summary>
+        public const float Scale = 0.5f;
+
         private SpriteRenderer _renderer;
         private Sprite[] _frames = Array.Empty<Sprite>();
         private int _frame;
@@ -20,7 +27,10 @@ namespace Gopet.Runtime.World
         {
             var go = new GameObject($"Character animation {animation.Type}:{index}", typeof(SpriteRenderer));
             go.transform.SetParent(avatar, false);
+            // Parent là PlayerAvatar.TitleAnchor (trên tên, đã tính theo chiều cao nhân vật);
+            // sprite pivot ở đáy nên chỉ còn cộng vX/vY server gửi (trục y jar hướng xuống).
             go.transform.localPosition = new Vector3(animation.OffsetX, -animation.OffsetY, 0f);
+            go.transform.localScale = Vector3.one * Scale;
             var view = go.AddComponent<CharacterAnimationView>();
             view._renderer = go.GetComponent<SpriteRenderer>();
             view._renderer.sortingOrder = animation.DrawAtEnd ? 32010 : 31990;

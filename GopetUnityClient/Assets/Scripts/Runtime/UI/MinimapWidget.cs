@@ -13,14 +13,20 @@ namespace Gopet.Runtime.UI
         /// <see cref="ShopServiceEventHud"/> nên hai bên không thể lệch hàng nhau.
         /// </summary>
         private const float SizeFrac = ShopServiceEventHud.MinimapSlotFrac;
-        private const float MarginFrac = ShopServiceEventHud.ReservedRightFrac;
+        /// <summary>Lề phải của minimap — sát mép màn hình, bằng lề trên <see cref="TopFrac"/>.</summary>
+        private const float MarginFrac = 0.003f;
         private const float TopRowFrac = ShopServiceEventHud.TopMarginFrac;
 
         /// <summary>
-        /// Cao hơn nút một chút: đáy minimap ngang ĐÁY CHỮ "Sự kiện" bên cạnh, không
-        /// phải ngang đáy icon — nhìn mới thành một hàng liền khối.
+        /// Minimap nhô cao hơn hàng nút, sát mép trên màn hình, để ô map to hơn một chút.
         /// </summary>
-        private const float HeightFrac = SizeFrac * (1f + ShopServiceEventHud.LabelBottomFrac);
+        private const float TopFrac = 0.003f;
+
+        /// <summary>
+        /// Đáy minimap ngang ĐÁY CHỮ "Sự kiện" bên cạnh, không phải ngang đáy icon — nhìn
+        /// mới thành một hàng liền khối. Mép trên kéo lên sát lề (<see cref="TopFrac"/>).
+        /// </summary>
+        private const float BottomFrac = TopRowFrac + SizeFrac * (1f + ShopServiceEventHud.LabelBottomFrac);
         /// <summary>Viền mảnh thôi — viền dày ăn mất phần map vốn đã bé tí.</summary>
         private const float BorderPx = 2f;
 
@@ -32,9 +38,16 @@ namespace Gopet.Runtime.UI
         /// mảng TRẮNG — đúng cái ô trắng trơn nhìn như widget hỏng.
         /// </summary>
         private static readonly Color EmptyMapColor = new Color(0.04f, 0.09f, 0.13f, 1f);
+
+        /// <summary>
+        /// Dải tên map trên đỉnh ô, nằm trên nền tối. Ảnh map phủ phần còn lại bên dưới
+        /// nên chữ không bao giờ đè lên map.
+        /// </summary>
+        private const float TitleFrac = 0.24f;
+        private const float MapAreaTop = 1f - TitleFrac;
         private RawImage _mapImage;
         private RectTransform _viewport, _dot;
-        private Text _fallback;
+        private Text _fallback, _title;
         private PlayerAvatar _follow;
         private int _mapWidth, _mapHeight;
         public event Action Clicked;
@@ -42,8 +55,8 @@ namespace Gopet.Runtime.UI
         {
             var root = new GameObject("MinimapWidget", typeof(RectTransform), typeof(Image), typeof(Button)); root.transform.SetParent(parent, false);
             var rect = (RectTransform)root.transform;
-            rect.anchorMin = new Vector2(1f - MarginFrac - SizeFrac, 1f - TopRowFrac - HeightFrac);
-            rect.anchorMax = new Vector2(1f - MarginFrac, 1f - TopRowFrac);
+            rect.anchorMin = new Vector2(1f - MarginFrac - SizeFrac, 1f - BottomFrac);
+            rect.anchorMax = new Vector2(1f - MarginFrac, 1f - TopFrac);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             var view = root.AddComponent<MinimapWidget>();
             // Dùng chính nền chữ nhật làm viền qua inset BorderPx của ảnh map;
@@ -70,6 +83,9 @@ namespace Gopet.Runtime.UI
             UiBuilder.Stretch(view._viewport);
             view._viewport.offsetMin = new Vector2(BorderPx, BorderPx);
             view._viewport.offsetMax = new Vector2(-BorderPx, -BorderPx);
+            // Ảnh map phủ KÍN vùng dưới dải tên (trái-phải sát viền), chấp nhận co giãn
+            // nhẹ theo tỉ lệ ô — letterbox để lại hai dải đen hai bên trông như map bị hụt.
+            view._viewport.anchorMax = new Vector2(1f, MapAreaTop);
             view._mapImage = viewport.GetComponent<RawImage>();
             view._mapImage.raycastTarget = false;
             view._mapImage.color = EmptyMapColor;
@@ -84,6 +100,8 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(dotImage);
             view._fallback = UiBuilder.MakeText(root.transform, font, "Fallback", 11, true);
             view._fallback.alignment = TextAnchor.MiddleCenter; view._fallback.text = "Bản đồ";
+            view._fallback.rectTransform.anchorMax = new Vector2(1f, MapAreaTop);
+            view._title = CreateTitle(root.transform, font);
             root.GetComponent<Button>().onClick.AddListener(() => view.Clicked?.Invoke());
             return view;
         }
@@ -95,20 +113,23 @@ namespace Gopet.Runtime.UI
         /// <param name="texture">Ảnh camera minimap, <c>null</c> khi chưa có map.</param>
         public void SetLiveMap(Texture texture, int mapWidthPixels, int mapHeightPixels, int mapId)
         {
+            _title.text = mapId > 0 ? MapDisplayNames.Get(mapId) : "Bản đồ";
             _mapWidth = mapWidthPixels; _mapHeight = mapHeightPixels;
             _follow = null;
             _dot.gameObject.SetActive(false);
             if (texture == null || _mapWidth <= 0 || _mapHeight <= 0)
             {
                 _mapImage.texture = null;
-                ShowFallback(mapId);
+                ShowFallback();
                 return;
             }
 
             _mapImage.texture = texture; _mapImage.color = Color.white;
             _mapImage.enabled = true; _fallback.enabled = false;
-            FitViewport(_mapWidth, _mapHeight);
         }
+
+        /// <summary>Tên map hiện tại trên đỉnh minimap.</summary>
+        public string MapName => _title.text;
         public void BindPlayer(PlayerAvatar avatar)
         {
             _follow = avatar;
@@ -123,29 +144,34 @@ namespace Gopet.Runtime.UI
             _dot.anchorMin = _dot.anchorMax = anchor;
             _dot.anchoredPosition = Vector2.zero;
         }
-        private void FitViewport(float width, float height)
+        private static Text CreateTitle(Transform parent, Font font)
         {
-            var ratio = width / height;
-            _viewport.offsetMin = new Vector2(BorderPx, BorderPx);
-            _viewport.offsetMax = new Vector2(-BorderPx, -BorderPx);
-            if (ratio >= 1f)
-            {
-                var pad = (1f - 1f / ratio) * 0.5f;
-                _viewport.anchorMin = new Vector2(0f, pad); _viewport.anchorMax = new Vector2(1f, 1f - pad);
-            }
-            else
-            {
-                var pad = (1f - ratio) * 0.5f;
-                _viewport.anchorMin = new Vector2(pad, 0f); _viewport.anchorMax = new Vector2(1f - pad, 1f);
-            }
+            var title = UiBuilder.MakeText(parent, font, "Map Title", 11, true);
+            var rect = title.rectTransform;
+            rect.anchorMin = new Vector2(0f, MapAreaTop);
+            rect.offsetMin = new Vector2(BorderPx + 2f, 0f);
+            rect.offsetMax = new Vector2(-BorderPx - 2f, -BorderPx);
+            title.alignment = TextAnchor.MiddleCenter;
+            title.color = Color.white;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
+            // Tên map dài tự thu nhỏ cho vừa ô thay vì tràn ra ngoài.
+            title.horizontalOverflow = HorizontalWrapMode.Wrap;
+            title.verticalOverflow = VerticalWrapMode.Truncate;
+            title.resizeTextForBestFit = true;
+            title.resizeTextMinSize = 6;
+            title.resizeTextMaxSize = 11;
+            title.raycastTarget = false;
+            title.text = "Bản đồ";
+            return title;
         }
-        private void ShowFallback(int mapId)
+
+        private void ShowFallback()
         {
             // Giữ RawImage BẬT nhưng không texture + màu tối: tắt hẳn thì lộ nguyên nền
             // viền, cả ô thành một mảng xanh đặc.
             _mapImage.enabled = true; _mapImage.color = EmptyMapColor;
+            // Tên map đã nằm ở dải trên đỉnh; ruột chỉ cần báo là chưa có ảnh.
             _fallback.enabled = true;
-            _fallback.text = mapId > 0 ? $"Map {mapId}" : "Bản đồ";
         }
     }
 }

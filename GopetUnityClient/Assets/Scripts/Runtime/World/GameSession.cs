@@ -169,7 +169,6 @@ namespace Gopet.Runtime.World
             s._hud.Character.BindAssets(assets);
             s._hud.Character.Clicked += s.OpenCharacterHub;
             s._hud.TaskTracker.Clicked += () => s.RequestTasks(true);
-            s.UpdateMapName();
             guider.BossBannerShown += s._hud.Ticker.Show;
             // Banner thường (SERVER_MESSAGE/BANNER_MESSAGE) dùng chung băng chạy chữ với banner
             // boss. Trước đây event này không có ai nghe nên mọi Player.showBanner() gọi đơn lẻ
@@ -332,7 +331,6 @@ namespace Gopet.Runtime.World
             // Đổi map → camera phải recenter theo map MỚI. Không thì nó đứng chỗ cũ và
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.
             s._scene.MapLoaded += () => s._camera?.Recenter();
-            s._scene.MapLoaded += s.UpdateMapName;
             s._scene.MapLoaded += s.RefreshMinimap;
 
             // Gắn MovementController khi SELF vừa spawn — sự kiện đến từ opcode 29
@@ -372,9 +370,6 @@ namespace Gopet.Runtime.World
             // ngay sau loginOK (Player.cs:522). Gửi thừa gây double init/exit/enter.
             return s;
         }
-
-        private void UpdateMapName() =>
-            _hud?.Character?.SetMapName(MapDisplayNames.Get(_scene.MapId));
 
         private void OnSelfSpawned(PlayerEnterMap evt)
         {

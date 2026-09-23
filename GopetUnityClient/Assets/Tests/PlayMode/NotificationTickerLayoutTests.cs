@@ -57,16 +57,17 @@ namespace Gopet.PlayModeTests
             Assert.Greater(viewport.rect.width, 100f, "Vùng chữ quá hẹp, thông báo sẽ không thấy chữ.");
         }
 
-        /// <summary>Băng phải nằm HẲN dưới thanh tài nguyên, không đè lên nó.</summary>
+        /// <summary>Mép dưới băng ngang hàng mép dưới HUD nhân vật.</summary>
         [Test]
-        public void BangThongBao_NamDuoiThanhTaiNguyen()
+        public void BangThongBao_MepDuoiNgangHud()
         {
             var ticker = NotificationTicker.Create(_root.transform);
             var pill = (RectTransform)ticker.transform;
 
-            // offsetMax.y âm = khoảng cách từ mép trên màn xuống mép trên băng.
-            Assert.Less(pill.offsetMax.y, -28f,
-                "Băng thông báo chồm lên thanh tài nguyên (cao 28px tính cả lề).");
+            // Neo góc trên-trái, pivot trên: mép dưới = -(khoảng cách đỉnh + cao băng).
+            var bottom = -pill.anchoredPosition.y + pill.sizeDelta.y;
+            Assert.AreEqual(CharacterHud.Margin + CharacterHud.PanelHeight, bottom, 0.01f,
+                "Mép dưới băng thông báo phải ngang mép dưới HUD nhân vật.");
         }
     }
 }

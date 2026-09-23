@@ -23,22 +23,21 @@ namespace Gopet.Runtime.UI
         // delivers non-empty text from the server.
         private const string SpeakerResource = "Ui/Hud/notify-speaker-v2";
 
-        // Neo cao ở vùng giữa phía trên, NGAY DƯỚI thanh tài nguyên (đậu/lúa/vàng) và
-        // thẳng cột với nó: hai thanh cùng một khối thông tin, lệch mép trái nhìn rất
-        // chướng. Mép phải chừa rộng hơn để không chạm cụm icon shop góc phải-trên.
-        private const float TopMargin = 38f;
+        // Mép dưới băng NGANG HÀNG mép dưới HUD nhân vật (avatar/HP/MP/tiền tệ), nằm bên
+        // phải HUD — thấp hơn hẳn cụm icon shop góc phải-trên nên không đè lên chúng.
+        public const float TopMargin = World.CharacterHud.Margin + World.CharacterHud.PanelHeight - Height;
         // Cái mắt thấy ở mép trái băng là CÁI LOA (nó thò ra ngoài viên thuốc), nên
         // thẳng cột với thanh tài nguyên nghĩa là loa thẳng cột, không phải viên thuốc.
         private const float LeftMargin = World.CurrencyBar.LeftMargin + SpeakerOverhang;
         /// <summary>
-        /// Độ dài băng CỐ ĐỊNH (174px — bằng độ dài ở khung chuẩn 960 trước đây).
+        /// Độ dài băng CỐ ĐỊNH: 174 của bản cũ, kéo dài thêm 40% (244) rồi gấp đôi.
         ///
         /// <para>Không tính theo lề phải: HUD scale theo chiều cao (match = 1) nên màn
         /// hẹp hơn 16:9 thì bề ngang canvas nhỏ lại, băng co tới mức chỉ còn cái loa và
         /// vùng chữ rộng ~0px — thông báo chạy mà không thấy chữ.</para>
         /// </summary>
-        public const float Width = 174f;
-        private const float Height = 32f;
+        public const float Width = 488f;
+        public const float Height = 32f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài
         private const float SpeakerOverhang = 14f;  // px thò ra mép trái pill
         private const float TextLeftPad = 40f;      // chỗ trống bên trong pill cho loa

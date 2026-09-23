@@ -188,7 +188,7 @@ namespace Gopet.Runtime.World
             // để ngồi trên GameHud (30) nhưng dưới BattleView (thường 40+). Nếu attach
             // trực tiếp vào world transform sẽ KHÔNG hiện — UI cần Canvas parent.
             s._hudParent = CreateHudOverlayCanvas(parent ?? s._scene.transform).transform;
-            s._currency = CurrencyBar.Create(s._hudParent, assets);
+            s._currency = CurrencyBar.Create(s._hud.Character.transform, assets);
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
             s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);

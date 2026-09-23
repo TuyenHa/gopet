@@ -87,10 +87,10 @@ namespace Gopet.PlayModeTests
             _view.Bind(_screen, null, null, "Buy", mode);
             Assert.That(Content.childCount, Is.InRange(1, 10));
             Scroll(30); // Warm the symmetric overscan capacity.
-            var ids = Content.GetComponentsInChildren<Transform>(true).Select(t => t.GetInstanceID()).ToArray();
+            var transforms = Content.GetComponentsInChildren<Transform>(true);
             for (var i = 50; i < 180; i += 10) Scroll(i);
-            CollectionAssert.AreEquivalent(ids,
-                Content.GetComponentsInChildren<Transform>(true).Select(t => t.GetInstanceID()).ToArray());
+            CollectionAssert.AreEquivalent(transforms,
+                Content.GetComponentsInChildren<Transform>(true));
             Assert.AreEqual("Pet 170", Row(170).Find("Title").GetComponent<Text>().text);
         }
 

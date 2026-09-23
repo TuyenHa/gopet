@@ -83,6 +83,13 @@ namespace Gopet.Runtime.UI
             _unreadDot.SetActive(unread);
         }
 
+        /// <summary>Dòng chữ không phải thư (nhiệm vụ…): tiêu đề đậm, không có chấm chưa đọc.</summary>
+        public void Bind(string title, string subtitle)
+        {
+            Bind(title, subtitle, true);
+            _unreadDot.SetActive(false);
+        }
+
         /// <summary>Vạch ngăn dưới chân dòng. Dòng CUỐI phải tắt, không thì thừa một nét sát viền.</summary>
         public void SetSeparatorVisible(bool visible) => _separator.SetActive(visible);
 

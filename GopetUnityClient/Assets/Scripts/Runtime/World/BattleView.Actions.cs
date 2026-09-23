@@ -11,7 +11,7 @@ namespace Gopet.Runtime.World
     {
         private void OnAttack()
         {
-            if (!_turn.CanAct) return;
+            if (HasResult || _closeRequested || !_turn.CanAct) return;
             _handler.SendNormalAttack();
             MarkSent();
         }
@@ -22,7 +22,7 @@ namespace Gopet.Runtime.World
         /// mở khoá lại. Gói lượt chỉ tới sau khi người chơi thật sự chọn một vật phẩm.</summary>
         private void OnPotion()
         {
-            if (!_turn.CanAct) return;
+            if (HasResult || _closeRequested || !_turn.CanAct) return;
             _handler.SendUseItem();
         }
 
@@ -35,11 +35,14 @@ namespace Gopet.Runtime.World
 
         /// <summary>Nút tròn mở/đóng popup. Không gate theo lượt — xem được kỹ năng lúc nào
         /// cũng được, chỉ từng dòng mới khoá khi chưa tới lượt hoặc thiếu MP.</summary>
-        private void ToggleSkillPopup() => _skillPopup?.Toggle();
+        private void ToggleSkillPopup()
+        {
+            if (!HasResult && !_closeRequested) _skillPopup?.Toggle();
+        }
 
         private void OnSkillUsed(int skillId)
         {
-            if (!_turn.CanAct) return;
+            if (HasResult || _closeRequested || !_turn.CanAct) return;
             SoundManager.Instance?.PlayEffect("s_button_ingame");
             _handler.SendSkill(skillId);
             _cooldowns.MarkUsed(skillId);
@@ -59,10 +62,11 @@ namespace Gopet.Runtime.World
         /// khi tới lượt người chơi (<c>PetBattle.cs:211-217</c>, <c>:677-684</c>).</summary>
         private void OnSurrenderClicked()
         {
-            if (_surrendered) return;
+            if (_surrendered || HasResult || _closeRequested) return;
             var d = YesNoDialog.Create(transform, "Bạn chắc chắn muốn xin thua?", "Xin thua", "Huỷ");
             d.Confirmed += () =>
             {
+                if (HasResult || _closeRequested) { Destroy(d.gameObject); return; }
                 _surrendered = true;
                 _handler.SendSurrender();
                 _actionBar.LockSurrender();
@@ -73,7 +77,11 @@ namespace Gopet.Runtime.World
 
         private void OnBackClicked()
         {
-            if (_result != null) { Closed?.Invoke(); return; }
+            if (HasResult)
+            {
+                if (!AwaitingVictoryConfirmation && _result != null) RequestClose();
+                return;
+            }
             OnSurrenderClicked();
         }
 

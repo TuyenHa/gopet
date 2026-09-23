@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using Gopet.Net;
 using Gopet.Net.Auth;
@@ -149,7 +149,8 @@ namespace Gopet.Net.LiveSmoke
             WarpChecks.Run(socket, _router, mapRec);
             ChallengePlaceChecks.Run(socket, _router, mapRec);
             MarketPlaceChecks.Run(socket, _router, mapRec);
-            BattleChecks.Run(socket, _router, guider, mapRec.Handler, _success.UserId);
+            var world = BattleChecks.Run(socket, _router, guider, mapRec.Handler, _success.UserId);
+            PetInteractChecks.Run(socket, _router, _success.UserId, world);
             HoldConnection(socket, auth);
             return true;
         }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Gopet.Net.Map;
 using Gopet.UiLogic;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace Gopet.Runtime.World
     /// <para><b>Không click-to-move</b>. Jar không có; server chỉ nhìn 2 số cuối nên chấp
     /// nhận, nhưng hành vi client khác hẳn — người chơi jar cũ sẽ thấy lạ.</para>
     /// </summary>
-    public sealed class MovementController : MonoBehaviour
+    public sealed partial class MovementController : MonoBehaviour
     {
         /// <summary>Tốc độ đi mặc định — 4 ô/giây (96 px/s). Chỉnh sau khi có <c>playerData.speed</c> từ server.</summary>
         public const float DefaultWalkSpeedPxPerSec = 96f;
@@ -32,6 +32,39 @@ namespace Gopet.Runtime.World
         private readonly PathSampler _sampler = new PathSampler();
         private InputAction _wasdAction;
         private InputAction _arrowAction;
+        private bool _walking;
+        private float _lockedUntil;
+
+        /// <summary>Quay mặt nhân vật về một hướng (0=đông, 1=tây, 2=nam, 3=bắc) mà không
+        /// cần người chơi bấm phím. Lúc tương tác pet, jar xoay người chơi về phía con pet.</summary>
+        /// <summary>
+        /// Cấm điều khiển trong <paramref name="seconds"/> giây rồi tự mở lại. Tách hẳn khỏi
+        /// <see cref="InputEnabled"/> (cờ của trận đánh): nếu dùng chung một cờ thì hiệu ứng
+        /// tương tác pet hết giờ giữa trận sẽ mở khoá ngay trong lúc đang đánh.
+        /// </summary>
+        public void LockInput(float seconds)
+        {
+            if (seconds <= 0f) return;
+            _lockedUntil = Mathf.Max(_lockedUntil, Time.time + seconds);
+        }
+
+        public void FaceDirection(int direction)
+        {
+            LastDirection = direction;
+            if (_camera != null && (direction == 0 || direction == 1)) _camera.FaceRight = direction == 0;
+            _scene?.Self?.SetLocomotion(direction, false);
+        }
+
+        /// <summary>Đang có phím đi được giữ. Xem <see cref="WalkStarted"/> để biết vì sao
+        /// người gọi cần phân biệt "đang đi" với "vừa bắt đầu đi".</summary>
+        public bool IsWalking => _walking;
+
+        /// <summary>
+        /// Bắn ra ở khung hình người chơi CHUYỂN từ đứng yên sang đi. Chế độ hồi phục pet
+        /// của jar tắt đúng lúc này (<c>ew.java:424</c>), nên cần mốc "bắt đầu đi" chứ không
+        /// phải cờ "đang đi" — nếu không sẽ gửi gói tắt mỗi khung hình.
+        /// </summary>
+        public event System.Action WalkStarted;
 
         public float WalkSpeed { get; set; } = DefaultWalkSpeedPxPerSec;
         public int CurrentMapId => _mapId;
@@ -40,42 +73,6 @@ namespace Gopet.Runtime.World
 
         /// <summary>Hướng cuối cùng (0=đông,1=tây,2=nam,3=bắc). Server ghi log — client dùng animation sau.</summary>
         public int LastDirection { get; private set; } = 0;
-
-        private void Awake()
-        {
-            _wasdAction = new InputAction("Move WASD", InputActionType.Value);
-            var composite = _wasdAction.AddCompositeBinding("2DVector");
-            composite.With("Up", "<Keyboard>/w");
-            composite.With("Down", "<Keyboard>/s");
-            composite.With("Left", "<Keyboard>/a");
-            composite.With("Right", "<Keyboard>/d");
-            _arrowAction = new InputAction("Move Arrows", InputActionType.Value);
-            var arrows = _arrowAction.AddCompositeBinding("2DVector");
-            arrows.With("Up", "<Keyboard>/upArrow");
-            arrows.With("Down", "<Keyboard>/downArrow");
-            arrows.With("Left", "<Keyboard>/leftArrow");
-            arrows.With("Right", "<Keyboard>/rightArrow");
-        }
-
-        private void OnEnable()
-        {
-            _wasdAction?.Enable();
-            _arrowAction?.Enable();
-        }
-
-        private void OnDisable()
-        {
-            _wasdAction?.Disable();
-            _arrowAction?.Disable();
-        }
-
-        private void OnDestroy()
-        {
-            _wasdAction?.Dispose();
-            _arrowAction?.Dispose();
-            _wasdAction = null;
-            _arrowAction = null;
-        }
 
         public static MovementController Attach(MapScene scene, MapHandler handler, CameraFollower camera, GameHud hud,
             int mapId, int userId, int initialJarX, int initialJarY)
@@ -101,8 +98,9 @@ namespace Gopet.Runtime.World
         {
             if (_scene?.Self == null) return;
 
-            if (!InputEnabled)
+            if (!InputEnabled || Time.time < _lockedUntil)
             {
+                _walking = false;
                 _scene.Self.SetLocomotion(LastDirection, false);
                 return;
             }
@@ -112,6 +110,11 @@ namespace Gopet.Runtime.World
 
             if (dx != 0f || dy != 0f)
             {
+                if (!_walking)
+                {
+                    _walking = true;
+                    WalkStarted?.Invoke();
+                }
                 Walk(dx, dy);
                 if (!_sampler.Recording) _sampler.Start(nowMs);
                 _sampler.Sample((int)_jarX, (int)_jarY);
@@ -128,6 +131,7 @@ namespace Gopet.Runtime.World
             }
             if (dx == 0f && dy == 0f)
             {
+                _walking = false;
                 _scene.Self.SetLocomotion(LastDirection, false);
             }
         }
@@ -176,17 +180,5 @@ namespace Gopet.Runtime.World
                 _scene.Self?.SnapTo(jarX, (int)_jarY);
         }
 
-        private (float dx, float dy) ReadDirection()
-        {
-            var mobile = _hud?.Joystick?.Direction ?? Vector2.zero;
-            if (mobile.sqrMagnitude > 0.001f) return (mobile.x, -mobile.y);
-            if (_hud != null && _hud.IsTyping) return (0f, 0f);
-            var keyboard = (_wasdAction?.ReadValue<Vector2>() ?? Vector2.zero) +
-                (_arrowAction?.ReadValue<Vector2>() ?? Vector2.zero);
-            keyboard = Vector2.ClampMagnitude(keyboard, 1f);
-            // Input System uses screen/gamepad convention (up = +Y), while the
-            // JAR map coordinates increase downward (up = -Y).
-            return (keyboard.x, -keyboard.y);
-        }
     }
 }

@@ -60,7 +60,6 @@ namespace Gopet.Runtime.World
         private PlayerStatsHandler _statsHandler;
         private CurrencyBar _currency;
         private ExpBuffIndicator _expBuffIndicator;
-        private CharacterMenuButton _menuButton;
         private CharacterMenuView _menuView;
         private PetActionButton _petButton;
         private AttackButton _attackButton;
@@ -82,6 +81,10 @@ namespace Gopet.Runtime.World
 
         /// <summary>Vệt chém của nút đánh đang diễn — chặn bấm chồng, xem AttackNearestMob.</summary>
         private bool _slashPlaying;
+
+        /// <summary>Chế độ hồi phục pet đang bật. Server giữ cờ này tới khi client gửi tắt,
+        /// nên phải nhớ để còn tắt đúng một lần lúc người chơi bước đi.</summary>
+        private bool _petRecoveryOn;
 
         /// <summary>HP pet self mới nhất từ <c>MY_PET_INFO</c>. Nút đánh cần biết để không
         /// diễn cả hoạt cảnh rồi mới ăn lời từ chối của server.
@@ -165,6 +168,7 @@ namespace Gopet.Runtime.World
             s._hud.PlaceChatNameProvider = s._scene.TryGetAvatarName;
             s._hud.Character.BindAssets(assets);
             s._hud.Character.Clicked += s.OpenCharacterHub;
+            s._hud.TaskTracker.Clicked += () => s.RequestTasks(true);
             s.UpdateMapName();
             guider.BossBannerShown += s._hud.Ticker.Show;
             // Banner thường (SERVER_MESSAGE/BANNER_MESSAGE) dùng chung băng chạy chữ với banner
@@ -190,9 +194,6 @@ namespace Gopet.Runtime.World
             s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
 
-            s._menuButton = CharacterMenuButton.Create(s._hudParent);
-            s._menuButton.Clicked += s.OpenCharacterMenu;
-
             s._petButton = PetActionButton.Create(s._hudParent);
             s._petButton.Clicked += s.OpenPetRadial;
 
@@ -215,7 +216,6 @@ namespace Gopet.Runtime.World
             s._letterHandler = new LetterHandler();
             s._letterHandler.RegisterOn(client.Router);
             s._letterHandler.MailboxReceived += s.OnMailboxReceived;
-            s._letterHandler.HasLetterReceived += n => s._menuButton.SetMailUnread(n.HasUnread);
             // HAS_LETTER chỉ nói CÓ hay KHÔNG. Có thì xin hộp thư về đếm để lên được con số
             // trên huy hiệu; hết thư thì khỏi tốn round-trip, cho số 0 luôn.
             s._letterHandler.HasLetterReceived += n =>
@@ -284,10 +284,15 @@ namespace Gopet.Runtime.World
                 }
                 s._hasPetFollowing = selfFound;
             };
+            s._worldHandler.PetInteractionReceived += s.OnPetInteraction;
             s._petZoneHandler.PetUnfollowed += u =>
             {
                 s._petLayer.Remove(u.OwnerUserId);
-                if (u.OwnerUserId == login.UserId) s._hasPetFollowing = false;
+                if (u.OwnerUserId != login.UserId) return;
+                s._hasPetFollowing = false;
+                // Không còn pet thì server bỏ luôn chế độ hồi phục; giữ cờ bật ở client
+                // sẽ làm lần bấm sau thành "tắt" và nút đảo nghĩa vĩnh viễn.
+                s._petRecoveryOn = false;
             };
             s._petZoneHandler.MyPetInfoReceived += p =>
             {
@@ -378,6 +383,7 @@ namespace Gopet.Runtime.World
                 _movement = MovementController.Attach(_scene, _mapHandler, _camera, _hud,
                     mapId: _scene.MapId, userId: evt.UserId,
                     initialJarX: evt.X, initialJarY: evt.Y);
+                _movement.WalkStarted += StopPetRecovery;
                 _hud?.Ticker?.Show("Chào mừng đến với Gopet! Đánh quái nhận EXP và vật phẩm.");
             }
             else
@@ -391,11 +397,6 @@ namespace Gopet.Runtime.World
         {
             if (_movement != null) _movement.InputEnabled = !active;
             if (_hud != null) _hud.SetBattleMode(active);
-        }
-
-        private void OpenCharacterMenu()
-        {
-            OpenMenu(CharacterMenuPage.Main);
         }
 
         /// <summary>Mở trực tiếp một nhóm menu từ HUD ngoài (Dịch vụ/Sự kiện).</summary>
@@ -655,6 +656,15 @@ namespace Gopet.Runtime.World
             if (Time.unscaledTime < _petActionCooldownUntil) return;
             _petActionCooldownUntil = Time.unscaledTime + 0.5f;
 
+            // Cả bốn mục đều vô nghĩa khi chưa có pet: server bỏ qua gói bật hồi phục
+            // (GameController.setRecovery), còn hôn/chơi/xoa đầu thì không có ai để diễn.
+            if (!_hasPetFollowing)
+            {
+                ShowToast("Chưa có pet đi cùng.");
+                ClosePetRadial();
+                return;
+            }
+
             Message msg;
             switch (action)
             {
@@ -667,8 +677,24 @@ namespace Gopet.Runtime.World
                 case PetActionRadial.Action.Poke:
                     msg = PetActionPackets.Interact(PetActionPackets.Poke);
                     break;
+                // Bấm lại khi đang bật = tắt, giống công tắc của jar.
+                case PetActionRadial.Action.Heal when _petRecoveryOn:
+                    StopPetRecovery();
+                    ShowToast("Đã dừng hồi phục pet.");
+                    ClosePetRadial();
+                    return;
                 case PetActionRadial.Action.Heal:
-                    msg = PetActionPackets.Heal();
+                    // Đang đi thì mốc "bắt đầu đi" đã qua, sẽ không có ai gửi gói tắt cho
+                    // tới lần dừng hẳn kế tiếp — chặn ngay còn hơn để hồi phục chạy lén.
+                    if (_movement != null && _movement.IsWalking)
+                    {
+                        ShowToast("Đứng yên rồi mới hồi phục được.");
+                        ClosePetRadial();
+                        return;
+                    }
+                    _petRecoveryOn = true;
+                    ShowToast("Pet đang hồi phục — bước đi là dừng.");
+                    msg = PetActionPackets.Heal(true);
                     break;
                 default:
                     return;
@@ -680,9 +706,20 @@ namespace Gopet.Runtime.World
         }
 
         /// <summary>
-        /// Dựng Canvas ScreenSpaceOverlay riêng cho các HUD phụ (CurrencyBar, MenuButton,
-        /// PetButton) và các popup (CharacterMenuView, PetActionRadial, MailboxView,
-        /// EnchantEvolveView, YesNoDialog, TargetPlayerMenu, ChangePasswordView, PetEquipView).
+        /// Tắt chế độ hồi phục pet. Gọi khi người chơi bước đi (jar <c>ew.java:424</c>) hoặc
+        /// khi họ bấm lại nút. Không bật thì không gửi gì — tránh rác mạng mỗi bước chân.
+        /// </summary>
+        private void StopPetRecovery()
+        {
+            if (!_petRecoveryOn) return;
+            _petRecoveryOn = false;
+            _client.Send(PetActionPackets.Heal(false));
+        }
+
+        /// <summary>
+        /// Dựng Canvas ScreenSpaceOverlay riêng cho các HUD phụ (CurrencyBar, PetButton)
+        /// và các popup (CharacterMenuView, PetActionRadial, MailboxView, EnchantEvolveView,
+        /// YesNoDialog, TargetPlayerMenu, ChangePasswordView, PetEquipView).
         ///
         /// <para><b>Bắt buộc:</b> UI của uGUI cần Canvas parent. Attach trực tiếp vào
         /// world transform (như <c>_scene.transform</c>) thì nút không hiện, không bấm được.

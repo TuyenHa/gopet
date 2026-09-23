@@ -46,15 +46,15 @@ namespace Gopet.Runtime.World
         public int OpponentActorId => _start.Opponent.ActorId;
         public int TurnDurationMs => _start.TurnDurationMs;
 
-        /// <summary>Đã có kết quả (đang hiện hoặc đang chờ hoạt cảnh xong) — người khác đừng
-        /// đóng hộ, để băng chữ kịp diễn.</summary>
-        public bool HasResult => _result != null || _pendingResult != null;
+        /// <summary>Kết quả đầu tiên đã tới, kể cả đang chờ hoạt cảnh cuối.</summary>
+        public bool HasResult => _resultReceived;
         public event Action Closed;
         public event Action Ticked;
 
         public static BattleView Create(Transform parent, BattleStart start, BattleHandler handler,
             RemoteAssetCache assets, PlayerStats playerStats = null)
         {
+            var startedAt = Time.realtimeSinceStartupAsDouble;
             var go = new GameObject("Pet Battle", typeof(RectTransform), typeof(Canvas),
                 typeof(CanvasScaler), typeof(GraphicRaycaster));
             go.transform.SetParent(parent, false);
@@ -65,6 +65,7 @@ namespace Gopet.Runtime.World
             scaler.referenceResolution = new Vector2(960f, 540f); scaler.matchWidthOrHeight = 1f;
             var view = go.AddComponent<BattleView>();
             view._handler = handler; view._start = start;
+            view._summaryTracker = new BattleSummaryTracker(start, startedAt);
             view.Build(assets, UiBuilder.BuiltinFont(), playerStats);
             handler.BuffStateReceived += view.OnBuff;
             handler.StatsReceived += view.OnStats;
@@ -82,7 +83,8 @@ namespace Gopet.Runtime.World
 
         public void Apply(BattleTurn turn)
         {
-            if (turn.BattleId != BattleId) return;
+            if (turn.BattleId != BattleId || HasResult || _closeRequested) return;
+            _summaryTracker.RecordTurn(turn);
             // Trạng thái lượt cập nhật NGAY (nhãn phải đúng tức thì); phần render thì xếp
             // hàng để diễn tuần tự thay vì nổ hết trong một frame.
             _turn.ApplyTurnPacket(turn.ActorId, turn.Type, turn.Effects.Length);
@@ -116,14 +118,13 @@ namespace Gopet.Runtime.World
         /// <summary>Đồng bộ trạng thái bật/tắt của mọi nút theo lượt hiện tại.</summary>
         private void RefreshLocks()
         {
-            // `_result != null` phải có: server gửi gói kết quả TRƯỚC sendMyPetInfo()
-            // (PetBattle.cs:959-967), bỏ qua nó thì snapshot đến sau bật lại nút của trận đã đóng.
-            var canAct = _result == null && !InOpening && _turn.CanAct
+            // Khoá ngay khi nhận kết quả, cả lúc còn đang diễn đòn cuối.
+            var canAct = !HasResult && !_closeRequested && !InOpening && _turn.CanAct
                          && (_animator == null || _animator.Idle);
             _actionBar?.SetActionsInteractable(canAct);
             _skillPopup?.RefreshState(_left.Mp, !canAct);
             // Nút tròn luôn bấm được để xem kỹ năng; từng dòng mới khoá theo lượt.
-            if (_skillButton != null) _skillButton.interactable = _result == null;
+            if (_skillButton != null) _skillButton.interactable = !HasResult && !_closeRequested;
         }
 
         private void Build(RemoteAssetCache assets, Font font, PlayerStats playerStats)
@@ -182,7 +183,8 @@ namespace Gopet.Runtime.World
             // SyncLocalVitals để biết vì sao không áp ngay.
             if (TickOpening()) RefreshLocks();
             if (_pendingVitals != null && (_animator == null || _animator.Idle)) ApplyPendingVitals();
-            if (_result != null && Time.unscaledTime - _resultShownAt >= ResultAutoCloseSeconds)
+            if (_result != null && !AwaitingVictoryConfirmation
+                && Time.unscaledTime - _resultShownAt >= ResultAutoCloseSeconds)
             {
                 RequestClose();
             }

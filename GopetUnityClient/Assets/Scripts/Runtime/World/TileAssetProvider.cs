@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Gopet.Runtime.UI;
 using Gopet.UiLogic;
 using UnityEngine;
@@ -109,6 +109,25 @@ namespace Gopet.Runtime.World
             var pivot = forcedPivot ??
                 new Vector2(source.pivot.x / source.rect.width, source.pivot.y / source.rect.height);
             return ObjectCache[key] = Sprite.Create(source.texture, source.rect, pivot, WorldPixelsPerUnit);
+        }
+
+        /// <summary>
+        /// Cắt một ô con của ảnh jar theo toạ độ GÓC TRÁI-TRÊN (đúng hệ của file mô tả khung
+        /// hiệu ứng). Pivot đặt ở góc trái-trên luôn, để người vẽ chỉ việc đặt pivot vào đúng
+        /// điểm neo mà không phải bù nửa chiều rộng/cao.
+        /// </summary>
+        public static Sprite Region(string relativePath, int x, int y, int width, int height)
+        {
+            var key = $"{relativePath}|{x},{y},{width},{height}";
+            if (ObjectCache.TryGetValue(key, out var cached) && cached != null) return cached;
+
+            var source = JarSkin.Raw(relativePath);
+            // Rect của Unity tính từ MÉP DƯỚI ảnh, file jar tính từ mép trên — lật lại.
+            var rect = new Rect(source.rect.x + x,
+                                source.rect.y + source.rect.height - y - height,
+                                width, height);
+            return ObjectCache[key] = Sprite.Create(source.texture, rect, new Vector2(0f, 1f),
+                                                    WorldPixelsPerUnit);
         }
 
         /// <summary>Chỉ dùng cho test — xoá cache để mỗi test bắt đầu sạch.</summary>

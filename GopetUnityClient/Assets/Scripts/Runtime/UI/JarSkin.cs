@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,6 +24,10 @@ namespace Gopet.Runtime.UI
 
         private static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
 
+        /// <summary>Nội dung file đã sao ra mảng byte nên không chết theo asset bị dọn — khác
+        /// <see cref="Cache"/>, ở đây không cần kiểm null lại.</summary>
+        private static readonly Dictionary<string, byte[]> BytesCache = new Dictionary<string, byte[]>();
+
         /// <summary>Ảnh giải từ một trong 5 kho <c>.dat</c>. Ví dụ: <c>Bank("lg", 0)</c> — banner màn đăng nhập.</summary>
         public static Sprite Bank(string bankName, int index)
         {
@@ -38,6 +42,25 @@ namespace Gopet.Runtime.UI
         public static Sprite Raw(string relativePathNoExtension)
         {
             return Load($"{ArtRoot}Raw/{relativePathNoExtension}", relativePathNoExtension);
+        }
+
+        /// <summary>
+        /// File nhị phân rời trong jar (mô tả khung hiệu ứng, cạnh file <c>.png</c> cùng tên).
+        /// Trong jar file này KHÔNG có đuôi; muốn Unity nhận là <c>TextAsset</c> thì bản chép
+        /// vào <c>Resources</c> phải mang đuôi <c>.bytes</c> — đuôi đó không nằm trong khoá.
+        /// </summary>
+        public static byte[] RawBytes(string relativePathNoExtension)
+        {
+            var resourcePath = $"{ArtRoot}Raw/{relativePathNoExtension}";
+            if (BytesCache.TryGetValue(resourcePath, out var cached)) return cached;
+
+            var asset = Resources.Load<TextAsset>(resourcePath);
+            if (asset == null)
+            {
+                throw new InvalidOperationException(
+                    $"Không tìm thấy dữ liệu \"{relativePathNoExtension}\" tại Resources/{resourcePath}.bytes.");
+            }
+            return BytesCache[resourcePath] = asset.bytes;
         }
 
         private static Sprite Load(string resourcePath, string label)

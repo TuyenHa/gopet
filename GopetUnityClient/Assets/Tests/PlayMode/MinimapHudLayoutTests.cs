@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using Gopet.Runtime.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -10,7 +10,7 @@ namespace Gopet.PlayModeTests
     /// <summary>
     /// Minimap là widget MỚI trên HUD nên dễ đè lên thứ đã có. Test này chặn lỗi đó tái
     /// diễn: minimap không được giao với hàng icon Cửa hàng/Dịch vụ/Sự kiện (góc
-    /// phải-trên) hay nút menu nhân vật (góc phải-dưới).
+    /// phải-trên).
     /// </summary>
     public sealed class MinimapHudLayoutTests
     {
@@ -41,7 +41,6 @@ namespace Gopet.PlayModeTests
         {
             var minimap = MinimapWidget.Create(_root.transform, null);
             var topRow = ShopServiceEventHud.Create(_root.transform, null);
-            var menuButton = CharacterMenuButton.Create(_root.transform);
             yield return null;
 
             var minimapRect = WorldRect((RectTransform)minimap.transform);
@@ -50,8 +49,6 @@ namespace Gopet.PlayModeTests
                 Assert.IsFalse(minimapRect.Overlaps(WorldRect((RectTransform)icon.transform)),
                     $"Minimap đè lên icon HUD '{icon.name}'.");
             }
-            Assert.IsFalse(minimapRect.Overlaps(WorldRect((RectTransform)menuButton.transform)),
-                "Minimap đè lên nút menu nhân vật.");
         }
 
         /// <summary>

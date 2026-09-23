@@ -23,9 +23,9 @@ namespace Gopet.Runtime.UI
 
         private void BuildEmbeddedContent()
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             _headerName = UiBuilder.MakeText(transform, font, "Header", 15, false);
-            _headerName.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_headerName, FontStyle.Bold);
             _headerName.alignment = TextAnchor.MiddleCenter;
             _headerName.color = new Color(0.14f, 0.24f, 0.44f, 1f);
             HeaderRect(_headerName.rectTransform, 2f, 22f);
@@ -50,7 +50,13 @@ namespace Gopet.Runtime.UI
             AddEmbeddedSlot(EquipSlot.Weapon, "Vũ khí", 10f, 130f);
             AddEmbeddedSlot(EquipSlot.Armor, "Giáp", 326f, 50f);
             AddEmbeddedSlot(EquipSlot.Glove, "Bao tay", 326f, 130f);
-            AddEmbeddedSlot(EquipSlot.Boot, "Giày", 168f, 230f);
+            AddEmbeddedSlot(EquipSlot.Boot, "Giày", 0f, 0f);
+            // Giày neo GIỮA MÉP DƯỚI thay vì toạ độ cứng từ đỉnh: panel thấp hơn 294 là ô
+            // tràn ra ngoài popup. Host đã thụt 4 so với panel "Trang bị pet" → +1 = cách 5.
+            var boot = (RectTransform)_slots[EquipSlot.Boot].transform;
+            boot.anchorMin = boot.anchorMax = new Vector2(0.5f, 0f);
+            boot.pivot = new Vector2(0.5f, 0f);
+            boot.anchoredPosition = new Vector2(0f, 1f);
 
             var hidden = MakeEmbeddedButton("Kích ẩn", 1f, 8f);
             hidden.onClick.AddListener(() => HiddenStatsRequested?.Invoke());
@@ -71,19 +77,24 @@ namespace Gopet.Runtime.UI
             rect.anchorMin = rect.anchorMax = new Vector2(anchorX, 0f);
             rect.pivot = new Vector2(anchorX, 0f);
             rect.anchoredPosition = new Vector2(anchorX == 1f ? -offsetX : offsetX, 6f);
-            rect.sizeDelta = new Vector2(80f, 28f);
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 11, true);
+            rect.sizeDelta = new Vector2(92f, 32f);
+            // Kiểu nút chung (khung vàng, mặt xanh). Thiếu ảnh thì về nút bo góc cũ.
+            var image = go.GetComponent<Image>();
+            if (!GameButtonSkin.Apply(image, rect.sizeDelta.y))
+            {
+                image.color = UiBuilder.ButtonFace;
+                RoundedUiSprite.Apply(image);
+            }
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 12, true);
             text.text = label;
-            text.alignment = TextAnchor.MiddleCenter;
+            GameButtonSkin.StyleLabel(text);
             return go.GetComponent<Button>();
         }
 
         private void LoadEmbeddedPortrait(PetEquipInfo info)
         {
             if (_embeddedPortrait == null || _assets == null || string.IsNullOrEmpty(info.FrameImage)) return;
-            _assets.Get(info.FrameImage, ImagePackets.TypeNpc, texture =>
+            _assets.Get(info.FrameImage, ImagePackets.TypeNpc, _embeddedPortrait, texture =>
             {
                 if (texture == null || _embeddedPortrait == null) return;
                 var frameCount = Mathf.Max(1, info.FrameNumber);

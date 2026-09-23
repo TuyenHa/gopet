@@ -169,7 +169,6 @@ namespace Gopet.Runtime.World
             s._hud.Character.BindAssets(assets);
             s._hud.Character.Clicked += s.OpenCharacterHub;
             s._hud.TaskTracker.Clicked += () => s.RequestTasks(true);
-            s.UpdateMapName();
             guider.BossBannerShown += s._hud.Ticker.Show;
             // Banner thường (SERVER_MESSAGE/BANNER_MESSAGE) dùng chung băng chạy chữ với banner
             // boss. Trước đây event này không có ai nghe nên mọi Player.showBanner() gọi đơn lẻ
@@ -189,7 +188,7 @@ namespace Gopet.Runtime.World
             // để ngồi trên GameHud (30) nhưng dưới BattleView (thường 40+). Nếu attach
             // trực tiếp vào world transform sẽ KHÔNG hiện — UI cần Canvas parent.
             s._hudParent = CreateHudOverlayCanvas(parent ?? s._scene.transform).transform;
-            s._currency = CurrencyBar.Create(s._hudParent, assets);
+            s._currency = CurrencyBar.Create(s._hud.Character.transform, assets);
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
             s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
@@ -207,7 +206,7 @@ namespace Gopet.Runtime.World
             // Camera phụ chụp trọn map cho minimap — con của scene nên đổi map/thoát
             // game là nó đi theo, không để lại camera mồ côi.
             s._minimapCamera = MinimapCamera.Attach(s._scene.transform);
-            s._minimap = MinimapWidget.Create(s._hudParent, UiBuilder.BuiltinFont());
+            s._minimap = MinimapWidget.Create(s._hudParent, UiBuilder.DefaultFont());
             s._minimap.Clicked += () => s._mapTeleportHandler.RequestOptions();
             // Map khởi đầu đã nạp xong TỪ TRƯỚC khi HUD dựng (LoadMap gọi ở đầu Start),
             // nên chỉ nghe MapLoaded thôi thì minimap trống trơn cho tới lần warp đầu tiên.
@@ -332,7 +331,6 @@ namespace Gopet.Runtime.World
             // Đổi map → camera phải recenter theo map MỚI. Không thì nó đứng chỗ cũ và
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.
             s._scene.MapLoaded += () => s._camera?.Recenter();
-            s._scene.MapLoaded += s.UpdateMapName;
             s._scene.MapLoaded += s.RefreshMinimap;
 
             // Gắn MovementController khi SELF vừa spawn — sự kiện đến từ opcode 29
@@ -372,9 +370,6 @@ namespace Gopet.Runtime.World
             // ngay sau loginOK (Player.cs:522). Gửi thừa gây double init/exit/enter.
             return s;
         }
-
-        private void UpdateMapName() =>
-            _hud?.Character?.SetMapName(MapDisplayNames.Get(_scene.MapId));
 
         private void OnSelfSpawned(PlayerEnterMap evt)
         {
@@ -519,7 +514,7 @@ namespace Gopet.Runtime.World
             switch (action)
             {
                 case PetSlotActionsView.Action.Unequip:
-                    _client.Send(PetEquipPackets.Unequip(item.ItemId));
+                    OpenUnequipConfirm(item);
                     break;
 
                 case PetSlotActionsView.Action.MountGem:
@@ -541,7 +536,6 @@ namespace Gopet.Runtime.World
         }
 
         private EnchantEvolveView _enchantView;
-        private YesNoDialog _destroyDialog;
         private TargetPlayerMenu _targetMenu;
 
         /// <summary>
@@ -604,22 +598,12 @@ namespace Gopet.Runtime.World
 
         private void OpenDestroyConfirm(PetEquipItem item)
         {
-            if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-            _destroyDialog = YesNoDialog.Create(_hudParent,
-                $"Xác nhận HUỶ {item.DisplayName}?\nHành động không thể hoàn tác.",
-                "Huỷ đồ", "Không");
-            _destroyDialog.Confirmed += () =>
-            {
-                _client.Send(PetEquipPackets.RequestDestroyEquip(item.ItemId));
-                Debug.Log($"[Gopet] Huỷ item #{item.ItemId} — chờ server YN dialog xác nhận lần 2.");
-                if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-                _destroyDialog = null;
-            };
-            _destroyDialog.Cancelled += () =>
-            {
-                if (_destroyDialog != null) Object.Destroy(_destroyDialog.gameObject);
-                _destroyDialog = null;
-            };
+            ShowEquipConfirm($"Xác nhận HUỶ {ItemName(item)}?\nHành động không thể hoàn tác.",
+                "Huỷ đồ", "Không", () =>
+                {
+                    _client.Send(PetEquipPackets.RequestDestroyEquip(item.ItemId));
+                    Debug.Log($"[Gopet] Huỷ item #{item.ItemId} — chờ server YN dialog xác nhận lần 2.");
+                });
         }
 
         private ChangePasswordView _passwordView;

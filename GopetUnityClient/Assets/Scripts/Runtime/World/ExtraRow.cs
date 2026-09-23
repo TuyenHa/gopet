@@ -48,7 +48,7 @@ namespace Gopet.Runtime.World
             iconRect.sizeDelta = new Vector2(IconSize, IconSize);
 
             _count = UiBuilder.MakeText(transform, font, "Count", 13, false);
-            _count.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_count, FontStyle.Bold);
             _count.alignment = TextAnchor.MiddleLeft;
             var countRect = _count.rectTransform;
             countRect.anchorMin = new Vector2(0f, 0f);
@@ -62,7 +62,7 @@ namespace Gopet.Runtime.World
         private void LoadIcon(RemoteAssetCache assets, string iconPath)
         {
             if (assets == null || string.IsNullOrEmpty(iconPath)) return;
-            assets.Get(iconPath, ImagePackets.TypeIcon, texture =>
+            assets.Get(iconPath, ImagePackets.TypeIcon, _icon, texture =>
             {
                 if (texture == null || _icon == null) return;
                 _icon.sprite = Sprite.Create(texture,

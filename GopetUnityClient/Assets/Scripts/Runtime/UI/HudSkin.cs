@@ -20,6 +20,8 @@ namespace Gopet.Runtime.UI
         public const string Event = "event";
         /// <summary>Hộp thư — sinh bằng tools/image-gen, cùng khuôn 128×128 nền trong.</summary>
         public const string Mail = "mail";
+        /// <summary>Nút Pet dưới minimap — đầu cún chibi, sinh bằng tools/image-gen, 128×128 nền trong.</summary>
+        public const string Pet = "pet";
         public const string Close = "close";
         public const string Coin = "coin";
 

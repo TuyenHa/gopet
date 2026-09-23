@@ -14,6 +14,9 @@ namespace Gopet.Runtime.World
         public float FillAmount => _fill == null ? 0f : _fill.fillAmount;
         public string ValueText => _value == null ? string.Empty : _value.text;
 
+        /// <summary>Bo góc thanh (border-radius 5).</summary>
+        private const float TrackRadius = 5f;
+
         public static StatBar Create(Transform parent, Font font, string name,
             string badge, Color color, float top, bool showPercent = false,
             float x = 100f, float width = 190f)
@@ -64,17 +67,21 @@ namespace Gopet.Runtime.World
             RoundedUiSprite.Apply(badgeGo);
             var badgeText = UiBuilder.MakeText(badgeGo.transform, font, "Label", 11, true);
             badgeText.text = badge;
-            badgeText.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(badgeText, FontStyle.Bold);
             badgeText.alignment = TextAnchor.MiddleCenter;
             badgeText.color = new Color(0.04f, 0.26f, 0.52f, 1f);
 
-            var track = MakeImage(transform, "Track", new Color(0.1f, 0.48f, 0.82f, 1f));
+            // Viền track lấy màu thanh sẫm đi một nấc — viền xanh cố định lệch tông khi
+            // thanh HP đỏ / MP xanh lá.
+            var edge = Color.Lerp(color, Color.black, 0.35f);
+            var track = MakeImage(transform, "Track", edge);
             SetRect(track.rectTransform, 34f, 0f, trackWidth, 17f);
-            RoundedUiSprite.Apply(track);
+            RoundedUiSprite.Apply(track, TrackRadius);
 
             var viewport = MakeImage(track.transform, "Track Surface",
-                new Color(0.12f, 0.26f, 0.42f, 0.9f));
-            RoundedUiSprite.Apply(viewport);
+                new Color(0.12f, 0.16f, 0.22f, 0.9f));
+            // Bán kính trong nhỏ hơn đúng phần thụt 1 để viền đều ở bốn góc.
+            RoundedUiSprite.Apply(viewport, TrackRadius - 1f);
             Inset(viewport.rectTransform, 1f);
             viewport.gameObject.AddComponent<Mask>().showMaskGraphic = true;
 
@@ -85,7 +92,7 @@ namespace Gopet.Runtime.World
             _fill.fillOrigin = 0;
 
             _value = UiBuilder.MakeText(viewport.transform, font, "Value", 11, true);
-            _value.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_value, FontStyle.Bold);
             _value.alignment = TextAnchor.MiddleCenter;
             _value.color = Color.white;
             var shadow = _value.gameObject.AddComponent<Shadow>();

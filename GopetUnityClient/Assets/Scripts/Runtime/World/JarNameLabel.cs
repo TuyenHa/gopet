@@ -7,8 +7,8 @@ namespace Gopet.Runtime.World
     /// Nhãn tên trong world-space: chữ TRẮNG in đậm, canh giữa theo trục X, đáy chữ nằm đúng
     /// gốc toạ độ. Dùng chung cho người chơi, pet, NPC/quái, cổng map, nhà, bang hội.
     ///
-    /// <para><b>Dùng font TTF của HUD</b> (<see cref="UiBuilder.BuiltinFont"/>) thay cho bitmap
-    /// font jar. Bảng glyph của jar (<see cref="JarFont"/>) thiếu phần lớn CHỮ HOA có dấu — nó
+    /// <para><b>Dùng font TTF của HUD</b> (<see cref="UiBuilder.DefaultFont"/>) thay cho bitmap
+    /// font jar. Bảng glyph của jar  thiếu phần lớn CHỮ HOA có dấu — nó
     /// chỉ có <c>Đ Ă Á Â</c> — nên tên nào chứa chữ hoa có dấu khác đều rơi về ô trắng.</para>
     ///
     /// <para><c>TextMesh</c> chứ không phải canvas world-space: mỗi canvas là một batch riêng,
@@ -61,6 +61,17 @@ namespace Gopet.Runtime.World
             if (_mesh != null) _mesh.text = text ?? string.Empty;
         }
 
+        /// <summary>
+        /// Đỉnh nét chữ thật (không phải khung dòng) trong hệ toạ độ <paramref name="space"/>.
+        /// Tên rỗng thì không có nét nào — trả <paramref name="fallback"/>.
+        /// </summary>
+        public float VisibleTopIn(Transform space, float fallback) =>
+            // Renderer tắt/ẩn trả bounds rỗng ở gốc world → danh hiệu văng xuống đáy map.
+            _renderer == null || !_renderer.enabled || !_renderer.gameObject.activeInHierarchy
+                || string.IsNullOrWhiteSpace(_mesh.text)
+                ? fallback
+                : space.InverseTransformPoint(_renderer.bounds.max).y;
+
         public void SetSortingOrder(int order)
         {
             if (_renderer != null) _renderer.sortingOrder = order;
@@ -72,12 +83,12 @@ namespace Gopet.Runtime.World
             go.transform.SetParent(transform, false);
 
             _mesh = go.GetComponent<TextMesh>();
-            _mesh.font = UiBuilder.BuiltinFont();
+            _mesh.font = UiBuilder.DefaultFont();
             _mesh.fontSize = FontSize;
             _mesh.characterSize = Height / UnitsPerCharSize;
             // In ĐẬM thay cho viền đen: nét dày tự nó đã tách chữ khỏi nền, mà chỉ tốn một
             // mesh thay vì năm (bản trước vẽ thêm 4 bản đen lệch 4 hướng làm viền).
-            _mesh.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_mesh, FontStyle.Bold);
             // Đáy chữ ở gốc toạ độ, canh giữa ngang — đúng như glyph bitmap cũ (pivot đáy-trái,
             // vẽ từ -Width/2). Đổi sang MiddleCenter sẽ đẩy mọi nhãn tụt xuống nửa dòng.
             _mesh.anchor = TextAnchor.LowerCenter;

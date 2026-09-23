@@ -81,7 +81,7 @@ function emit(entries) {
         '    /// Opcode giao thức, phản chiếu nguyên văn <c>GopetCMD.cs</c> của server.',
         '    /// Nhiều hằng số trùng giá trị vì chúng là sub-command trong ngữ cảnh khác nhau.',
         '    /// </summary>',
-        '    public static class GopetCmd',
+        '    public static partial class GopetCmd',
         '    {',
     ];
 
@@ -110,21 +110,29 @@ function main() {
         process.exit(1);
     }
 
-    const generated = emit(entries);
-    const existing = fs.existsSync(OUT_FILE) ? fs.readFileSync(OUT_FILE, 'utf8') : null;
-
-    if (checkOnly) {
-        if (existing !== generated) {
-            console.error('GopetCmd.cs đã lệch so với GopetCMD.cs của server. Chạy lại không có --check.');
-            process.exit(1);
+    // Keep social command families together in a generated partial instead of
+    // dropping server aliases or exempting a growing generated file from checks.
+    const social = e => /GUILD|CLAN|LETTER|FRIEND|CHAT/.test(e.name);
+    const outputs = [
+        [OUT_FILE, emit(entries.filter(e => !social(e)))],
+        [OUT_FILE.replace('.cs', '.Social.cs'), emit(entries.filter(social))],
+    ];
+    for (const [file, generated] of outputs) {
+        // Windows checkouts may apply core.autocrlf; line endings are not protocol drift.
+        const existing = fs.existsSync(file)
+            ? fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : null;
+        if (checkOnly) {
+            if (existing !== generated) {
+                console.error(`${path.basename(file)} differs from server constants. Run npm run gen:cmd.`);
+                process.exitCode = 1;
+            }
+        } else {
+            fs.mkdirSync(path.dirname(file), { recursive: true });
+            fs.writeFileSync(file, generated, 'utf8');
         }
-        console.log(`OK — ${entries.length} hằng số khớp.`);
-        return;
     }
+    if (!process.exitCode) console.log(`OK - ${entries.length} constants across ${outputs.length} files.`);
 
-    fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
-    fs.writeFileSync(OUT_FILE, generated, 'utf8');
-    console.log(`Đã sinh ${entries.length} hằng số -> ${path.relative(REPO_ROOT, OUT_FILE)}`);
 }
 
 main();

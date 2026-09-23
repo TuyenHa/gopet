@@ -1,0 +1,7 @@
+{
+  "newMapData/158.png": {
+    "sourceSha256": "217524b7e440711560bf3817efc9efa9504d707ffea96753317fdeaf1c03c0f7",
+    "overrideSha256": "032c0b30e3c36d9ace5b6210a5d2c0e8e17bc7989631dec6af322e49c68f7697",
+    "reason": "Preserve customized tree art committed in 1ab2259 (2026-09-19)."
+  }
+}

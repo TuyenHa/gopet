@@ -9,7 +9,7 @@ namespace Gopet.Runtime.World
 {
     /// <summary>
     /// HUD góc trên-trái style jar cổ: portrait pet trong khung tròn + badge level nhỏ
-    /// dưới chân portrait + 2 thanh pill HP (xanh lá) / MP (xanh dương).
+    /// dưới chân portrait + 2 thanh bo góc HP (đỏ) / MP (xanh lá).
     ///
     /// <para><b>HP/MP là stat PET</b>, không phải char. Portrait dùng frame đầu của pet
     /// sprite (server bơm qua <c>SEND_LIST_PET_ZONE</c>). Level lấy từ cùng gói. HP/MP
@@ -22,7 +22,18 @@ namespace Gopet.Runtime.World
     {
         // Ngắn hơn bản cũ 20 px; portrait giữ nguyên, chỉ thu phần tên và thanh HP/MP.
         private const float PanelWidth = 240f;
-        private const float PanelHeight = 88f;
+        // Tên map đã chuyển lên đầu minimap nên panel chỉ còn cao vừa portrait + 2 thanh.
+        /// <summary>Mép trên hàng tiền tệ (sao/vàng/đậu/lúa) — ngay dưới portrait + 2 thanh.</summary>
+        public const float CurrencyTop = 70f;
+        /// <summary>Cao hàng tiền tệ bên trong HUD.</summary>
+        public const float CurrencyRowHeight = 26f;
+        /// <summary>
+        /// Portrait + 2 thanh (70) rồi tới hàng tiền tệ. Dòng nhiệm vụ và chỉ báo buff EXP
+        /// bên dưới tính vị trí theo con số này.
+        /// </summary>
+        public const float PanelHeight = CurrencyTop + CurrencyRowHeight;
+        /// <summary>Lề của HUD tính từ góc trên-trái màn hình.</summary>
+        public const float Margin = 12f;
         private const float PortraitSize = 56f;
         private const float PortraitLeft = 6f;
         private const float PortraitTop = 6f;
@@ -33,7 +44,6 @@ namespace Gopet.Runtime.World
         private const float NameTop = 2f;
 
         private Text _name;
-        private Text _mapName;
         private Text _levelBadge;
         private Image _portrait;
         private RemoteAssetCache _assets;
@@ -45,7 +55,6 @@ namespace Gopet.Runtime.World
         /// <summary>Deprecated — pet EXP chưa có realtime; property giữ để tương thích, không dùng.</summary>
         public StatBar Experience { get; private set; }
         public string PlayerName => _name == null ? string.Empty : _name.text;
-        public string MapName => _mapName == null ? string.Empty : _mapName.text;
 
         public static CharacterHud Create(Transform parent, string playerName)
         {
@@ -54,7 +63,7 @@ namespace Gopet.Runtime.World
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(12f, -12f);
+            rect.anchoredPosition = new Vector2(Margin, -Margin);
             rect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
             // Panel nền tối bán trong suốt, viền cong — hợp với style jar.
@@ -66,7 +75,7 @@ namespace Gopet.Runtime.World
             var hud = go.AddComponent<CharacterHud>();
             go.GetComponent<Button>().transition = Selectable.Transition.None;
             go.GetComponent<Button>().onClick.AddListener(() => hud.Clicked?.Invoke());
-            hud.Build(UiBuilder.BuiltinFont());
+            hud.Build(UiBuilder.DefaultFont());
             hud.SetName(playerName);
             return hud;
         }
@@ -83,11 +92,6 @@ namespace Gopet.Runtime.World
             _levelBadge.text = level.ToString();
         }
 
-        public void SetMapName(string mapName)
-        {
-            _mapName.text = string.IsNullOrWhiteSpace(mapName) ? "Bản đồ chưa xác định" : mapName;
-        }
-
         public void SetPortrait(Sprite sprite)
         {
             if (_portrait == null) return;
@@ -99,7 +103,7 @@ namespace Gopet.Runtime.World
         public void SetPetPortrait(string frameImagePath)
         {
             if (_assets == null || string.IsNullOrEmpty(frameImagePath)) return;
-            _assets.Get(frameImagePath, ImagePackets.TypeNpc, tex =>
+            _assets.Get(frameImagePath, ImagePackets.TypeNpc, _portrait, tex =>
             {
                 if (tex == null || _portrait == null) return;
                 // Sprite strip: chỉ lấy frame đầu (width / frameCount) — nhưng đây HUD
@@ -148,25 +152,19 @@ namespace Gopet.Runtime.World
 
             _name = UiBuilder.MakeText(transform, font, "Player Name", 12, false);
             SetRect(_name.rectTransform, BarLeft, NameTop, BarWidth, 14f);
-            _name.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_name, FontStyle.Bold);
             _name.color = new Color(0.95f, 0.95f, 0.95f, 1f);
             var shadow = _name.gameObject.AddComponent<Shadow>();
             shadow.effectColor = new Color(0f, 0f, 0f, 0.9f);
             shadow.effectDistance = new Vector2(1f, -1f);
 
-            // 2 thanh pill: HP xanh lá (top), MP xanh dương (bottom). Font 12, no percent.
+            // 2 thanh bo góc 5: HP đỏ (top), MP xanh lá (bottom). Font 12, no percent.
             Hp = StatBar.Create(transform, font, "HP Bar", "HP",
-                new Color(0.24f, 0.85f, 0.28f, 1f), 18f, x: BarLeft, width: BarWidth);
+                new Color(0.88f, 0.22f, 0.22f, 1f), 18f, x: BarLeft, width: BarWidth);
             Mp = StatBar.Create(transform, font, "MP Bar", "MP",
-                new Color(0.22f, 0.55f, 0.95f, 1f), 42f, x: BarLeft, width: BarWidth);
+                new Color(0.26f, 0.78f, 0.30f, 1f), 42f, x: BarLeft, width: BarWidth);
             Hp.SetUnavailable();
             Mp.SetUnavailable();
-
-            _mapName = UiBuilder.MakeText(transform, font, "Map Name", 11, false);
-            SetRect(_mapName.rectTransform, BarLeft, 66f, BarWidth, 17f);
-            _mapName.alignment = TextAnchor.MiddleLeft;
-            _mapName.color = Color.white;
-            _mapName.text = "Bản đồ chưa xác định";
         }
 
         private void BuildLevelBadge(Font font, Transform frame)
@@ -185,7 +183,7 @@ namespace Gopet.Runtime.World
 
             _levelBadge = UiBuilder.MakeText(inner.transform, font, "Level", 13, true);
             _levelBadge.text = "--";
-            _levelBadge.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_levelBadge, FontStyle.Bold);
             _levelBadge.alignment = TextAnchor.MiddleCenter;
             _levelBadge.color = new Color(0.15f, 0.08f, 0.02f, 1f);
         }

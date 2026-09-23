@@ -42,10 +42,13 @@ namespace Gopet.PlayModeTests
 
             view.OpenInitial();
             Assert.AreEqual(CharacterMenuAction.Inventory, requested);
-            Assert.AreEqual(4, view.transform.Cast<Transform>()
+            // Tab nằm trong Content của khung popup chung, không còn là con trực tiếp.
+            Assert.AreEqual(4, view.GetComponentsInChildren<Transform>(true)
                 .Count(child => child.name.StartsWith("Tab_")));
 
             view.SelectTab(CharacterHubTab.Pet);
+            Assert.AreEqual(CharacterMenuAction.PetEquipment, requested,
+                "Mở tab Pet phải tự nạp trang bị của pet đang chọn.");
             var selectPet = FindButton(view, "Chọn pet");
             Assert.IsNotNull(selectPet);
             selectPet.onClick.Invoke();

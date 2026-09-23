@@ -17,6 +17,20 @@ namespace Gopet.Runtime.UI
         /// <summary>Tâm panel THẤP hơn tâm màn hình để logo (chồm lên đỉnh) không bị cắt.</summary>
         private const float PanelCenterY = 0.45f;
         private const float PanelAspect = 561f / 471f;
+
+        /// <summary>
+        /// Form đăng ký có 3 ô nhập nên panel CAO hơn (bề ngang giữ nguyên). Tâm hạ xuống
+        /// để logo treo trên đỉnh vẫn nằm trong màn hình.
+        /// </summary>
+        private const float RegistrationPanelHeightFrac = 0.74f;
+        private const float RegistrationPanelCenterY = 0.40f;
+        /// <summary>
+        /// Tỉ lệ quy đổi kích thước hàng của form đăng ký: vùng nội dung cao hơn nên hàng
+        /// tính theo tỉ lệ phải nhỏ lại để ô nhập/nút giữ nguyên cỡ thật như form đăng nhập.
+        /// </summary>
+        private const float RegistrationScale = PanelHeightFrac / RegistrationPanelHeightFrac;
+        /// <summary>Viền 9-slice của panel.png (480x320): ôm trọn góc đá quý + sao.</summary>
+        private const float PanelSliceBorder = 60f;
         /// <summary>Chừa lề trong panel để không lấn viền xanh.</summary>
         private const float PadX = 0.10f;
 
@@ -46,6 +60,10 @@ namespace Gopet.Runtime.UI
         public string Username => _username.text;
 
         public string Password => _password.text;
+
+        /// <summary>Ô nhập lại mật khẩu — chỉ có ở form đăng ký, form đăng nhập là null.</summary>
+        private InputField _confirmPassword;
+        public const string PasswordMismatchNotice = "Mật khẩu nhập lại không khớp.";
 
         /// <summary>Có nhớ tài khoản cho lần đăng nhập THÀNH CÔNG kế tiếp hay không.</summary>
         public bool Remember => _remember.isOn;
@@ -84,6 +102,12 @@ namespace Gopet.Runtime.UI
         {
             _username.text = username ?? string.Empty;
             _password.text = password ?? string.Empty;
+        }
+
+        /// <summary>Điền ô nhập lại mật khẩu (chỉ form đăng ký có ô này).</summary>
+        public void SetConfirmPassword(string password)
+        {
+            if (_confirmPassword != null) _confirmPassword.text = password ?? string.Empty;
         }
 
         public void SetNotice(string text)
@@ -127,6 +151,12 @@ namespace Gopet.Runtime.UI
         {
             if (_submit != null && !_submit.interactable) return;
             _sound?.PlayEffect("s_button");
+            // Chặn ngay ở form: gửi REGISTER với mật khẩu gõ nhầm là tạo tài khoản không vào được.
+            if (_confirmPassword != null && _confirmPassword.text != _password.text)
+            {
+                SetNotice(PasswordMismatchNotice);
+                return;
+            }
             SubmitRegistrationRequested?.Invoke(_username.text, _password.text);
         }
 
@@ -166,9 +196,9 @@ namespace Gopet.Runtime.UI
         }
 
         /// <summary>
-        /// Khung xanh bo góc + mặt trong nhạt — cùng bộ với <see cref="CharacterHud"/> và
-        /// <see cref="NotificationTicker"/>. Bỏ sprite cam-kem cũ để form đồng bộ HUD map
-        /// và splash winter. Logo GOPET vẫn treo trên đỉnh vì có <c>MakeLogo</c>.
+        /// Khung viền vàng góc đá quý + mặt trong xanh nhạt — cùng bộ với ô trang bị pet.
+        /// Vẽ 9-slice để góc trang trí giữ nguyên dù panel đổi tỉ lệ. Thiếu ảnh thì rơi về
+        /// khung xanh bo góc procedural. Logo goPet treo trên đỉnh nhờ <c>MakeLogo</c>.
         /// </summary>
         private RectTransform MakePanel()
         {
@@ -176,9 +206,18 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(transform, false);
 
             var frame = go.GetComponent<Image>();
+            frame.raycastTarget = true; // chắn cú chạm rơi xuống nền phía sau
+            var skin = LoginSkin.GetSliced(LoginSkin.Panel, PanelSliceBorder);
+            if (skin != null)
+            {
+                frame.sprite = skin;
+                frame.type = Image.Type.Sliced;
+                frame.color = Color.white;
+                PlacePanel(go, _registrationMode);
+                return (RectTransform)go.transform;
+            }
             RoundedUiSprite.Apply(frame);
             frame.color = new Color(0.18f, 0.55f, 0.9f, 1f);
-            frame.raycastTarget = true; // chắn cú chạm rơi xuống nền phía sau
 
             var surface = new GameObject("Surface", typeof(RectTransform), typeof(Image));
             surface.transform.SetParent(go.transform, false);
@@ -189,18 +228,24 @@ namespace Gopet.Runtime.UI
             var srect = (RectTransform)surface.transform;
             srect.anchorMin = Vector2.zero; srect.anchorMax = Vector2.one;
             srect.offsetMin = new Vector2(4f, 4f); srect.offsetMax = new Vector2(-4f, -4f);
+            PlacePanel(go, _registrationMode);
+            return (RectTransform)go.transform;
+        }
 
+        private static void PlacePanel(GameObject go, bool registration)
+        {
+            var height = registration ? RegistrationPanelHeightFrac : PanelHeightFrac;
+            var center = registration ? RegistrationPanelCenterY : PanelCenterY;
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(0.5f, PanelCenterY - PanelHeightFrac / 2f);
-            rect.anchorMax = new Vector2(0.5f, PanelCenterY + PanelHeightFrac / 2f);
+            rect.anchorMin = new Vector2(0.5f, center - height / 2f);
+            rect.anchorMax = new Vector2(0.5f, center + height / 2f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
 
             var fitter = go.GetComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
-            fitter.aspectRatio = PanelAspect;
-
-            return rect;
+            // Giữ bề ngang như form đăng nhập: cao thêm bao nhiêu thì tỉ lệ rộng/cao giảm bấy nhiêu.
+            fitter.aspectRatio = PanelAspect * PanelHeightFrac / height;
         }
 
         private void MakeLogo(RectTransform panel)

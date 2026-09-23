@@ -77,7 +77,7 @@ namespace Gopet.Runtime.UI
             rect.offsetMax = offsetMax;
             label.text = value;
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = style;
+            UiBuilder.SetFontStyle(label, style);
             label.color = color;
             return label;
         }
@@ -99,7 +99,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(go.transform, font, "Label", 17, stretch: true);
             label.text = "Thử lại";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = Color.white;
 
             var button = go.GetComponent<Button>();

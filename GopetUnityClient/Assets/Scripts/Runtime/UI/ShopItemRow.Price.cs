@@ -39,7 +39,7 @@ namespace Gopet.Runtime.UI
 
             _price = UiBuilder.MakeText(go.transform, _font, "Amount", 12, false);
             _price.color = Color.white;
-            _price.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_price, FontStyle.Bold);
             _price.alignment = TextAnchor.MiddleCenter;
 
             // Đơn vị tiền lạ ("100 điểm hoa ngọc") dài gấp mấy lần "20"; cỡ chữ cố

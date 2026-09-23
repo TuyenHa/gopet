@@ -60,7 +60,7 @@ namespace Gopet.Runtime.UI
 
         public static MailboxView Create(Transform parent, Mailbox mailbox)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
 
             // Nền mờ + bấm ra ngoài để đóng. Component nằm ở ĐÂY chứ không ở khung popup:
             // người gọi huỷ một object là mất cả nền lẫn khung.

@@ -19,6 +19,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { decodeBank } = require('./dat-bank');
 const { patchWaterBanks } = require('./map-water-bank-patch');
+const { rawPngBytes } = require('./raw-png-overrides');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const JAR_DIR = path.join(REPO_ROOT, 'client.jar_Decompiler.com');
@@ -66,7 +67,7 @@ function buildPlan() {
 
     for (const rel of walk(JAR_DIR, '.png')) {
         // PNG rời nằm ngoài mọi kho .dat — copy y nguyên để giữ cấu trúc thư mục gốc.
-        plan.push({ dest: path.join(ART_DIR, 'Raw', rel), bytes: fs.readFileSync(path.join(JAR_DIR, rel)), kind: `raw png ${rel}` });
+        plan.push({ dest: path.join(ART_DIR, 'Raw', rel), bytes: rawPngBytes(rel, fs.readFileSync(path.join(JAR_DIR, rel))), kind: `raw png ${rel}` });
     }
 
     for (const rel of walk(path.join(JAR_DIR, 'maps'), '.dat')) {

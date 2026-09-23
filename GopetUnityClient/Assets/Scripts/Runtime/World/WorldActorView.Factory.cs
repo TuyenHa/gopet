@@ -81,7 +81,7 @@ namespace Gopet.Runtime.World
             }
             else
             {
-                assets.Get(imagePath, ImagePackets.TypeNpc, texture =>
+                assets.Get(imagePath, ImagePackets.TypeNpc, view, texture =>
                 {
                     if (view == null || texture == null) return;
                     view._frames = SpriteFrameCache.Slice(imagePath, texture, frameCount);

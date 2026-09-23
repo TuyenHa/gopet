@@ -40,7 +40,7 @@ namespace Gopet.Runtime.World
             timerRect.anchoredPosition = new Vector2(0f, -18f);
             timerRect.sizeDelta = new Vector2(180f, 32f);
             _placeTime.alignment = TextAnchor.MiddleCenter;
-            _placeTime.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_placeTime, FontStyle.Bold);
             _placeTime.gameObject.SetActive(false);
 
             _bigText = UiBuilder.MakeText(parent, font, "Big Text Effect", 34, false);
@@ -49,7 +49,7 @@ namespace Gopet.Runtime.World
             bigRect.pivot = new Vector2(0.5f, 0.5f);
             bigRect.sizeDelta = new Vector2(720f, 72f);
             _bigText.alignment = TextAnchor.MiddleCenter;
-            _bigText.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_bigText, FontStyle.Bold);
             _bigText.color = new Color(1f, 0.82f, 0.2f, 1f);
             _bigText.gameObject.SetActive(false);
         }

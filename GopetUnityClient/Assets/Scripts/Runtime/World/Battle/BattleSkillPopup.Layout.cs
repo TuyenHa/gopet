@@ -72,7 +72,7 @@ namespace Gopet.Runtime.World.Battle
             rect.offsetMax = new Vector2(-(TitleHeight + Pad), -Pad);
             label.text = "KỸ NĂNG";
             label.alignment = TextAnchor.MiddleLeft;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = new Color(1f, 0.85f, 0.35f);
 
             var btnGo = new GameObject("Đóng", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -89,7 +89,7 @@ namespace Gopet.Runtime.World.Battle
             var x = UiBuilder.MakeText(btnGo.transform, font, "X", 12, true);
             x.text = "✕";
             x.alignment = TextAnchor.MiddleCenter;
-            x.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(x, FontStyle.Bold);
             x.color = Color.white;
             btnGo.GetComponent<Button>().onClick.AddListener(() => popup.SetOpen(false));
         }

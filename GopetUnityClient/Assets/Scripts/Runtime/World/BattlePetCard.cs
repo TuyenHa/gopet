@@ -53,7 +53,7 @@ namespace Gopet.Runtime.World
             card._rect = rect;
             card._home = rect.anchoredPosition;
             card.BuildSprite(left);
-            assets.Get(pet.ImagePath, ImagePackets.TypeNpc, card.SetTexture);
+            assets.Get(pet.ImagePath, ImagePackets.TypeNpc, card, card.SetTexture);
             return card;
         }
 

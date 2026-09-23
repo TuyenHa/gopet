@@ -1,134 +1,105 @@
 using System;
 using Gopet.Net.Pet;
+using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Modal chọn nguyên liệu cho cường hoá (2 material: template + crystal) hoặc
-    /// tiến hoá (2 material: template + tier stone).
+    /// Popup chọn nguyên liệu cho cường hoá (template + crystal) hoặc tiến hoá (2 nguyên
+    /// liệu lên tier). Khung, badge tiêu đề và nút X lấy từ <see cref="GamePopupFrame"/> —
+    /// cùng khung với Cửa hàng. Ô nhập và nút dựng ở <c>EnchantEvolveView.Build.cs</c>.
     ///
-    /// <para>Chưa có picker nguyên liệu từ túi — hiện dùng 2 InputField nhập itemId
-    /// trực tiếp (dev-mode). Khi có <c>PET_INVENTORY</c> handler + item picker view
-    /// đầy đủ, thay 2 field bằng 2 nút "Chọn nguyên liệu" mở picker.</para>
+    /// <para>Chưa có picker nguyên liệu từ túi — hiện dùng 2 ô nhập itemId trực tiếp.
+    /// Server chọn hộ nguyên liệu thì <see cref="ApplyServerMaterial"/> điền vào ô.</para>
     /// </summary>
-    public sealed class EnchantEvolveView : MonoBehaviour
+    public sealed partial class EnchantEvolveView : MonoBehaviour
     {
         public enum Mode { Enchant, UpTier }
+
+        private const float PopupWidth = 340f;
+        private const float PopupHeight = 232f;
+
+        private static readonly Color ErrorColor = new Color(0.86f, 0.28f, 0.28f, 1f);
+        private static readonly Color OkColor = new Color(0.25f, 0.62f, 0.2f, 1f);
+
+        private InputField _fieldA, _fieldB;
+        private Text _status;
 
         public event Action<int, int> Confirmed; // (matA, matB)
         public event Action CloseRequested;
 
         public static EnchantEvolveView Create(Transform parent, Mode mode, int itemId, string itemName)
         {
-            var backdrop = new GameObject($"{mode} Backdrop", typeof(RectTransform), typeof(Image), typeof(Button));
-            backdrop.transform.SetParent(parent, false);
-            UiBuilder.Stretch((RectTransform)backdrop.transform);
-            backdrop.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+            var root = new GameObject($"{mode} Popup", typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            UiBuilder.Stretch((RectTransform)root.transform);
+            var view = root.AddComponent<EnchantEvolveView>();
 
-            var view = backdrop.AddComponent<EnchantEvolveView>();
-            backdrop.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
+            // Lớp tối là ANH EM với khung: Unity dò handler click ngược lên cây cha, nên
+            // nút đóng mà nằm ở cha thì bấm vào ô nhập cũng đóng popup.
+            var dim = new GameObject("Dim", typeof(RectTransform), typeof(Image), typeof(Button));
+            dim.transform.SetParent(root.transform, false);
+            UiBuilder.Stretch((RectTransform)dim.transform);
+            dim.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+            dim.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
 
-            var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
-            panel.transform.SetParent(backdrop.transform, false);
-            var rect = (RectTransform)panel.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(320f, 250f);
-            var img = panel.GetComponent<Image>();
-            RoundedUiSprite.Apply(img);
-            img.color = new Color(0.11f, 0.14f, 0.2f, 0.98f);
-
-            view.BuildContent(panel.transform, mode, itemName);
+            var font = UiBuilder.DefaultFont();
+            var title = mode == Mode.Enchant ? "Cường hóa" : "Tiến hóa";
+            var frame = GamePopupFrame.Create(root.transform, font, title, PopupWidth, PopupHeight);
+            frame.Closed += () => view.CloseRequested?.Invoke();
+            view.BuildContent(frame.Content, font, mode, JarIconTokens.Humanize(itemName ?? string.Empty));
             return view;
         }
 
-        private InputField _fieldA, _fieldB;
-        private Text _errorText;
-
-        private void BuildContent(Transform panel, Mode mode, string itemName)
+        private void BuildContent(Transform content, Font font, Mode mode, string itemName)
         {
-            var font = UiBuilder.BuiltinFont();
-            var title = UiBuilder.MakeText(panel, font, "Title", 16, false);
-            title.text = mode == Mode.Enchant ? $"Cường hoá {itemName}" : $"Tiến hoá {itemName}";
-            title.fontStyle = FontStyle.Bold;
-            title.alignment = TextAnchor.MiddleCenter;
-            title.color = UiBuilder.TextMain;
-            SetRect(title.rectTransform, 8f, 24f);
+            // Tên đồ server trả kèm cả dải chỉ số — cho xuống 2 dòng rồi co chữ, đừng tràn.
+            var name = UiBuilder.MakeText(content, font, "Item name", 14, false);
+            name.text = itemName;
+            name.alignment = TextAnchor.MiddleCenter;
+            name.color = PopupPalette.TextDark;
+            name.horizontalOverflow = HorizontalWrapMode.Wrap;
+            name.verticalOverflow = VerticalWrapMode.Truncate;
+            name.resizeTextForBestFit = true;
+            name.resizeTextMinSize = 10;
+            name.resizeTextMaxSize = 14;
+            UiBuilder.SetFontStyle(name, FontStyle.Bold);
+            PlaceTop(name.rectTransform, 2f, 36f, 4f);
 
-            var hint = UiBuilder.MakeText(panel, font, "Hint", 11, false);
+            var hint = UiBuilder.MakeText(content, font, "Hint", 11, false);
             hint.text = mode == Mode.Enchant
-                ? "Nhập itemId 2 nguyên liệu (template + crystal)."
-                : "Nhập itemId 2 nguyên liệu để tiến lên tier tiếp theo.";
+                ? "Nhập ID 2 nguyên liệu (template + crystal)."
+                : "Nhập ID 2 nguyên liệu để lên tier tiếp theo.";
             hint.alignment = TextAnchor.MiddleCenter;
-            hint.color = UiBuilder.TextMuted;
-            SetRect(hint.rectTransform, 40f, 30f);
+            hint.color = PopupPalette.TextMuted;
+            PlaceTop(hint.rectTransform, 40f, 16f, 4f);
 
-            _fieldA = MakeField(panel, font, mode == Mode.Enchant ? "Material ID" : "Material 1 ID", 78f);
-            _fieldB = MakeField(panel, font, mode == Mode.Enchant ? "Crystal ID" : "Material 2 ID", 118f);
+            _fieldA = MakeField(content, font, mode == Mode.Enchant ? "ID nguyên liệu" : "ID nguyên liệu 1", 62f);
+            _fieldB = MakeField(content, font, mode == Mode.Enchant ? "ID crystal" : "ID nguyên liệu 2", 104f);
 
-            _errorText = UiBuilder.MakeText(panel, font, "Error", 11, false);
-            _errorText.alignment = TextAnchor.MiddleCenter;
-            _errorText.color = new Color(1f, 0.4f, 0.4f, 1f);
-            SetRect(_errorText.rectTransform, 158f, 18f);
+            _status = UiBuilder.MakeText(content, font, "Status", 11, false);
+            _status.alignment = TextAnchor.MiddleCenter;
+            PlaceTop(_status.rectTransform, 144f, 16f, 4f);
 
-            MakeSubmit(panel, font, mode == Mode.Enchant ? "Cường hoá" : "Tiến hoá", 186f);
-        }
-
-        private static InputField MakeField(Transform panel, Font font, string placeholder, float top)
-        {
-            var go = new GameObject($"Field:{placeholder}", typeof(RectTransform), typeof(Image), typeof(InputField));
-            go.transform.SetParent(panel, false);
-            SetRect((RectTransform)go.transform, top, 32f);
-            go.GetComponent<Image>().color = UiBuilder.Field;
-            var input = go.GetComponent<InputField>();
-            input.contentType = InputField.ContentType.IntegerNumber;
-            var text = UiBuilder.MakeText(go.transform, font, "Text", 14, true);
-            text.color = UiBuilder.TextMain;
-            text.rectTransform.offsetMin = new Vector2(10f, 0f);
-            text.rectTransform.offsetMax = new Vector2(-10f, 0f);
-            input.textComponent = text;
-            var ph = UiBuilder.MakeText(go.transform, font, "Placeholder", 13, true);
-            ph.text = placeholder;
-            ph.color = UiBuilder.TextMuted;
-            ph.fontStyle = FontStyle.Italic;
-            ph.rectTransform.offsetMin = new Vector2(10f, 0f);
-            ph.rectTransform.offsetMax = new Vector2(-10f, 0f);
-            input.placeholder = ph;
-            return input;
-        }
-
-        private void MakeSubmit(Transform panel, Font font, string label, float top)
-        {
-            var go = new GameObject("Submit", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(panel, false);
-            SetRect((RectTransform)go.transform, top, 40f);
-            var img = go.GetComponent<Image>();
-            img.color = new Color(0.7f, 0.55f, 0.15f, 1f);
-            RoundedUiSprite.Apply(img);
-            var t = UiBuilder.MakeText(go.transform, font, "Label", 15, true);
-            t.text = label;
-            t.fontStyle = FontStyle.Bold;
-            t.alignment = TextAnchor.MiddleCenter;
-            t.color = Color.white;
-            go.GetComponent<Button>().onClick.AddListener(TrySubmit);
+            MakeSubmit(content, font, mode == Mode.Enchant ? "Cường hóa" : "Tiến hóa");
         }
 
         private void TrySubmit()
         {
             if (!int.TryParse(_fieldA.text, out var a) || !int.TryParse(_fieldB.text, out var b))
             {
-                _errorText.text = "Nhập số hợp lệ cho cả 2 material.";
+                SetStatus("Nhập số hợp lệ cho cả 2 nguyên liệu.", ErrorColor);
                 return;
             }
             if (a <= 0 || b <= 0)
             {
-                _errorText.text = "Material ID phải > 0.";
+                SetStatus("ID nguyên liệu phải lớn hơn 0.", ErrorColor);
                 return;
             }
             Confirmed?.Invoke(a, b);
-            _errorText.text = "Đã gửi. Đợi server phản hồi…";
-            _errorText.color = new Color(0.6f, 0.85f, 0.5f, 1f);
+            SetStatus("Đã gửi. Đợi server phản hồi…", OkColor);
         }
 
         public void ApplyServerMaterial(PetEquipMaterialSelection material)
@@ -136,17 +107,13 @@ namespace Gopet.Runtime.UI
             if (material == null) return;
             var field = material.Slot == 7 ? _fieldA : _fieldB;
             field.text = material.ItemOrTemplateId.ToString();
-            _errorText.text = $"Đã chọn {material.Name}";
-            _errorText.color = UiBuilder.TextMuted;
+            SetStatus($"Đã chọn {JarIconTokens.Humanize(material.Name)}", PopupPalette.TextMuted);
         }
 
-        private static void SetRect(RectTransform rect, float top, float height)
+        private void SetStatus(string text, Color color)
         {
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.offsetMin = new Vector2(16f, -(top + height));
-            rect.offsetMax = new Vector2(-16f, -top);
+            _status.text = text;
+            _status.color = color;
         }
     }
 }

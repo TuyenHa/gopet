@@ -31,6 +31,34 @@ namespace Gopet.Runtime.UI
         public static readonly Color TextMain = new Color(0.93f, 0.94f, 0.96f, 1f);
         public static readonly Color TextMuted = new Color(0.68f, 0.71f, 0.76f, 1f);
 
+        private const string DefaultFontPath = "Fonts/BeVietnamPro/BeVietnamPro-Regular";
+        private const string SemiBoldFontPath = "Fonts/BeVietnamPro/BeVietnamPro-SemiBold";
+
+        private static Font _defaultFont;
+        private static Font _semiBoldFont;
+        private static bool _semiBoldLoaded;
+
+        /// <summary>
+        /// Font UI mặc định: Be Vietnam Pro — dấu chồng tiếng Việt (ế, ộ, Ặ) đặt đúng
+        /// chỗ ở cỡ 11–14, Arial thì dính/đè dòng trên. Cache vì mọi view đều gọi.
+        ///
+        /// <para>Thiếu asset thì lùi về font dựng sẵn để vẫn có chữ, nhưng phải cảnh
+        /// báo — lùi im lặng thì không ai biết UI đã về Arial.</para>
+        /// </summary>
+        public static Font DefaultFont()
+        {
+            if (_defaultFont != null) return _defaultFont;
+
+            _defaultFont = Resources.Load<Font>(DefaultFontPath);
+            if (_defaultFont == null)
+            {
+                Debug.LogWarning($"[Gopet] Thiếu font {DefaultFontPath} — dùng font dựng sẵn.");
+                _defaultFont = LegacyFont();
+            }
+
+            return _defaultFont;
+        }
+
         /// <summary>
         /// Font dựng sẵn của Unity. Unity 6 đổi tên nó thành <c>LegacyRuntime.ttf</c>;
         /// bản cũ hơn là <c>Arial.ttf</c>.
@@ -39,7 +67,7 @@ namespace Gopet.Runtime.UI
         /// nào được vẽ</b> — màn hình trống trơn, không có lỗi nào báo. Nên hụt cả hai
         /// tên thì phải hét lên.</para>
         /// </summary>
-        public static Font BuiltinFont()
+        private static Font LegacyFont()
         {
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -50,6 +78,64 @@ namespace Gopet.Runtime.UI
             }
 
             return font;
+        }
+
+        /// <summary>
+        /// Đặt kiểu chữ. Legacy <c>Text</c> chỉ gắn được một file font, nên
+        /// <c>FontStyle.Bold</c> trên bản Regular là đậm GIẢ (Unity tự làm dày, nhòe viền).
+        /// Ở đây Bold đổi hẳn sang file SemiBold; bỏ Bold thì trả về font mặc định.
+        /// </summary>
+        public static void SetFontStyle(Text text, FontStyle style)
+        {
+            text.font = ResolveStyledFont(text.font, style, out var synthesized);
+            text.fontStyle = synthesized;
+        }
+
+        /// <summary>
+        /// Như bản <c>Text</c>, cho chữ world-space. <c>TextMesh</c> vẽ bằng material của
+        /// font nên đổi font thì phải đổi material theo, không thì ra ô vuông/chữ rác.
+        /// </summary>
+        public static void SetFontStyle(TextMesh mesh, FontStyle style)
+        {
+            mesh.font = ResolveStyledFont(mesh.font, style, out var synthesized);
+            mesh.fontStyle = synthesized;
+
+            var renderer = mesh.GetComponent<MeshRenderer>();
+            if (renderer != null && mesh.font != null) renderer.sharedMaterial = mesh.font.material;
+        }
+
+        /// <summary>Chọn file font cho kiểu chữ; <paramref name="synthesized"/> là phần kiểu Unity còn phải tự giả lập.</summary>
+        private static Font ResolveStyledFont(Font current, FontStyle style, out FontStyle synthesized)
+        {
+            var semiBold = SemiBoldFont();
+            if (semiBold == null)
+            {
+                synthesized = style; // thiếu SemiBold → đành dùng đậm giả
+                return current;
+            }
+
+            if (style == FontStyle.Bold || style == FontStyle.BoldAndItalic)
+            {
+                synthesized = style == FontStyle.BoldAndItalic ? FontStyle.Italic : FontStyle.Normal;
+                return semiBold;
+            }
+
+            synthesized = style;
+            return current == semiBold ? DefaultFont() : current;
+        }
+
+        private static Font SemiBoldFont()
+        {
+            if (_semiBoldLoaded) return _semiBoldFont;
+
+            _semiBoldLoaded = true;
+            _semiBoldFont = Resources.Load<Font>(SemiBoldFontPath);
+            if (_semiBoldFont == null)
+            {
+                Debug.LogWarning($"[Gopet] Thiếu font {SemiBoldFontPath} — chữ đậm dùng đậm giả.");
+            }
+
+            return _semiBoldFont;
         }
 
         /// <summary>Trải kín vùng chứa.</summary>

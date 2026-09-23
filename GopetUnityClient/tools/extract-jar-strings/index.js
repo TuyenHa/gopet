@@ -82,6 +82,12 @@ function emit(table) {
     return JSON.stringify(sorted, null, 2) + '\n';
 }
 
+function matchesGenerated(actual, expected) {
+    // Normalize checkout line endings only. Escaped newlines inside JSON string
+    // values remain untouched, so changes to the actual translations still fail.
+    return actual.replace(/\r\n/g, '\n') === expected;
+}
+
 function main() {
     const checkOnly = process.argv.includes('--check');
 
@@ -98,8 +104,8 @@ function main() {
     const enPath = path.join(OUT_DIR, 'strings-en.json');
 
     if (checkOnly) {
-        const viOk = fs.existsSync(viPath) && fs.readFileSync(viPath, 'utf8') === viJson;
-        const enOk = fs.existsSync(enPath) && fs.readFileSync(enPath, 'utf8') === enJson;
+        const viOk = fs.existsSync(viPath) && matchesGenerated(fs.readFileSync(viPath, 'utf8'), viJson);
+        const enOk = fs.existsSync(enPath) && matchesGenerated(fs.readFileSync(enPath, 'utf8'), enJson);
         if (!viOk || !enOk) {
             console.error('Bảng chuỗi đã lệch so với a.java. Chạy: node index.js');
             process.exit(1);
@@ -121,4 +127,5 @@ function main() {
     }
 }
 
-main();
+module.exports = { parse, emit, matchesGenerated };
+if (require.main === module) main();

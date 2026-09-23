@@ -49,6 +49,27 @@ namespace Gopet.UiLogic
             return sb.ToString().TrimEnd();
         }
 
+        /// <summary>
+        /// Như <see cref="Strip"/> nhưng GIỮ nghĩa của các tag mang thông tin: tag chỉ số
+        /// thành nhãn trong ngoặc ("(str)" → "(STR)"), tag tiền thành chữ ("(vang)" →
+        /// "vàng"). Tag chỉ để trang trí (sao, cờ…) vẫn bị bỏ. Dùng cho text mô tả, nơi
+        /// bỏ hẳn tag là câu cụt nghĩa ("với giá 2 và sẽ nhận…").
+        /// </summary>
+        public static string Humanize(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text.IndexOf('(') < 0) return text;
+            foreach (var pair in Readable)
+                text = text.Replace(pair[0], pair[1]);
+            return Strip(text);
+        }
+
+        private static readonly string[][] Readable =
+        {
+            new[] { "(str)", "(STR)" }, new[] { "(agi)", "(AGI)" }, new[] { "(int)", "(INT)" },
+            new[] { "(atk)", "(ATK)" }, new[] { "(def)", "(DEF)" }, new[] { "(hp)", "(HP)" },
+            new[] { "(mp)", "(MP)" }, new[] { "(vang)", "vàng" }, new[] { "(ngoc)", "ngọc" },
+        };
+
         private static bool TryMatchToken(string text, int start, out int length)
         {
             foreach (var tok in KnownTokens)

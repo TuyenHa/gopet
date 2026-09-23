@@ -66,7 +66,7 @@ namespace Gopet.Runtime.World
             var view = go.AddComponent<BattleView>();
             view._handler = handler; view._start = start;
             view._summaryTracker = new BattleSummaryTracker(start, startedAt);
-            view.Build(assets, UiBuilder.BuiltinFont(), playerStats);
+            view.Build(assets, UiBuilder.DefaultFont(), playerStats);
             handler.BuffStateReceived += view.OnBuff;
             handler.StatsReceived += view.OnStats;
             handler.HitExpReceived += view.OnHitExp;

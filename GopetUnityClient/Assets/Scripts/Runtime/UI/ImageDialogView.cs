@@ -54,7 +54,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(spec.Width * scale, spec.Height * scale);
 
             if (assets == null) return;
-            assets.Get(spec.ImagePath, ImagePackets.TypeIcon, texture =>
+            assets.Get(spec.ImagePath, ImagePackets.TypeIcon, _image, texture =>
             {
                 if (this != null && _image != null) _image.texture = texture;
             });

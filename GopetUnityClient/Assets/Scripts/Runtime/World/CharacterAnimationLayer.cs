@@ -48,7 +48,9 @@ namespace Gopet.Runtime.World
             if (avatar == null || !_state.TryGetValue(userId, out var update) || update.Animations.Length == 0)
                 return;
             var root = new GameObject("Server character animations");
-            root.transform.SetParent(avatar, false);
+            // Neo vào mốc danh hiệu của avatar để tự bám theo chiều cao nhân vật/skin.
+            var anchor = avatar.GetComponent<PlayerAvatar>()?.TitleAnchor;
+            root.transform.SetParent(anchor != null ? anchor : avatar, false);
             _roots[userId] = root;
             for (var i = 0; i < update.Animations.Length; i++)
                 CharacterAnimationView.Create(root.transform, update.Animations[i], _assets, i);

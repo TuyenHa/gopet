@@ -47,7 +47,7 @@ namespace Gopet.Runtime.UI
             var canvas = new GameObject("BenchCanvas", typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
 
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
 
             _menu = GenericMenuView.Create(canvas.transform, font);
             _menu.Bind(BuildScreen(itemCount), null, new GuiderHandler(m => m.Dispose()));

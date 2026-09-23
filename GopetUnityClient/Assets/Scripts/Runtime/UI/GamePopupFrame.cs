@@ -119,7 +119,7 @@ namespace Gopet.Runtime.UI
             label.text = title;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.rectTransform.offsetMin = new Vector2(26f, 0f);
         }
     }

@@ -35,6 +35,7 @@ namespace Gopet.Runtime.UI
         private ScrollRect _scrollRect;
         private bool _compactCards;
         private bool _lightCards;
+        private float _rowGap;
 
         private float _viewportHeight;
         private float _scrollY;
@@ -69,6 +70,22 @@ namespace Gopet.Runtime.UI
             _compactCards = value;
             foreach (var row in _realized.Values) row.SetCompactCard(value);
         }
+
+        /// <summary>
+        /// Khoảng trống giữa hai dòng (ref-unit). Mặc định 0 — dòng liền nhau, ngăn bằng vạch.
+        /// Danh sách thẻ nền tối (chọn pet) cần khe hở, không thì các thẻ dính thành một khối.
+        /// </summary>
+        public void SetRowGap(float gap)
+        {
+            gap = Mathf.Max(0f, gap);
+            if (Mathf.Approximately(gap, _rowGap)) return;
+            _rowGap = gap;
+            RecycleAll();
+            Refresh();
+        }
+
+        /// <summary>Bước từ mép trên dòng này tới mép trên dòng kế: cao dòng + khe hở.</summary>
+        private float RowStep => MenuItemRow.Height + _rowGap;
 
         /// <summary>Kiểu card nền sáng cho các popup danh sách pet.</summary>
         public void SetLightCards(bool value)
@@ -141,9 +158,9 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(panel.GetComponent<Image>());
             panel.GetComponent<Image>().color = UiBuilder.Panel;
 
-            _title = UiBuilder.MakeText(panel.transform, _font ?? UiBuilder.BuiltinFont(), "Title", 18, false);
+            _title = UiBuilder.MakeText(panel.transform, _font ?? UiBuilder.DefaultFont(), "Title", 18, false);
             _title.text = _screen?.Title ?? string.Empty;
-            _title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
             _title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(_title.rectTransform, 8f, 42f, 54f);
 
@@ -155,7 +172,7 @@ namespace Gopet.Runtime.UI
             closeRect.anchoredPosition = new Vector2(-8f, -8f);
             closeRect.sizeDelta = new Vector2(38f, 34f);
             close.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var closeLabel = UiBuilder.MakeText(close.transform, _font ?? UiBuilder.BuiltinFont(), "Label", 18, true);
+            var closeLabel = UiBuilder.MakeText(close.transform, _font ?? UiBuilder.DefaultFont(), "Label", 18, true);
             closeLabel.text = "×";
             closeLabel.alignment = TextAnchor.MiddleCenter;
             close.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke(this));
@@ -261,7 +278,7 @@ namespace Gopet.Runtime.UI
             UpdateContentHeight();
 
             Visible = _viewportHeight > 0f
-                ? MenuVirtualizer.Compute(_screen.Items.Length, MenuItemRow.Height, _viewportHeight, _scrollY)
+                ? MenuVirtualizer.Compute(_screen.Items.Length, RowStep, _viewportHeight, _scrollY)
                 : new VisibleRange(0, _screen.Items.Length);
 
             // Thu hồi dòng đã ra khỏi tầm nhìn TRƯỚC, để tái dùng ngay trong lượt này.
@@ -296,7 +313,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(_compactCards ? -12f : 0f,
                 _compactCards ? MenuItemRow.Height - 6f : MenuItemRow.Height);
             rect.anchoredPosition = new Vector2(_compactCards ? 6f : 0f,
-                -MenuVirtualizer.OffsetOf(index, MenuItemRow.Height) - (_compactCards ? 3f : 0f));
+                -MenuVirtualizer.OffsetOf(index, RowStep) - (_compactCards ? 3f : 0f));
 
             _realized[index] = row;
         }
@@ -331,7 +348,9 @@ namespace Gopet.Runtime.UI
         {
             if (_content == null || _screen == null) return;
             _content.sizeDelta = new Vector2(0f,
-                Mathf.Max(MenuVirtualizer.ContentHeight(_screen.Items.Length, MenuItemRow.Height), _viewportHeight));
+                // Trừ khe hở sau dòng cuối — không có dòng nào bên dưới để cách.
+                Mathf.Max(MenuVirtualizer.ContentHeight(_screen.Items.Length, RowStep)
+                    - (_screen.Items.Length > 0 ? _rowGap : 0f), _viewportHeight));
         }
 
         /// <summary>Cho test và cho input bàn phím gọi thẳng, không phải qua chuột.</summary>

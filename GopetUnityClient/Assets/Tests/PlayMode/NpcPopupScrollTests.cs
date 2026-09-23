@@ -64,7 +64,7 @@ namespace Gopet.PlayModeTests
         [Test]
         public void SuGia_HienTangThuCung_CuonDuocKhiNhieuPet()
         {
-            var view = HeavenNpcTabsView.Create(_host.transform, UiBuilder.BuiltinFont(),
+            var view = HeavenNpcTabsView.Create(_host.transform, UiBuilder.DefaultFont(),
                 Options(-25, (88, "Hướng dẫn"), (89, "Hiến tặng thú cưng")));
 
             Assert.IsTrue(view.TryConsumeMenu(
@@ -77,7 +77,7 @@ namespace Gopet.PlayModeTests
         [Test]
         public void BacSi_TayGym_CuonDuocKhiNhieuDong()
         {
-            var view = BacSiNpcTabsView.Create(_host.transform, UiBuilder.BuiltinFont(),
+            var view = BacSiNpcTabsView.Create(_host.transform, UiBuilder.DefaultFont(),
                 Options(-7, (22, "Hồi sinh pet sau PK"), (24, "Tẩy gym")));
 
             // Phải đang ở tab Tẩy gym thì popup mới nhận gói menu của tab đó.

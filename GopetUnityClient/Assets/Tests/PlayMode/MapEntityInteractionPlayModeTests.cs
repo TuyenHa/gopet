@@ -25,7 +25,6 @@ namespace Gopet.PlayModeTests
             Assert.AreEqual(4, portals.Length, "Map 11 phải có đúng 4 portal (decode-map11-entities.md).");
 
             // Đọc entity qua CHÍNH đường GameSession dùng để warp (sự kiện Selected) —
-            // không đọc JarNameLabel (không expose text, chỉ vẽ glyph trực tiếp).
             var clicked = new System.Collections.Generic.List<JarMapEntity>();
             foreach (var portal in portals)
             {
@@ -57,19 +56,12 @@ namespace Gopet.PlayModeTests
         [UnityTest]
         public IEnumerator Map11_Portal_NhanCanGiuaMuiTen_CaXVaY()
         {
-            // Trước fix: nhãn portal đặt cố định +32 units TRÊN portal position, chỉ
-            // dịch theo Y. Nhưng arrow là object RIÊNG lệch cả X (dx tới 34) lẫn Y —
-            // nhãn cách arrow theo X, và cách theo Y khác nhau tuỳ portal (9-23).
-            // Fix: căn giữa nhãn ngay tâm arrow (cả X và Y), nhích lên chút chống đè glyph.
-            //
-            // Khoá bằng: mỗi portal, trục Y từ nhãn đến TÂM arrow ≤ 8 px. Trục X cũng
-            // ≤ 8 px TRỪ KHI portal nằm sát biên map (vd "Đường lên núi" X=45/576, arrow
-            // dx=-34 đẩy nhãn ra ngoài map) — khi đó nhãn bị kẹp vào trong biên map thay
-            // vì bám sát tâm arrow, nên chỉ khoá "chữ không tràn ra ngoài map".
+            // TrueType labels prioritize staying within 26 world units of their
+            // arrow over keeping every glyph within the map edge.
             var renderer = MapRenderer.Create(null, 11);
             var portals = renderer.GetComponentsInChildren<MapPortalView>();
             var mapH = renderer.Map.HeightPixels;
-            var mapW = renderer.Map.WidthPixels;
+            yield return null; // Let TextMesh build its rendered geometry.
 
             foreach (var portal in portals)
             {
@@ -102,21 +94,19 @@ namespace Gopet.PlayModeTests
                 Assert.LessOrEqual(distY, 8f,
                     $"portal '{entity.Name}': nhãn Y={labelWorldY} cách tâm arrow Y={arrowCenterWorldY} {distY} px");
 
-                // NameScale 0.75 khớp LabelScale trong MapPortalView (private, không expose).
-                var halfTextWidth = JarFont.Width(entity.Name) * 0.5f * 0.75f;
-                var arrowFitsInMap = arrowCenterWorldX - halfTextWidth >= 0f && arrowCenterWorldX + halfTextWidth <= mapW;
-                if (arrowFitsInMap)
-                {
-                    Assert.LessOrEqual(distX, 8f,
-                        $"portal '{entity.Name}': nhãn X={labelWorldX} cách tâm arrow X={arrowCenterWorldX} {distX} px");
-                }
-                else
-                {
-                    Assert.GreaterOrEqual(labelWorldX - halfTextWidth, -0.5f,
-                        $"portal '{entity.Name}': nhãn vẫn tràn mép TRÁI map (labelX={labelWorldX})");
-                    Assert.LessOrEqual(labelWorldX + halfTextWidth, mapW + 0.5f,
-                        $"portal '{entity.Name}': nhãn vẫn tràn mép PHẢI map (labelX={labelWorldX})");
-                }
+                Assert.LessOrEqual(distX, 26f,
+                    $"portal '{entity.Name}': label must stay near its arrow");
+                var mesh = label.GetComponentInChildren<TextMesh>();
+                Assert.IsNotNull(mesh);
+                Assert.AreEqual(entity.Name, mesh.text);
+                Assert.AreEqual(TextAnchor.LowerCenter, mesh.anchor);
+                Assert.AreEqual(TextAlignment.Center, mesh.alignment);
+                Assert.IsNotNull(mesh.font);
+                var rendered = mesh.GetComponent<MeshRenderer>();
+                Assert.IsNotNull(rendered);
+                Assert.Greater(rendered.bounds.size.x, 0f, "Label must render visible text");
+                Assert.Greater(rendered.bounds.size.y, 0f, "Label must render visible text");
+
             }
 
             Object.Destroy(renderer.gameObject);

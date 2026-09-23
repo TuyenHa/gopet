@@ -84,7 +84,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(parent, font, "GenderLabel", 18, false);
             label.text = gender == 0 ? "♂   Nam" : "♀   Nữ";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = gender == 0 ? Blue : new Color(0.93f, 0.26f, 0.52f, 1f);
             var rect = (RectTransform)label.transform;
             rect.anchorMin = new Vector2(0f, 0.03f);
@@ -116,7 +116,7 @@ namespace Gopet.Runtime.UI
             var check = UiBuilder.MakeText(badge.transform, font, "Check", 24, true);
             check.text = "✓";
             check.color = Color.white;
-            check.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(check, FontStyle.Bold);
             check.alignment = TextAnchor.MiddleCenter;
             check.raycastTarget = false;
             MoveHighlight(0);

@@ -20,9 +20,7 @@ namespace Gopet.PlayModeTests
 
             Assert.IsNotNull(hud);
             Assert.AreEqual("Sư Gia Thiên Thần", hud.PlayerName);
-            hud.SetMapName("Thành Phố Linh Thú");
-            Assert.AreEqual("Thành Phố Linh Thú", hud.MapName);
-            Assert.IsNotNull(hud.transform.Find("Map Name"));
+            Assert.IsNull(hud.transform.Find("Map Name"), "Tên map đã chuyển lên minimap.");
             Assert.IsNotNull(hud.transform.Find("Portrait Frame/Portrait Mask/Portrait"));
             Assert.AreEqual(UnityEngine.UI.Image.Type.Sliced,
                 hud.GetComponent<UnityEngine.UI.Image>().type);

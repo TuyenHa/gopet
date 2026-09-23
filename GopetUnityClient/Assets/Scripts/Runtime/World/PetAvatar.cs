@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Gopet.Net.Images;
 using Gopet.Net.Pet;
 using Gopet.Runtime.Assets;
@@ -65,7 +65,7 @@ namespace Gopet.Runtime.World
                 JarIconTokens.Strip(entry.DisplayName ?? string.Empty));
 
             var frames = Mathf.Max((int)entry.FrameNum, 1);
-            assets.Get(entry.FrameImagePath, ImagePackets.TypeNpc, texture =>
+            assets.Get(entry.FrameImagePath, ImagePackets.TypeNpc, view, texture =>
             {
                 if (view == null || texture == null) return;
                 view._frames = SpriteFrameCache.Slice(entry.FrameImagePath, texture, frames);

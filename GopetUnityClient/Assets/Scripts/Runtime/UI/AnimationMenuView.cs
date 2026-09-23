@@ -29,7 +29,7 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = UiBuilder.Panel;
 
             var view = backdrop.AddComponent<AnimationMenuView>();
-            view.Build(panel.transform, font ?? UiBuilder.BuiltinFont(), screen, assets);
+            view.Build(panel.transform, font ?? UiBuilder.DefaultFont(), screen, assets);
             return view;
         }
 
@@ -37,7 +37,7 @@ namespace Gopet.Runtime.UI
         {
             var title = UiBuilder.MakeText(panel, font, "Title", 18, false);
             title.text = screen.Title;
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(title.rectTransform, 8f, 36f, 16f);
 
@@ -103,7 +103,7 @@ namespace Gopet.Runtime.UI
             if (element.FrameCount > 1)
                 image.uvRect = new Rect(0f, 0f, 1f / element.FrameCount, 1f);
             if (assets != null)
-                assets.Get(element.TextOrPath, ImagePackets.TypeIcon, texture =>
+                assets.Get(element.TextOrPath, ImagePackets.TypeIcon, image, texture =>
                 {
                     if (image != null) image.texture = texture;
                 });

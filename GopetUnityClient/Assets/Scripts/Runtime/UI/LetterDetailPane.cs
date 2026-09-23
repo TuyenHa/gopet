@@ -85,7 +85,7 @@ namespace Gopet.Runtime.UI
             _title = UiBuilder.MakeText(transform, font, "Title", 13, false);
             _title.alignment = TextAnchor.MiddleLeft;
             _title.color = PopupPalette.TextDark;
-            _title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
             _title.supportRichText = false;
             _title.horizontalOverflow = HorizontalWrapMode.Wrap;
             _title.verticalOverflow = VerticalWrapMode.Truncate;

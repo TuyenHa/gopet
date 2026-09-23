@@ -24,9 +24,8 @@ namespace Gopet.Runtime.UI
         /// hơn một chút cho đỡ chiếm màn.</summary>
         public const float Size = 120f;
 
-        /// <summary>Cách lề phải đủ để lọt giữa cụm nút PET/menu (14..70px từ mép phải)
-        /// và khung chat ở giữa màn.</summary>
-        private const float RightMargin = 80f;
+        /// <summary>Sát lề phải: nút PET đã lên dưới minimap nên góc dưới-phải trống.</summary>
+        public const float RightMargin = 10f;
 
         /// <summary>Cỡ lúc đang giữ — nổi lên đủ thấy nhưng không che mất ngón tay.</summary>
         private const float PressedScale = 1.12f;
@@ -67,10 +66,10 @@ namespace Gopet.Runtime.UI
                 // Thiếu art thì vẫn phải đánh được: nút chữ thay cho icon.
                 Debug.LogWarning($"[Gopet] Thiếu icon nút đánh tại Resources/{IconResource}.");
                 RoundedUiSprite.Apply(button._icon);
-                var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 18, true);
+                var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 18, true);
                 label.text = "ĐÁNH";
                 label.alignment = TextAnchor.MiddleCenter;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 label.color = Color.white;
             }
 

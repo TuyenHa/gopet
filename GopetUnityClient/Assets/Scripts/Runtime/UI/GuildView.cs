@@ -73,7 +73,7 @@ namespace Gopet.Runtime.UI
             outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
             outline.effectDistance = new Vector2(2f, -2f);
 
-            view._font = UiBuilder.BuiltinFont();
+            view._font = UiBuilder.DefaultFont();
             view._panel = panel.transform;
             view.BuildHeader();
             view.BuildTabs();
@@ -86,7 +86,7 @@ namespace Gopet.Runtime.UI
         {
             var title = UiBuilder.MakeText(_panel, _font, "Title", 16, false);
             title.text = "Bang hội";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             title.color = GuildText;
             UiBuilder.PlaceRow(title.rectTransform, Padding, 22f, Padding);
@@ -113,7 +113,7 @@ namespace Gopet.Runtime.UI
                 var xLabel = UiBuilder.MakeText(closeGo.transform, _font, "X", 18, true);
                 xLabel.text = "×";
                 xLabel.alignment = TextAnchor.MiddleCenter;
-                xLabel.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(xLabel, FontStyle.Bold);
                 xLabel.color = Color.white;
             }
             closeGo.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke());
@@ -147,7 +147,7 @@ namespace Gopet.Runtime.UI
                 var label = UiBuilder.MakeText(go.transform, _font, "Label", 12, true);
                 label.text = TabLabels[i];
                 label.alignment = TextAnchor.MiddleCenter;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 label.color = GuildText;
 
                 _tabButtons[i] = go.GetComponent<Button>();

@@ -34,18 +34,18 @@ namespace Gopet.PlayModeTests
             if (_canvas != null) Object.DestroyImmediate(_canvas);
         }
 
-        /// <summary>Font dựng sẵn trả về <c>null</c> thì KHÔNG MỘT CHỮ NÀO được vẽ.</summary>
+        /// <summary>Font trả về <c>null</c> thì KHÔNG MỘT CHỮ NÀO được vẽ.</summary>
         [Test]
-        public void FontDungSan_LayDuoc()
+        public void FontMacDinh_LayDuoc()
         {
-            Assert.IsNotNull(UiBuilder.BuiltinFont(),
+            Assert.IsNotNull(UiBuilder.DefaultFont(),
                 "Không có font thì Text.font = null và màn hình trống trơn, không lỗi nào báo.");
         }
 
         [Test]
         public void BieuMauDangNhap_ChuDocDuocTrenNen()
         {
-            var form = FormView.Create(_canvas.transform, UiBuilder.BuiltinFont());
+            var form = FormView.Create(_canvas.transform, UiBuilder.DefaultFont());
             form.Bind("Đăng nhập", new[] { "Tài khoản", "Mật khẩu" }, new[] { "Đăng nhập", "Quên" });
             form.SetNotice("Sai mật khẩu");
 
@@ -55,7 +55,7 @@ namespace Gopet.PlayModeTests
         [Test]
         public void HopThoai_ChuDocDuocTrenNen()
         {
-            var dialog = ChoiceDialogView.Create(_canvas.transform, UiBuilder.BuiltinFont());
+            var dialog = ChoiceDialogView.Create(_canvas.transform, UiBuilder.DefaultFont());
             dialog.Bind("Chắc chưa?", new[] { "Đồng ý", "Thôi" });
 
             AssertReadable(dialog.gameObject);
@@ -64,7 +64,7 @@ namespace Gopet.PlayModeTests
         [Test]
         public void DongMenu_ChuDocDuocTrenNen()
         {
-            var row = MenuItemRow.Create(_canvas.transform, UiBuilder.BuiltinFont());
+            var row = MenuItemRow.Create(_canvas.transform, UiBuilder.DefaultFont());
             row.Bind(new MenuItemInfo { Title = "Đổi 2.400 (vàng)", Description = "mô tả", CanSelect = true },
                      0, null, _ => { });
 

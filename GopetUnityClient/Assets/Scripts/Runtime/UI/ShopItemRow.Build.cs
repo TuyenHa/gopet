@@ -69,7 +69,7 @@ namespace Gopet.Runtime.UI
             // nút giá và tràn khỏi thẻ (thấy rõ ở tab Thức ăn, mô tả dài cả câu).
             // Wrap để xuống dòng, Truncate để phần không còn chỗ bị cắt chứ không tràn.
             _title = UiBuilder.MakeText(parent, _font, "Title", 14, false);
-            _title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
             _title.color = PopupPalette.TextDark;
             _title.horizontalOverflow = HorizontalWrapMode.Wrap;
             _title.verticalOverflow = VerticalOverflow;

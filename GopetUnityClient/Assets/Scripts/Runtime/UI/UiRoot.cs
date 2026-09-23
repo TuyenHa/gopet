@@ -115,6 +115,12 @@ namespace Gopet.Runtime.UI
                 return;
             }
 
+            if (ItemSelectPopupView.Handles(screen))
+            {
+                ShowItemSelectPopup(screen);
+                return;
+            }
+
             // Popup cửa hàng đang mở và listId khớp shop tab active → giao cho popup
             // tự bind. Không thì cả hai view chồng nhau và người chơi tưởng bug.
             if (_shopPopup != null && _shopPopup.TryConsumeMenu(screen)) return;
@@ -288,7 +294,10 @@ namespace Gopet.Runtime.UI
             view.Bind(string.Empty, labels);
             view.Chosen += index =>
             {
-                _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
+                // NPC không có lựa chọn nào: ChoiceDialogView vẫn dựng một nút "OK" dự
+                // phòng để đóng hộp thoại — nút đó không ứng với option nào của server.
+                if (index >= 0 && index < options.Options.Length)
+                    _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
                 Close(view);
             };
             view.Closed += () => Close(view);
@@ -392,6 +401,7 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
             if (ReferenceEquals(screen, _taskPopup)) _taskPopup = null;
+            if (ReferenceEquals(screen, _itemSelectPopup)) _itemSelectPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
             if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;

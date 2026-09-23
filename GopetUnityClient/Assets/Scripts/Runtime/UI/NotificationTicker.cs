@@ -9,8 +9,8 @@ namespace Gopet.Runtime.UI
     /// báo mới thì hiện loa + text chạy phải → trái. Nền viên thuốc nâu đen mờ, chữ
     /// trắng in đậm — copy nguyên HUD "loa thông báo" của Gopet mobile.
     ///
-    /// <para><b>Vị trí</b>: neo đỉnh, giãn đều hai bên với lề <see cref="SideMargin"/>,
-    /// cách mép trên <see cref="TopMargin"/> — nằm HẲN dưới CharacterHud.</para>
+    /// <para><b>Vị trí</b>: neo góc trên-trái tại <see cref="LeftMargin"/>, rộng cố định
+    /// <see cref="Width"/>, cách mép trên <see cref="TopMargin"/> — nằm HẲN dưới CharacterHud.</para>
     /// <para><b>Loa</b>: sprite lớn (<see cref="SpeakerSize"/>) tràn ra mép trái pill để
     /// mắt bám vào biểu tượng trước, giống HUD gốc.</para>
     /// <para><b>Vòng đời text</b>: mỗi thông báo lặp <see cref="RepeatsPerMessage"/> lần rồi
@@ -23,23 +23,21 @@ namespace Gopet.Runtime.UI
         // delivers non-empty text from the server.
         private const string SpeakerResource = "Ui/Hud/notify-speaker-v2";
 
-        // Neo cao ở vùng giữa phía trên, NGAY DƯỚI thanh tài nguyên (đậu/lúa/vàng) và
-        // thẳng cột với nó: hai thanh cùng một khối thông tin, lệch mép trái nhìn rất
-        // chướng. Mép phải chừa rộng hơn để không chạm cụm icon shop góc phải-trên.
-        private const float TopMargin = 38f;
+        // Mép dưới băng NGANG HÀNG mép dưới HUD nhân vật (avatar/HP/MP/tiền tệ), nằm bên
+        // phải HUD — thấp hơn hẳn cụm icon shop góc phải-trên nên không đè lên chúng.
+        public const float TopMargin = World.CharacterHud.Margin + World.CharacterHud.PanelHeight - Height;
         // Cái mắt thấy ở mép trái băng là CÁI LOA (nó thò ra ngoài viên thuốc), nên
         // thẳng cột với thanh tài nguyên nghĩa là loa thẳng cột, không phải viên thuốc.
         private const float LeftMargin = World.CurrencyBar.LeftMargin + SpeakerOverhang;
         /// <summary>
-        /// Lề phải. Ở khung chuẩn 960 băng dài 174px — bằng 2/3 độ dài trước (261px),
-        /// vốn đã là 3/4 của bản gốc 348px. Chữ vẫn chạy được vì băng cuộn ngang, chỉ
-        /// là cửa sổ nhìn hẹp lại.
+        /// Độ dài băng CỐ ĐỊNH: 174 của bản cũ, kéo dài thêm 40% (244) rồi gấp đôi.
         ///
-        /// <para>Cắt từ mép PHẢI: mép trái phải giữ thẳng cột với thanh tài nguyên
-        /// ngay trên nó.</para>
+        /// <para>Không tính theo lề phải: HUD scale theo chiều cao (match = 1) nên màn
+        /// hẹp hơn 16:9 thì bề ngang canvas nhỏ lại, băng co tới mức chỉ còn cái loa và
+        /// vùng chữ rộng ~0px — thông báo chạy mà không thấy chữ.</para>
         /// </summary>
-        private const float RightMargin = 504f;
-        private const float Height = 32f;
+        public const float Width = 488f;
+        public const float Height = 32f;
         private const float SpeakerSize = 48f;      // loa to hơn pill, tràn ra ngoài
         private const float SpeakerOverhang = 14f;  // px thò ra mép trái pill
         private const float TextLeftPad = 40f;      // chỗ trống bên trong pill cho loa
@@ -62,11 +60,10 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(parent, false);
 
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.offsetMin = new Vector2(LeftMargin, -(TopMargin + Height));
-            rect.offsetMax = new Vector2(-RightMargin, -TopMargin);
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(LeftMargin, -TopMargin);
+            rect.sizeDelta = new Vector2(Width, Height);
 
             // Viên thuốc nâu đen mờ — copy HUD "loa thông báo" mobile: chỉ 1 lớp, không viền.
             var pill = go.GetComponent<Image>();
@@ -75,7 +72,7 @@ namespace Gopet.Runtime.UI
             pill.color = new Color(0.10f, 0.08f, 0.06f, 0.72f);
 
             var ticker = go.AddComponent<NotificationTicker>();
-            ticker.Build(go.transform, UiBuilder.BuiltinFont());
+            ticker.Build(go.transform, UiBuilder.DefaultFont());
             ticker.gameObject.SetActive(false);
             return ticker;
         }
@@ -128,7 +125,7 @@ namespace Gopet.Runtime.UI
             _label = UiBuilder.MakeText(_viewport, font, "Marquee", 17, false);
             _label.alignment = TextAnchor.MiddleLeft;
             _label.color = Color.white;
-            _label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_label, FontStyle.Bold);
             _label.horizontalOverflow = HorizontalWrapMode.Overflow;
             _labelRect = _label.rectTransform;
             _labelRect.anchorMin = new Vector2(0f, 0f);
@@ -167,11 +164,12 @@ namespace Gopet.Runtime.UI
             _current = _queue.Dequeue();
             _repeatsLeft = RepeatsPerMessage;
             _label.text = _current;
+            // Bật TRƯỚC khi đo: đo lúc còn ẩn thì chưa có canvas, bề rộng chữ có thể sai.
+            gameObject.SetActive(true);
             LayoutRebuilder.ForceRebuildLayoutImmediate(_labelRect);
             _labelWidth = Mathf.Max(_label.preferredWidth, 1f);
             _labelRect.sizeDelta = new Vector2(_labelWidth, 0f);
             _labelRect.anchoredPosition = new Vector2(_viewport.rect.width, 0f);
-            gameObject.SetActive(true);
         }
 
         private static Image MakeImage(Transform parent, string name, Color color)

@@ -79,7 +79,7 @@ namespace Gopet.Runtime.UI
                 new Vector2(18f, 18f), new Rect(375f, 80f, 515f, 600f));
             var title = UiBuilder.MakeText(transform, _font, "Title", 12, false);
             title.text = "TOP PHÚ HỘ";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             title.color = new Color(0.07f, 0.34f, 0.72f, 1f);
             PlaceCentered(title.rectTransform, new Vector2(0f, -19f), new Vector2(150f, 20f));
@@ -138,7 +138,7 @@ namespace Gopet.Runtime.UI
             if (assets != null && !string.IsNullOrEmpty(item.ImagePath))
             {
                 var expected = item.ImagePath;
-                assets.Get(expected, ImagePackets.TypeIcon, texture =>
+                assets.Get(expected, ImagePackets.TypeIcon, avatarImage, texture =>
                 {
                     if (this != null && avatarImage != null && item.ImagePath == expected) avatarImage.texture = texture;
                 });
@@ -146,7 +146,7 @@ namespace Gopet.Runtime.UI
 
             var name = UiBuilder.MakeText(row.transform, _font, "Name", 11, false);
             name.text = item.Title ?? "Người chơi";
-            name.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(name, FontStyle.Bold);
             name.color = new Color(0.14f, 0.19f, 0.29f, 1f);
             Place(name.rectTransform, 106f, 1f, new Vector2(0f, -13f), new Vector2(210f, 18f));
 

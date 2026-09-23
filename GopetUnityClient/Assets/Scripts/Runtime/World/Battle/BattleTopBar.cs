@@ -67,7 +67,7 @@ namespace Gopet.Runtime.World.Battle
             text.text = "‹ Quay lại";
             text.alignment = TextAnchor.MiddleCenter;
             text.color = new Color(0.87f, 0.91f, 0.97f, 1f);
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.raycastTarget = false;
 
             go.GetComponent<Button>().onClick.AddListener(() =>
@@ -106,7 +106,7 @@ namespace Gopet.Runtime.World.Battle
 
             var title = UiBuilder.MakeText(group.transform, font, "Tiêu đề", 16, false);
             title.alignment = TextAnchor.MiddleCenter;
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.text = kind == BattleKind.Mob ? "ĐÁNH QUÁI" : "ĐẤU TRƯỜNG PET";
         }
 

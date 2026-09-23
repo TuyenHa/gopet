@@ -13,7 +13,7 @@ namespace Gopet.Runtime.UI
         {
             var title = UiBuilder.MakeText(page, _font, "TopTitle", 14, false);
             title.text = "Top cống hiến";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.UpperCenter;
             title.color = GuildText;
             var tr = title.rectTransform;
@@ -55,7 +55,7 @@ namespace Gopet.Runtime.UI
                 var rank = UiBuilder.MakeText(go.transform, _font, "Rank", 12, false);
                 rank.text = $"#{i + 1}";
                 rank.color = i < 3 ? TabActive : GuildMutedText;
-                rank.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(rank, FontStyle.Bold);
                 var rr = rank.rectTransform;
                 rr.anchorMin = Vector2.zero;
                 rr.anchorMax = new Vector2(0.1f, 1f);
@@ -135,7 +135,7 @@ namespace Gopet.Runtime.UI
             string stateText = locked ? "Khoá" : slot.State == 0 ? "Thuê skill" : "Đang dùng";
             var header = UiBuilder.MakeText(go.transform, _font, "Header", 13, false);
             header.text = $"Slot {index + 1} — {stateText}";
-            header.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(header, FontStyle.Bold);
             header.color = locked ? GuildMutedText : GuildText;
             var hr = header.rectTransform;
             hr.anchorMin = new Vector2(0f, 0.5f);
@@ -172,7 +172,7 @@ namespace Gopet.Runtime.UI
             btnGo.GetComponent<Image>().color = TabActive;
             var bLabel = UiBuilder.MakeText(btnGo.transform, _font, "BtnLabel", 11, true);
             bLabel.alignment = TextAnchor.MiddleCenter;
-            bLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(bLabel, FontStyle.Bold);
             bLabel.color = new Color(0.1f, 0.08f, 0.02f, 1f);
 
             var slotIndex = slot.Index;

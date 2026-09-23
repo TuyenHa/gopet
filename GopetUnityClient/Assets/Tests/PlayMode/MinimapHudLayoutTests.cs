@@ -52,8 +52,8 @@ namespace Gopet.PlayModeTests
         }
 
         /// <summary>
-        /// Minimap là ô ngoài cùng bên phải của hàng HUD: cùng mép trên, cùng chiều cao,
-        /// nằm bên phải mọi nút. Mốc canh hàng vẫn đo theo "Sự kiện" vì nhãn của nó là
+        /// Minimap là ô ngoài cùng bên phải của hàng HUD: cùng đáy, nhô cao hơn hàng nút
+        /// (sát lề trên), nằm bên phải mọi nút. Mốc canh hàng vẫn đo theo "Sự kiện" vì nhãn của nó là
         /// mốc chiều cao chung của cả hàng.
         /// </summary>
         [UnityTest]
@@ -68,7 +68,7 @@ namespace Gopet.PlayModeTests
             var events = WorldRect((RectTransform)eventIcon);
             var label = WorldRect((RectTransform)eventIcon.Find("Label"));
 
-            Assert.AreEqual(events.yMax, map.yMax, 0.5f, "Minimap lệch hàng so với icon HUD.");
+            Assert.Greater(map.yMax, events.yMax, "Minimap phải nhô sát lề trên hơn icon HUD.");
             Assert.AreEqual(label.yMin, map.yMin, 0.5f,
                 "Đáy minimap phải ngang đáy chữ 'Sự kiện'.");
             Assert.GreaterOrEqual(map.xMin, events.xMax,

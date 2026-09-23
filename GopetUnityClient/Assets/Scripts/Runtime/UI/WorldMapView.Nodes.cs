@@ -84,7 +84,7 @@ namespace Gopet.Runtime.UI
             text.text = string.IsNullOrEmpty(option.Name) ? MapDisplayNames.Get(option.MapId) : option.Name;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = option.Locked ? LabelLockedText : LabelText;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;

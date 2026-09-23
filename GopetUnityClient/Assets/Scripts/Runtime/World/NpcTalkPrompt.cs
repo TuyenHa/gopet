@@ -64,11 +64,11 @@ namespace Gopet.Runtime.World
             var go = new GameObject("Label", typeof(TextMesh));
             go.transform.SetParent(parent, false);
             var mesh = go.GetComponent<TextMesh>();
-            mesh.font = UiBuilder.BuiltinFont();
+            mesh.font = UiBuilder.DefaultFont();
             mesh.fontSize = 32;
             mesh.anchor = TextAnchor.MiddleCenter;
             mesh.alignment = TextAlignment.Center;
-            mesh.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(mesh, FontStyle.Bold);
             // characterSize world-space; ChatBubble tham chiếu characterSize 2 ≈ 18px chiều cao.
             // 1.3 ≈ 12px vừa khít khung 14px; bold + fontSize 32 vẫn giữ được độ nét ở kích thước
             // nhỏ, tránh làm panel dài quá cho chữ 10-ký-tự "Nói chuyện".

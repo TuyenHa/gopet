@@ -108,7 +108,7 @@ namespace Gopet.Runtime.UI
             var text = UiBuilder.MakeText(_body, _font, name, size, false);
             text.text = value;
             text.color = DarkText;
-            text.fontStyle = style;
+            UiBuilder.SetFontStyle(text, style);
             return text;
         }
 
@@ -136,7 +136,7 @@ namespace Gopet.Runtime.UI
             var text = UiBuilder.MakeText(go.transform, _font, "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.color = Color.white;
             return go.GetComponent<Button>();
         }

@@ -10,7 +10,7 @@ namespace Gopet.Runtime.World
         {
             if (_kioskDialog != null) Object.Destroy(_kioskDialog.gameObject);
 
-            var dialog = KioskListingView.Create(_hudParent, UiBuilder.BuiltinFont());
+            var dialog = KioskListingView.Create(_hudParent, UiBuilder.DefaultFont());
             _kioskDialog = dialog;
             dialog.Bind(listing, _assets);
             dialog.ActionChosen += hasListing =>

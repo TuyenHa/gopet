@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.World
 {
     /// <summary>
-    /// Hàng ngang 4 mục tiền tệ chính (Star / Gold / Coin / Lua) đặt giữa-trên màn hình,
+    /// Hàng ngang 4 mục tiền tệ chính (Star / Gold / Coin / Lua) nằm trong HUD nhân vật,
     /// style tham chiếu ảnh jar (icon tròn màu + số ngay bên phải).
     ///
     /// <para>Icon là procedural — mỗi loại 1 badge tròn màu riêng + chữ đầu bên trong
@@ -53,28 +53,29 @@ namespace Gopet.Runtime.World
         private Text _lua;
         private RectTransform _extrasParent;
 
+        /// <param name="parent">Transform của <see cref="CharacterHud"/>.</param>
         public static CurrencyBar Create(Transform parent, RemoteAssetCache assets)
         {
             var go = new GameObject("Currency Bar", typeof(RectTransform), typeof(Image),
                 typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
             go.transform.SetParent(parent, false);
 
-            // Neo top-left, xem LeftMargin; tránh chạm shop icons ở góc phải-trên
-            // (ShopServiceEventHud).
+            // Nằm TRONG HUD nhân vật, hàng dưới portrait + HP/MP (CharacterHud.CurrencyTop),
+            // dồn sang MÉP PHẢI HUD (pivot phải: bề ngang co giãn theo số tiền mà mép phải
+            // vẫn đứng yên). Nền trong suốt — HUD đã có panel tối.
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(LeftMargin, -8f);
-            rect.sizeDelta = new Vector2(0f, ItemHeight + PanelPadding * 2);
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-4f, -CharacterHud.CurrencyTop);
+            rect.sizeDelta = new Vector2(0f, CharacterHud.CurrencyRowHeight);
 
             var panel = go.GetComponent<Image>();
             panel.raycastTarget = false;
-            RoundedUiSprite.Apply(panel);
-            panel.color = new Color(0.08f, 0.11f, 0.16f, 0.72f);
+            panel.color = Color.clear;
 
             var bar = go.AddComponent<CurrencyBar>();
             bar._assets = assets;
-            bar._font = UiBuilder.BuiltinFont();
+            bar._font = UiBuilder.DefaultFont();
             bar._layout = go.GetComponent<HorizontalLayoutGroup>();
             bar._layout.padding = new RectOffset(
                 (int)PanelPadding, (int)PanelPadding, (int)(PanelPadding * 0.5f), (int)(PanelPadding * 0.5f));
@@ -154,7 +155,7 @@ namespace Gopet.Runtime.World
             MakeIcon(go.transform, style);
 
             var text = UiBuilder.MakeText(go.transform, _font, "Value", 11, false);
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.alignment = TextAnchor.MiddleLeft;
             text.color = Color.white;
             var tle = text.gameObject.AddComponent<LayoutElement>();
@@ -179,10 +180,10 @@ namespace Gopet.Runtime.World
             le.preferredWidth = IconSize;
             le.preferredHeight = IconSize;
 
-            var label = UiBuilder.MakeText(iconGo.transform, UiBuilder.BuiltinFont(), "Glyph", 12, true);
+            var label = UiBuilder.MakeText(iconGo.transform, UiBuilder.DefaultFont(), "Glyph", 12, true);
             label.text = style.label;
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = new Color(0.15f, 0.08f, 0.02f, 1f);
         }
 

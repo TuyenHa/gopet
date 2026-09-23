@@ -45,6 +45,7 @@ namespace Gopet.Runtime.UI
             backgroundGo.GetComponent<Image>().color = new Color(0.29f, 0.72f, 0.92f, 1f);
 
             AddPicture(backgroundGo.transform, Resources.Load<Sprite>(PictureResource));
+            AddLogo(backgroundGo.transform);
 
             // Tắt TRƯỚC khi AddComponent: GameObject đang active thì AddComponent
             // chạy Awake+OnEnable NGAY LẬP TỨC, tức trước khi kịp gán field ở dưới —
@@ -81,6 +82,31 @@ namespace Gopet.Runtime.UI
             var fitter = go.GetComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
             fitter.aspectRatio = picture.rect.width / picture.rect.height;
+        }
+
+        /// <summary>
+        /// Logo jar "goPet" đặt lên khoảng trời trống phía trên tranh splash — tranh cố ý
+        /// không in chữ để dùng đúng logo nhận diện của game gốc.
+        /// </summary>
+        private static void AddLogo(Transform parent)
+        {
+            var logo = LoginSkin.Get(LoginSkin.Logo);
+            if (logo == null) return;
+
+            var go = new GameObject("Logo", typeof(RectTransform), typeof(Image), typeof(AspectRatioFitter));
+            go.transform.SetParent(parent, false);
+            var image = go.GetComponent<Image>();
+            image.sprite = logo;
+            image.raycastTarget = false;
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.60f);
+            rect.anchorMax = new Vector2(0.5f, 0.90f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+
+            var fitter = go.GetComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+            fitter.aspectRatio = logo.rect.width / logo.rect.height;
         }
 
         private void OnEnable()

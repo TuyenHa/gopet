@@ -33,7 +33,9 @@ namespace Gopet.Runtime.World
             go.transform.localScale = Vector3.one * Scale;
             var view = go.AddComponent<CharacterAnimationView>();
             view._renderer = go.GetComponent<SpriteRenderer>();
-            view._renderer.sortingOrder = animation.DrawAtEnd ? 32010 : 31990;
+            // Trên mọi nhân vật (ActorBaseOrder 10000 + y) nhưng DƯỚI bong bóng chat (20000):
+            // danh hiệu nằm ngay trên tên nên bong bóng chat đè lên, không được che chữ chat.
+            view._renderer.sortingOrder = animation.DrawAtEnd ? 19_995 : 19_990;
             assets?.Get(animation.FrameImagePath, ImagePackets.TypeIcon, view, texture =>
             {
                 if (view == null || texture == null) return;

@@ -29,11 +29,17 @@ namespace Gopet.PlayModeTests
         }
 
         [Test]
-        public void MocDanhHieu_TrenTenCach10px()
+        public void MocDanhHieu_CachDinhChuTen3px()
         {
-            Assert.AreEqual(_avatar.HeadTopY + NameHeight + PlayerAvatar.TitleGap,
-                _avatar.TitleAnchor.localPosition.y, 0.001f);
-            Assert.AreEqual(10f, PlayerAvatar.TitleGap);
+            var name = _avatar.transform.Find("Name").GetComponent<JarNameLabel>();
+            var nameTop = name.VisibleTopIn(_avatar.transform, float.NaN);
+
+            Assert.AreEqual(3f, PlayerAvatar.TitleGap);
+            Assert.AreEqual(nameTop + PlayerAvatar.TitleGap, _avatar.TitleAnchor.localPosition.y, 0.001f);
+            // Đỉnh nét chữ thấp hơn đỉnh khung dòng: đo theo khung thì danh hiệu bị đẩy xa.
+            Assert.Greater(nameTop, _avatar.HeadTopY, "Tên phải nằm trên đầu.");
+            Assert.LessOrEqual(nameTop, _avatar.HeadTopY + NameHeight + 0.001f,
+                "Đang đo theo khung dòng chữ thay vì nét chữ.");
         }
 
         [Test]

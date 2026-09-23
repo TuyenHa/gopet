@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Gopet.Runtime.UI;
 using UnityEngine;
 
@@ -14,10 +15,7 @@ namespace Gopet.Runtime.World
             { Kind = kind; Image = image; X = x; Y = y; Layer = layer; }
         }
 
-        private sealed class SwitchPart
-        {
-            public SpriteRenderer Normal, Step;
-        }
+        private sealed class SwitchPart { public SpriteRenderer Normal, Step; }
 
         private const float TicksPerSecond = 30f; // jar BaseCanvas.ticks ~30/giây: giữ đúng chu kỳ
         private const int IdleBobPixels = 3;       // jar nhún 1px; tăng cho dễ thấy theo yêu cầu
@@ -28,15 +26,12 @@ namespace Gopet.Runtime.World
         private readonly List<SwitchPart> _switchParts = new List<SwitchPart>();
         private Transform _visual;
         private Transform _body;   // thân + parts + mặt: nhún theo idle-bob; bóng & chân đứng yên
-        private SpriteRenderer _legNormal;
-        private SpriteRenderer _legStep;
+        private SpriteRenderer _legNormal, _legStep;
         private SpriteRenderer _face;          // part kind 4 — đổi sang sprite blink theo nhịp jar
         private Sprite _faceNormal, _faceBlink;
         private Vector2 _facePosNormal, _facePosBlink;
         private int _phase;        // lệch pha mỗi avatar (jar: tham số var5) để không nhún/nháy đồng loạt
-        private bool _moving;
-        private bool _showStep;
-        private bool _blinking;
+        private bool _moving, _showStep, _blinking;
 
         public static AvatarAppearance Create(Transform parent, int gender)
         {
@@ -154,17 +149,9 @@ namespace Gopet.Runtime.World
         public void SetMoving(bool moving) => _moving = moving;
 
         /// <summary>Đỉnh cao nhất của các bộ phận tính từ chân (lúc đứng yên), px game.</summary>
-        public float TopY
-        {
-            get
-            {
-                var top = 0f;
-                foreach (var (renderer, _) in _renderers)
-                    if (renderer != null && renderer.sprite != null)
-                        top = Mathf.Max(top, renderer.transform.localPosition.y + renderer.sprite.bounds.max.y);
-                return top;
-            }
-        }
+        public float TopY => _renderers.Where(r => r.renderer != null && r.renderer.sprite != null)
+            .Select(r => r.renderer.transform.localPosition.y + r.renderer.sprite.bounds.max.y)
+            .DefaultIfEmpty(0f).Max();
 
         public void SetSortingOrder(int order)
         {

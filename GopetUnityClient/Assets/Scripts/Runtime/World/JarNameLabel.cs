@@ -61,6 +61,17 @@ namespace Gopet.Runtime.World
             if (_mesh != null) _mesh.text = text ?? string.Empty;
         }
 
+        /// <summary>
+        /// Đỉnh nét chữ thật (không phải khung dòng) trong hệ toạ độ <paramref name="space"/>.
+        /// Tên rỗng thì không có nét nào — trả <paramref name="fallback"/>.
+        /// </summary>
+        public float VisibleTopIn(Transform space, float fallback) =>
+            // Renderer tắt/ẩn trả bounds rỗng ở gốc world → danh hiệu văng xuống đáy map.
+            _renderer == null || !_renderer.enabled || !_renderer.gameObject.activeInHierarchy
+                || string.IsNullOrWhiteSpace(_mesh.text)
+                ? fallback
+                : space.InverseTransformPoint(_renderer.bounds.max).y;
+
         public void SetSortingOrder(int order)
         {
             if (_renderer != null) _renderer.sortingOrder = order;

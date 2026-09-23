@@ -16,10 +16,9 @@ namespace Gopet.Runtime.World
         private readonly Queue<Vector2Int> _path = new Queue<Vector2Int>();
         private readonly PositionInterpolator _interp = new PositionInterpolator();
         private const float NameScale = 0.75f; // nhỏ hơn cho khớp jar; đồng bộ WorldActorView
-        private const float NameHeight = JarNameLabel.Height * NameScale;
 
         /// <summary>Khoảng cách từ đỉnh nhãn tên tới đáy danh hiệu (px game).</summary>
-        public const float TitleGap = 10f;
+        public const float TitleGap = 3f;
         private AvatarAppearance _appearance;
         private CharacterSkinView _skin;
         private CharacterWingView _wing;
@@ -84,9 +83,14 @@ namespace Gopet.Runtime.World
         /// <summary>Đo lại đỉnh đầu rồi xếp tên và mốc danh hiệu lên trên nó.</summary>
         private void RefreshHeadTop()
         {
-            HeadTopY = _skin != null && _skin.HasSprite ? _skin.TopY : _appearance.TopY;
+            var skinned = _skin != null && _skin.HasSprite;
+            HeadTopY = skinned ? _skin.TopY : _appearance.TopY;
+            // Cánh co giãn cùng tỉ lệ skin, không thì người nhỏ lại mà cánh vẫn to như cũ.
+            if (_wing != null) _wing.transform.localScale = Vector3.one * (skinned ? _skin.Scale : 1f);
             _nameLabel.transform.localPosition = new Vector3(0f, HeadTopY, 0f);
-            TitleAnchor.localPosition = new Vector3(0f, HeadTopY + NameHeight + TitleGap, 0f);
+            // Đo đỉnh CHỮ thật của tên: khung dòng chữ cao hơn nét chữ nhiều, cộng theo khung
+            // thì danh hiệu bị đẩy xa tên gấp mấy lần TitleGap.
+            TitleAnchor.localPosition = new Vector3(0f, _nameLabel.VisibleTopIn(transform, HeadTopY) + TitleGap, 0f);
         }
 
         public void SnapTo(int jarX, int jarY)
@@ -125,7 +129,11 @@ namespace Gopet.Runtime.World
 
         public void ApplySkin(string path, RemoteAssetCache assets)
         {
-            if (_skin != null) Destroy(_skin.gameObject);
+            if (_skin != null)
+            {
+                _skin.Loaded -= RefreshHeadTop;
+                Destroy(_skin.gameObject);
+            }
             _skin = null;
             var equipped = !string.IsNullOrEmpty(path);
             if (_appearance != null) _appearance.gameObject.SetActive(!equipped);
@@ -146,6 +154,7 @@ namespace Gopet.Runtime.World
             _wing = null;
             if (string.IsNullOrEmpty(path)) return;
             _wing = CharacterWingView.Create(transform, path, verticalOffset, assets);
+            RefreshHeadTop();
         }
 
         private void SetTarget(int jarX, int jarY)

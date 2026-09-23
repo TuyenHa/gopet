@@ -34,7 +34,7 @@ namespace Gopet.PlayModeTests
             _guider = new GuiderHandler(_sent.Add);
             _guider.RegisterOn(_router);
 
-            _view = AtmPopupView.Create(_host.transform, UiBuilder.BuiltinFont(), _guider,
+            _view = AtmPopupView.Create(_host.transform, UiBuilder.DefaultFont(), _guider,
                 null, () => { });
         }
 

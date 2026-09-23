@@ -32,7 +32,7 @@ namespace Gopet.PlayModeTests
             var hostRect = (RectTransform)_host.transform;
             hostRect.sizeDelta = new Vector2(370f, ShopItemRow.Height);
 
-            _row = ShopItemRow.Create(_host.transform, UiBuilder.BuiltinFont());
+            _row = ShopItemRow.Create(_host.transform, UiBuilder.DefaultFont());
         }
 
         [TearDown]

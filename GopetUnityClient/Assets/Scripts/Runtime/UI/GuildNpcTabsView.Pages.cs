@@ -90,7 +90,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(btnGo.transform, _font, "Label", 13, true);
             label.text = "Vào khu vực";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = Color.white;
 
             // Chỉ khi BẤM mới gửi: chuyển tab sang đây mà dịch chuyển luôn là người

@@ -141,9 +141,9 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(panel.GetComponent<Image>());
             panel.GetComponent<Image>().color = UiBuilder.Panel;
 
-            _title = UiBuilder.MakeText(panel.transform, _font ?? UiBuilder.BuiltinFont(), "Title", 18, false);
+            _title = UiBuilder.MakeText(panel.transform, _font ?? UiBuilder.DefaultFont(), "Title", 18, false);
             _title.text = _screen?.Title ?? string.Empty;
-            _title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
             _title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(_title.rectTransform, 8f, 42f, 54f);
 
@@ -155,7 +155,7 @@ namespace Gopet.Runtime.UI
             closeRect.anchoredPosition = new Vector2(-8f, -8f);
             closeRect.sizeDelta = new Vector2(38f, 34f);
             close.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var closeLabel = UiBuilder.MakeText(close.transform, _font ?? UiBuilder.BuiltinFont(), "Label", 18, true);
+            var closeLabel = UiBuilder.MakeText(close.transform, _font ?? UiBuilder.DefaultFont(), "Label", 18, true);
             closeLabel.text = "×";
             closeLabel.alignment = TextAnchor.MiddleCenter;
             close.GetComponent<Button>().onClick.AddListener(() => CloseRequested?.Invoke(this));

@@ -65,7 +65,7 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<MapLoadingOverlay>();
             view._born = Time.unscaledTime;
-            view.Build(UiBuilder.BuiltinFont());
+            view.Build(UiBuilder.DefaultFont());
             return view;
         }
 
@@ -89,7 +89,7 @@ namespace Gopet.Runtime.UI
                 var label = UiBuilder.MakeText(transform, font, $"Ký tự {i}", FontSize, false);
                 label.text = Word[i].ToString();
                 label.alignment = TextAnchor.LowerRight;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 label.raycastTarget = false;
                 var rect = label.rectTransform;
                 rect.anchorMin = rect.anchorMax = new Vector2(1f, 0f);

@@ -75,7 +75,7 @@ namespace Gopet.Runtime.UI
             pill.color = new Color(0.10f, 0.08f, 0.06f, 0.72f);
 
             var ticker = go.AddComponent<NotificationTicker>();
-            ticker.Build(go.transform, UiBuilder.BuiltinFont());
+            ticker.Build(go.transform, UiBuilder.DefaultFont());
             ticker.gameObject.SetActive(false);
             return ticker;
         }
@@ -128,7 +128,7 @@ namespace Gopet.Runtime.UI
             _label = UiBuilder.MakeText(_viewport, font, "Marquee", 17, false);
             _label.alignment = TextAnchor.MiddleLeft;
             _label.color = Color.white;
-            _label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_label, FontStyle.Bold);
             _label.horizontalOverflow = HorizontalWrapMode.Overflow;
             _labelRect = _label.rectTransform;
             _labelRect.anchorMin = new Vector2(0f, 0f);

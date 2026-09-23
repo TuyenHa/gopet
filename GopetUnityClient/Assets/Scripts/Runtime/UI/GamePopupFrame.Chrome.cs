@@ -93,7 +93,7 @@ namespace Gopet.Runtime.UI
                 xLabel.alignment = TextAnchor.MiddleCenter;
                 xLabel.text = "×";
                 xLabel.color = Color.white;
-                xLabel.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(xLabel, FontStyle.Bold);
             }
 
             go.GetComponent<Button>().onClick.AddListener(() => Closed?.Invoke());

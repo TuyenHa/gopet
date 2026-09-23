@@ -71,6 +71,28 @@ namespace Gopet.PlayModeTests
         }
 
         /// <summary>
+        /// Số phải được VẼ ra, không chỉ nằm trong <c>text</c>. Nhãn đặt
+        /// <c>VerticalWrapMode.Truncate</c>: hộp dòng của font cao hơn khung là Unity bỏ hẳn
+        /// dòng — vòng đỏ trơn không số, trong khi hai test trên vẫn xanh vì chỉ đọc
+        /// <c>text</c>. Đã xảy ra khi đổi sang Be Vietnam Pro (hộp dòng 1.26 em so với 1.15 của Arial).
+        /// </summary>
+        [UnityTest]
+        public IEnumerator CoThu_SoThatSuDuocVe([Values(2, 128)] int count)
+        {
+            var hud = ShopServiceEventHud.Create(_root.transform, UiBuilder.DefaultFont());
+            yield return null;
+
+            hud.SetMailCount(count);
+            yield return null;
+
+            var label = Badge(hud).GetComponentInChildren<Text>(true);
+            var generator = new TextGenerator();
+            generator.Populate(label.text, label.GetGenerationSettings(label.rectTransform.rect.size));
+            Assert.AreEqual(label.text.Length, generator.characterCountVisible,
+                $"Huy hiệu \"{label.text}\" bị cắt mất chữ — khung nhãn thấp hơn hộp dòng của font.");
+        }
+
+        /// <summary>
         /// Huy hiệu phải bám góc trên-phải của Ô VUÔNG ảnh icon, không phải góc khung nút.
         /// Neo nhầm vào khung là nó trôi sang khe bên cạnh, chờm lên minimap.
         /// </summary>

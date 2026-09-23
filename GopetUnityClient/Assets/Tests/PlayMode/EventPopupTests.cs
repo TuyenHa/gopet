@@ -24,7 +24,7 @@ namespace Gopet.PlayModeTests
             _host = new GameObject("UiHost", typeof(RectTransform));
             _sent = new List<Message>();
             var guider = new GuiderHandler(_sent.Add);
-            _view = DailyCheckinView.Create(_host.transform, UiBuilder.BuiltinFont(), guider, null);
+            _view = DailyCheckinView.Create(_host.transform, UiBuilder.DefaultFont(), guider, null);
         }
 
         [TearDown]

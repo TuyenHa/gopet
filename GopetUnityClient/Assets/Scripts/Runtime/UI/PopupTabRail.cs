@@ -114,7 +114,7 @@ namespace Gopet.Runtime.UI
                 var label = UiBuilder.MakeText(tabGo.transform, font, "Label", 11, true);
                 label.alignment = TextAnchor.MiddleCenter;
                 label.text = labels[i];
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 // MakeText bật Overflow; nhãn dài phải xuống dòng thay vì tràn ra
                 // ngoài viên tab, và cắt nếu vẫn không đủ chỗ.
                 label.horizontalOverflow = HorizontalWrapMode.Wrap;

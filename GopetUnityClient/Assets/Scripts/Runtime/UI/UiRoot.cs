@@ -288,7 +288,10 @@ namespace Gopet.Runtime.UI
             view.Bind(string.Empty, labels);
             view.Chosen += index =>
             {
-                _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
+                // NPC không có lựa chọn nào: ChoiceDialogView vẫn dựng một nút "OK" dự
+                // phòng để đóng hộp thoại — nút đó không ứng với option nào của server.
+                if (index >= 0 && index < options.Options.Length)
+                    _guider.SelectNpcOption(options.NpcId, options.Options[index].Id);
                 Close(view);
             };
             view.Closed += () => Close(view);

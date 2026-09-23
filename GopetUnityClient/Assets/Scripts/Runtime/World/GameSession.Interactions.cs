@@ -136,7 +136,7 @@ namespace Gopet.Runtime.World
         private void ShowToast(string text)
         {
             if (_hudParent == null) return;
-            ToastView.Create(_hudParent, UiBuilder.BuiltinFont(), text);
+            ToastView.Create(_hudParent, UiBuilder.DefaultFont(), text);
         }
 
         /// <summary>Bản public cho BattleCoordinator gọi khi timeout — tránh public toàn bộ

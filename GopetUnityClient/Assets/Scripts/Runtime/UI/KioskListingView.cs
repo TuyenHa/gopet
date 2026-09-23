@@ -35,7 +35,7 @@ namespace Gopet.Runtime.UI
             card.GetComponent<Image>().color = UiBuilder.Panel;
 
             var view = root.AddComponent<KioskListingView>();
-            view.Build(card.transform, font ?? UiBuilder.BuiltinFont());
+            view.Build(card.transform, font ?? UiBuilder.DefaultFont());
             return view;
         }
 
@@ -63,7 +63,7 @@ namespace Gopet.Runtime.UI
         {
             var title = UiBuilder.MakeText(card, font, "Title", 18, false);
             title.text = "Ki-ốt của bạn";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(title.rectTransform, 10f, 28f, 14f);
 

@@ -42,7 +42,7 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
             RoundedUiSprite.Apply(panel.GetComponent<Image>());
 
-            var title = UiBuilder.MakeText(panel.transform, UiBuilder.BuiltinFont(), "Title", 20, false);
+            var title = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Title", 20, false);
             UiBuilder.PlaceRow(title.rectTransform, 12f, 34f, 14f);
             title.text = "Cài đặt";
             title.alignment = TextAnchor.MiddleCenter;
@@ -70,7 +70,7 @@ namespace Gopet.Runtime.UI
             rect.offsetMax = new Vector2(-18f, -top);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 15, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 15, true);
             text.alignment = TextAnchor.MiddleCenter;
             go.GetComponent<Button>().onClick.AddListener(() => { clicked(); Refresh(); });
             return text;

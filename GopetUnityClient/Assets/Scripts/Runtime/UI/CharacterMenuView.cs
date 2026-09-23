@@ -38,7 +38,7 @@ namespace Gopet.Runtime.UI
             backdropImg.raycastTarget = true;
 
             var view = backdrop.AddComponent<CharacterMenuView>();
-            view._font = UiBuilder.BuiltinFont();
+            view._font = UiBuilder.DefaultFont();
             backdrop.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
 
             var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
@@ -109,7 +109,7 @@ namespace Gopet.Runtime.UI
 
             var title = UiBuilder.MakeText(_content, _font, "Title", 16, false);
             title.text = CharacterMenu.GetTitle(page);
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             title.color = UiBuilder.TextMain;
             SetTopRect(title.rectTransform, PanelPadding, TitleHeight);

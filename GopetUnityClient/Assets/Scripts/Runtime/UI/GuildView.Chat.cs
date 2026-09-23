@@ -61,7 +61,7 @@ namespace Gopet.Runtime.UI
             var sLabel = UiBuilder.MakeText(sendGo.transform, _font, "Label", 12, true);
             sLabel.text = "Gửi";
             sLabel.alignment = TextAnchor.MiddleCenter;
-            sLabel.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(sLabel, FontStyle.Bold);
             sLabel.color = new Color(0.1f, 0.08f, 0.02f, 1f);
             sendGo.GetComponent<Button>().onClick.AddListener(SendChat);
         }

@@ -60,10 +60,10 @@ namespace Gopet.Runtime.UI
             img.color = color;
             RoundedUiSprite.Apply(img);
 
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.color = Color.white;
 
             go.GetComponent<Button>().onClick.AddListener(() => Chosen?.Invoke(action));

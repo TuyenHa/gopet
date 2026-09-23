@@ -71,9 +71,9 @@ namespace Gopet.Runtime.UI
 
         private static void BuildText(Transform parent, MenuItemInfo item)
         {
-            var title = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), "Title", 19, false);
+            var title = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), "Title", 19, false);
             title.text = item.Title ?? "Vật phẩm";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.color = new Color(0.14f, 0.17f, 0.22f, 1f);
             var titleRect = title.rectTransform;
             titleRect.anchorMin = titleRect.anchorMax = new Vector2(0f, 1f);
@@ -86,7 +86,7 @@ namespace Gopet.Runtime.UI
             UiBuilder.PlaceRow((RectTransform)line.transform, 51f, 1f, 122f);
             line.GetComponent<Image>().color = new Color(0.8f, 0.84f, 0.89f, 1f);
 
-            var info = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), "Info", 15, false);
+            var info = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), "Info", 15, false);
             info.text = $"• {item.Description ?? "Chưa có mô tả"}\n• Mã vật phẩm: {item.ItemId}\n• Có thể sử dụng: {(item.CanSelect ? "Có" : "Không")}";
             info.color = new Color(0.2f, 0.23f, 0.28f, 1f);
             info.alignment = TextAnchor.UpperLeft;
@@ -116,7 +116,7 @@ namespace Gopet.Runtime.UI
                 image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
                 RoundedUiSprite.Apply(image);
             }
-            var label = UiBuilder.MakeText(close.transform, UiBuilder.BuiltinFont(), "Label", 28, true);
+            var label = UiBuilder.MakeText(close.transform, UiBuilder.DefaultFont(), "Label", 28, true);
             label.text = "×";
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
@@ -150,10 +150,10 @@ namespace Gopet.Runtime.UI
             var button = go.GetComponent<Button>();
             button.interactable = enabled;
             button.onClick.AddListener(() => onClick());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 17, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 17, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.color = label == "Hủy" ? new Color(0.25f, 0.28f, 0.34f, 1f) : Color.white;
         }
     }

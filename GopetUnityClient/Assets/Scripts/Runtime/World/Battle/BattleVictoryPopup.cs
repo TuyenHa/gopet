@@ -36,7 +36,7 @@ namespace Gopet.Runtime.World.Battle
             view.Resize();
 
             var title = Label(panel.transform, "Title", "CHIẾN THẮNG", 28);
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.color = new Color(1f, 0.83f, 0.35f);
             title.alignment = TextAnchor.MiddleCenter;
             UiBuilder.PlaceRow(title.rectTransform, 12, 42, 20);
@@ -102,7 +102,7 @@ namespace Gopet.Runtime.World.Battle
             var label = Label(go.transform, "Label", "OK", 21);
             UiBuilder.Stretch(label.rectTransform);
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             _ok = go.GetComponent<Button>();
             _ok.onClick.AddListener(() =>
             {
@@ -115,7 +115,7 @@ namespace Gopet.Runtime.World.Battle
 
         private static Text Label(Transform parent, string name, string value, int size)
         {
-            var label = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), name, size, false);
+            var label = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), name, size, false);
             label.text = value;
             label.supportRichText = false;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;

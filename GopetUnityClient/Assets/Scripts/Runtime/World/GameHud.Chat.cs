@@ -117,7 +117,7 @@ namespace Gopet.Runtime.World
             var label = UiBuilder.MakeText(go.transform, font, "Label", 17, true);
             label.text = "GỬI";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = Color.white;
             return go.GetComponent<Button>();
         }

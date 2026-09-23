@@ -59,14 +59,14 @@ namespace Gopet.Runtime.UI
             _icon.rectTransform.offsetMin = new Vector2(4f, 4f);
             _icon.rectTransform.offsetMax = new Vector2(-4f, -4f);
 
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             _slotLabel = UiBuilder.MakeText(transform, font, "SlotLabel", 10, true);
             _slotLabel.text = label;
             _slotLabel.alignment = TextAnchor.MiddleCenter;
             _slotLabel.color = UiBuilder.TextMuted;
 
             _levelBadge = UiBuilder.MakeText(transform, font, "Lvl", 10, false);
-            _levelBadge.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_levelBadge, FontStyle.Bold);
             _levelBadge.alignment = TextAnchor.LowerRight;
             _levelBadge.color = new Color(1f, 0.85f, 0.2f, 1f);
             var lRect = _levelBadge.rectTransform;

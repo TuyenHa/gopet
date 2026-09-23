@@ -76,10 +76,10 @@ namespace Gopet.Runtime.UI
 
         private void BuildContent(Transform panel)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
 
             _headerName = UiBuilder.MakeText(panel, font, "Header", 16, false);
-            _headerName.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_headerName, FontStyle.Bold);
             _headerName.alignment = TextAnchor.MiddleLeft;
             _headerName.color = UiBuilder.TextMain;
             HeaderRect(_headerName.rectTransform, 8f, 22f);

@@ -23,10 +23,10 @@ namespace Gopet.Runtime.UI
             img.color = new Color(0.85f, 0.5f, 0.2f, 0.95f);
             RoundedUiSprite.Apply(img);
 
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Icon", 20, true);
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Icon", 20, true);
             label.text = "PET";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = Color.white;
 
             var comp = go.AddComponent<PetActionButton>();

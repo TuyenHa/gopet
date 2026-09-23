@@ -67,10 +67,10 @@ namespace Gopet.Runtime.UI
                 // Thiếu art thì vẫn phải đánh được: nút chữ thay cho icon.
                 Debug.LogWarning($"[Gopet] Thiếu icon nút đánh tại Resources/{IconResource}.");
                 RoundedUiSprite.Apply(button._icon);
-                var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 18, true);
+                var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 18, true);
                 label.text = "ĐÁNH";
                 label.alignment = TextAnchor.MiddleCenter;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 label.color = Color.white;
             }
 

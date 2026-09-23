@@ -23,9 +23,9 @@ namespace Gopet.Runtime.UI
 
         private void BuildEmbeddedContent()
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             _headerName = UiBuilder.MakeText(transform, font, "Header", 15, false);
-            _headerName.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_headerName, FontStyle.Bold);
             _headerName.alignment = TextAnchor.MiddleCenter;
             _headerName.color = new Color(0.14f, 0.24f, 0.44f, 1f);
             HeaderRect(_headerName.rectTransform, 2f, 22f);
@@ -74,7 +74,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(80f, 28f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 11, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 11, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             return go.GetComponent<Button>();

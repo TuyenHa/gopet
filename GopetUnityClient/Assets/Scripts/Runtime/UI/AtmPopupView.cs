@@ -53,7 +53,7 @@ namespace Gopet.Runtime.UI
 
             var view = frame.gameObject.AddComponent<AtmPopupView>();
             view._frame = frame;
-            view._font = font ?? UiBuilder.BuiltinFont();
+            view._font = font ?? UiBuilder.DefaultFont();
             view._guider = guider ?? throw new ArgumentNullException(nameof(guider));
             view._assets = assets;
             view._requestAtm = requestAtm ?? throw new ArgumentNullException(nameof(requestAtm));
@@ -145,7 +145,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(tab.transform, _font, "Label", 11, true);
             label.text = "ATM";
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = Color.white;
             tab.GetComponent<Button>().onClick.AddListener(RequestAtm);
         }

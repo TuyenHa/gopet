@@ -148,7 +148,7 @@ namespace Gopet.Runtime.UI
             text.font = font;
             text.text = label;
             text.color = Color.white;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.alignment = TextAnchor.MiddleCenter;
             text.raycastTarget = false;
             Fit(text, 0.8f);

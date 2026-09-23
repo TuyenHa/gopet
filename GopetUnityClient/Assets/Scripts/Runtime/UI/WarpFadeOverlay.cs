@@ -67,10 +67,10 @@ namespace Gopet.Runtime.UI
         /// </summary>
         private static Text MakeCaption(Transform parent)
         {
-            var text = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), "Caption", 20, true);
+            var text = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), "Caption", 20, true);
             text.alignment = TextAnchor.MiddleCenter;
             text.color = new Color(1f, 0.93f, 0.72f, 1f);
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.raycastTarget = false;
             text.text = string.Empty;
             return text;

@@ -42,7 +42,7 @@ namespace Gopet.Runtime.World
             iconRect.sizeDelta = new Vector2(34f, 34f);
             indicator._icon = iconGo.GetComponent<RawImage>();
 
-            indicator._time = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Time", 13, false);
+            indicator._time = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Time", 13, false);
             indicator._time.alignment = TextAnchor.MiddleLeft;
             indicator._time.gameObject.SetActive(false);
             var timeRect = indicator._time.rectTransform;

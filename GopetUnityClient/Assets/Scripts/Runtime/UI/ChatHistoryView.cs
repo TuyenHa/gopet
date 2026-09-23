@@ -64,7 +64,7 @@ namespace Gopet.Runtime.UI
             go.GetComponent<Image>().color = UiBuilder.Field;
             var input = go.GetComponent<InputField>();
             input.characterLimit = 120;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Text", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Text", 14, true);
             text.rectTransform.offsetMin = new Vector2(8f, 0f);
             text.rectTransform.offsetMax = new Vector2(-8f, 0f);
             input.textComponent = text;

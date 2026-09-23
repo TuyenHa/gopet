@@ -42,7 +42,7 @@ namespace Gopet.Runtime.UI
 
         private void BuildContent(Transform panel, string message, string yesLabel, string noLabel)
         {
-            var font = UiBuilder.BuiltinFont();
+            var font = UiBuilder.DefaultFont();
             var text = UiBuilder.MakeText(panel, font, "Message", 14, false);
             text.text = message;
             text.alignment = TextAnchor.MiddleCenter;
@@ -75,7 +75,7 @@ namespace Gopet.Runtime.UI
                 image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
                 RoundedUiSprite.Apply(image);
             }
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "X", 18, true);
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "X", 18, true);
             label.text = "×";
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
@@ -97,7 +97,7 @@ namespace Gopet.Runtime.UI
             RoundedUiSprite.Apply(img);
             var t = UiBuilder.MakeText(go.transform, font, "Label", 14, true);
             t.text = label;
-            t.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(t, FontStyle.Bold);
             t.alignment = TextAnchor.MiddleCenter;
             t.color = Color.black;
             go.GetComponent<Button>().onClick.AddListener(() => onClick());

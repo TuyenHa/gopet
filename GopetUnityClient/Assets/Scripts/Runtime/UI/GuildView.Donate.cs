@@ -69,7 +69,7 @@ namespace Gopet.Runtime.UI
             var label = UiBuilder.MakeText(go.transform, _font, "BtnLabel", 11, true);
             label.text = text;
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = new Color(0.1f, 0.08f, 0.02f, 1f);
             go.GetComponent<Button>().onClick.AddListener(onClick);
         }

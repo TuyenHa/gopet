@@ -40,10 +40,10 @@ namespace Gopet.Runtime.UI
                 iconImage.sprite = HubIcon((int)_tabOrder[i] + 1);
                 iconImage.preserveAspect = true;
 
-                var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+                var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
                 label.text = _tabNames[i];
                 label.alignment = TextAnchor.MiddleLeft;
-                label.fontStyle = FontStyle.Bold;
+                UiBuilder.SetFontStyle(label, FontStyle.Bold);
                 label.color = TabText;
                 var labelRect = label.rectTransform;
                 labelRect.anchorMin = labelRect.anchorMax = new Vector2(0f, 0.5f);
@@ -86,9 +86,9 @@ namespace Gopet.Runtime.UI
             iconImage.sprite = HubIcon(0);
             iconImage.preserveAspect = true;
 
-            var title = UiBuilder.MakeText(transform, UiBuilder.BuiltinFont(), "Header title", 18, false);
+            var title = UiBuilder.MakeText(transform, UiBuilder.DefaultFont(), "Header title", 18, false);
             title.text = "Hành trang";
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.color = new Color(0.14f, 0.2f, 0.3f, 1f);
             var titleRect = title.rectTransform;
             titleRect.anchorMin = titleRect.anchorMax = new Vector2(0f, 1f);
@@ -96,7 +96,7 @@ namespace Gopet.Runtime.UI
             titleRect.sizeDelta = new Vector2(340f, 24f);
             titleRect.anchoredPosition = new Vector2(64f, -11f);
 
-            var subtitle = UiBuilder.MakeText(transform, UiBuilder.BuiltinFont(), "Header subtitle", 11, false);
+            var subtitle = UiBuilder.MakeText(transform, UiBuilder.DefaultFont(), "Header subtitle", 11, false);
             subtitle.text = "Quản lý vật phẩm của bạn";
             subtitle.color = new Color(0.32f, 0.39f, 0.5f, 1f);
             var subtitleRect = subtitle.rectTransform;
@@ -129,7 +129,7 @@ namespace Gopet.Runtime.UI
             var sprite = HudSkin.Get(HudSkin.Close);
             if (sprite != null) image.sprite = sprite;
             else image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "X", 18, true);
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "X", 18, true);
             label.text = "×";
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
@@ -167,9 +167,9 @@ namespace Gopet.Runtime.UI
 
         private static Text MakeTitle(Transform parent, string value, Sprite icon = null)
         {
-            var text = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), "Title", 15, false);
+            var text = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), "Title", 15, false);
             text.text = value;
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.alignment = icon == null ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
             text.color = new Color(0.14f, 0.24f, 0.44f, 1f);
             var rect = text.rectTransform;
@@ -207,7 +207,7 @@ namespace Gopet.Runtime.UI
             var image = go.GetComponent<Image>();
             RoundedUiSprite.Apply(image);
             image.color = UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 13, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 13, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = UiBuilder.TextMain;

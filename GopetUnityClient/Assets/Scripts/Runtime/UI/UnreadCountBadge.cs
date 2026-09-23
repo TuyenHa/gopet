@@ -55,7 +55,7 @@ namespace Gopet.Runtime.UI
             badge._label = UiBuilder.MakeText(go.transform, font, "Count", 14, stretch: true);
             badge._label.alignment = TextAnchor.MiddleCenter;
             badge._label.color = Color.white;
-            badge._label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(badge._label, FontStyle.Bold);
             badge._label.raycastTarget = false;
             // BẮT BUỘC đặt lại hai chế độ tràn: UiBuilder.MakeText để cả hai là Overflow,
             // mà Unity BỎ QUA best-fit khi chữ được phép tràn — không có gì chặn thì không có
@@ -67,15 +67,14 @@ namespace Gopet.Runtime.UI
             badge._label.resizeTextForBestFit = true;
             badge._label.resizeTextMinSize = 6;
             badge._label.resizeTextMaxSize = 8;
-            // Khung chữ lệch XUỐNG so với tâm vòng tròn: Unity căn giữa theo HỘP DÒNG
-            // (ascender + descender), mà chữ số không có phần đuôi dưới nên nhìn bị đội lên.
-            // Mức bù tỉ lệ với CỠ CHỮ chứ không phải cỡ vòng tròn: 6% đo lúc chữ còn kẹt ở
-            // fontSize 14, nay best-fit đã ghìm về 8 thì 3% là vừa — quá tay là số tụt xuống.
+            // Khung chữ CAO HƠN vòng tròn, đối xứng quanh tâm. Be Vietnam Pro chừa chỗ cho
+            // dấu chồng tiếng Việt nên hộp dòng cao ~1.26 em; với Truncate, hộp dòng không
+            // lọt khung là Unity bỏ HẲN dòng đó — vòng đỏ trơn, không số. Chiều ngang vẫn bó
+            // trong vòng tròn để best-fit co "99+" lại. Không cần bù lệch dọc: tâm hộp dòng
+            // (ascent 1.0, descent 0.265 → 0.37 em) trùng tâm chữ số (cap 0.74 → 0.37 em).
             var labelRect = badge._label.rectTransform;
-            // Dịch cả khung sang phải 3% đường kính: chữ số của font mặc định có phần
-            // đệm trái dày hơn phải, căn giữa theo hộp chữ thì nét nhìn bị lệch sang trái.
-            labelRect.anchorMin = new Vector2(0.13f, 0.12f);
-            labelRect.anchorMax = new Vector2(0.93f, 0.82f);
+            labelRect.anchorMin = new Vector2(0.10f, -0.30f);
+            labelRect.anchorMax = new Vector2(0.90f, 1.30f);
             labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
 
             go.SetActive(false);

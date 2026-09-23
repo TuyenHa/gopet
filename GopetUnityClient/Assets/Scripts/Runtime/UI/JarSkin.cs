@@ -16,7 +16,7 @@ namespace Gopet.Runtime.UI
     ///
     /// <para>Tên sai phải NÉM, không trả <c>null</c> lặng lẽ: sprite null là một ô
     /// trống suốt màn hình, không có lỗi nào báo — cùng bài học với
-    /// <c>UiBuilder.BuiltinFont</c> ở P5.</para>
+    /// <c>UiBuilder.DefaultFont</c> ở P5.</para>
     /// </summary>
     public static class JarSkin
     {

@@ -42,7 +42,7 @@ namespace Gopet.Runtime.UI
         public static Text Text(Transform parent, string name, string value, int size,
             float top, float height)
         {
-            var text = UiBuilder.MakeText(parent, UiBuilder.BuiltinFont(), name, size, false);
+            var text = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), name, size, false);
             text.text = value ?? string.Empty;
             UiBuilder.PlaceRow(text.rectTransform, top, height, 18f);
             text.color = UiBuilder.TextMain;
@@ -59,7 +59,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(124f, 40f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             go.GetComponent<Button>().onClick.AddListener(() => action());

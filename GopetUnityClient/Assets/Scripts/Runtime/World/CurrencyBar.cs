@@ -74,7 +74,7 @@ namespace Gopet.Runtime.World
 
             var bar = go.AddComponent<CurrencyBar>();
             bar._assets = assets;
-            bar._font = UiBuilder.BuiltinFont();
+            bar._font = UiBuilder.DefaultFont();
             bar._layout = go.GetComponent<HorizontalLayoutGroup>();
             bar._layout.padding = new RectOffset(
                 (int)PanelPadding, (int)PanelPadding, (int)(PanelPadding * 0.5f), (int)(PanelPadding * 0.5f));
@@ -154,7 +154,7 @@ namespace Gopet.Runtime.World
             MakeIcon(go.transform, style);
 
             var text = UiBuilder.MakeText(go.transform, _font, "Value", 11, false);
-            text.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
             text.alignment = TextAnchor.MiddleLeft;
             text.color = Color.white;
             var tle = text.gameObject.AddComponent<LayoutElement>();
@@ -179,10 +179,10 @@ namespace Gopet.Runtime.World
             le.preferredWidth = IconSize;
             le.preferredHeight = IconSize;
 
-            var label = UiBuilder.MakeText(iconGo.transform, UiBuilder.BuiltinFont(), "Glyph", 12, true);
+            var label = UiBuilder.MakeText(iconGo.transform, UiBuilder.DefaultFont(), "Glyph", 12, true);
             label.text = style.label;
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.color = new Color(0.15f, 0.08f, 0.02f, 1f);
         }
 

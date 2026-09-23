@@ -42,11 +42,11 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
             RoundedUiSprite.Apply(panel.GetComponent<Image>());
 
-            var title = UiBuilder.MakeText(panel.transform, UiBuilder.BuiltinFont(), "Title", 19, false);
+            var title = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Title", 19, false);
             UiBuilder.PlaceRow(title.rectTransform, 12f, 34f, 14f);
             title.text = $"Gym — {state.Name}";
             title.alignment = TextAnchor.MiddleCenter;
-            _stats = UiBuilder.MakeText(panel.transform, UiBuilder.BuiltinFont(), "Stats", 16, false);
+            _stats = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Stats", 16, false);
             UiBuilder.PlaceRow(_stats.rectTransform, 55f, 56f, 20f);
             _stats.alignment = TextAnchor.MiddleCenter;
             Refresh(state.Str, state.Agi, state.Int);
@@ -83,7 +83,7 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(width, 42f);
             go.GetComponent<Image>().color = UiBuilder.ButtonFace;
             RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 14, true);
+            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
             return go.GetComponent<Button>();

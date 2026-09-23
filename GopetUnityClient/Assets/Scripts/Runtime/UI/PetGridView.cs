@@ -201,7 +201,7 @@ namespace Gopet.Runtime.UI
             var title = UiBuilder.MakeText(parent, _font, "Title", 8, false);
             title.text = Shorten(CapitalizeFirst(item.Title));
             title.color = Blue;
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             Place(title.rectTransform, PortraitWidth, 16f, -6f, infoWidth);
 
             var description = UiBuilder.MakeText(parent, _font, "Description", 6, false);

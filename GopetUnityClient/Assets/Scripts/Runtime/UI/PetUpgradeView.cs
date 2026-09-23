@@ -44,7 +44,7 @@ namespace Gopet.Runtime.UI
             panel.GetComponent<Image>().color = UiBuilder.Panel;
 
             var view = backdrop.AddComponent<PetUpgradeView>();
-            view.Build(panel.transform, font ?? UiBuilder.BuiltinFont());
+            view.Build(panel.transform, font ?? UiBuilder.DefaultFont());
             return view;
         }
 
@@ -81,7 +81,7 @@ namespace Gopet.Runtime.UI
         private void Build(Transform panel, Font font)
         {
             var title = TextRow(panel, font, "Tiến hoá pet", 14f, 32f, 19);
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.alignment = TextAnchor.MiddleCenter;
             ButtonRow(panel, font, "Đóng", 14f, 34f, 54f, () => CloseRequested?.Invoke());
 

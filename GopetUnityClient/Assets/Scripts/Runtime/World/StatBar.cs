@@ -64,7 +64,7 @@ namespace Gopet.Runtime.World
             RoundedUiSprite.Apply(badgeGo);
             var badgeText = UiBuilder.MakeText(badgeGo.transform, font, "Label", 11, true);
             badgeText.text = badge;
-            badgeText.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(badgeText, FontStyle.Bold);
             badgeText.alignment = TextAnchor.MiddleCenter;
             badgeText.color = new Color(0.04f, 0.26f, 0.52f, 1f);
 
@@ -85,7 +85,7 @@ namespace Gopet.Runtime.World
             _fill.fillOrigin = 0;
 
             _value = UiBuilder.MakeText(viewport.transform, font, "Value", 11, true);
-            _value.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(_value, FontStyle.Bold);
             _value.alignment = TextAnchor.MiddleCenter;
             _value.color = Color.white;
             var shadow = _value.gameObject.AddComponent<Shadow>();

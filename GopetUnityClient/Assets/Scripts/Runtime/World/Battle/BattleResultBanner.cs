@@ -9,7 +9,7 @@ namespace Gopet.Runtime.World.Battle
     /// thay cho popup có nút "Tiếp tục" trước đây. Phần thưởng không nằm ở đây nữa —
     /// nó bay thành số trên đầu pet, giống jar gốc (<c>e.java:57-63</c>).
     ///
-    /// <para><b>Vẽ bằng CHỮ</b>, cùng font với HUD (<see cref="UiBuilder.BuiltinFont"/>), chứ
+    /// <para><b>Vẽ bằng CHỮ</b>, cùng font với HUD (<see cref="UiBuilder.DefaultFont"/>), chứ
     /// không phải ảnh dựng sẵn nữa. Ảnh sinh bằng AI hay sai dấu tiếng Việt — bản cũ từng ra
     /// "CHIẾN THẤNG" vì model vẽ dấu mũ thay cho dấu breve.</para></summary>
     public static class BattleResultBanner
@@ -46,11 +46,11 @@ namespace Gopet.Runtime.World.Battle
             rect.sizeDelta = SizeFor(parent, canvasHeight);
             rect.localRotation = Quaternion.Euler(0f, 0f, TiltDegrees);
 
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Nhãn",
+            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Nhãn",
                 Mathf.RoundToInt(canvasHeight * FontRatio), false);
             UiBuilder.Stretch(label.rectTransform);
             label.alignment = TextAnchor.MiddleCenter;
-            label.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(label, FontStyle.Bold);
             label.raycastTarget = false;
             label.text = won ? "CHIẾN THẮNG" : isParticipant ? "THUA CUỘC" : "KẾT THÚC";
             label.color = won ? new Color(1f, 0.82f, 0.2f) : new Color(0.75f, 0.82f, 0.9f);

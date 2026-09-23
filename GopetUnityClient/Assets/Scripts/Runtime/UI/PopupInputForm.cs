@@ -55,7 +55,7 @@ namespace Gopet.Runtime.UI
             var title = UiBuilder.MakeText(transform, font, "Title", 14, false);
             title.text = titleText;
             title.alignment = TextAnchor.MiddleCenter;
-            title.fontStyle = FontStyle.Bold;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
             title.color = PopupPalette.TextDark;
             UiBuilder.PlaceRow(title.rectTransform, 18f, 24f, 16f);
 

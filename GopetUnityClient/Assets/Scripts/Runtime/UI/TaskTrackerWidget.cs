@@ -24,7 +24,7 @@ namespace Gopet.Runtime.UI
             go.GetComponent<Image>().color = new Color(0.08f, 0.11f, 0.16f, 0.88f);
 
             var view = go.AddComponent<TaskTrackerWidget>();
-            view._label = UiBuilder.MakeText(go.transform, UiBuilder.BuiltinFont(), "Label", 12, true);
+            view._label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 12, true);
             view._label.alignment = TextAnchor.MiddleLeft;
             view._label.color = Color.white;
             view._label.rectTransform.offsetMin = new Vector2(10f, 0f);

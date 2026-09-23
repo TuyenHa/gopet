@@ -62,6 +62,64 @@ services:
       # Nạp dump lần đầu khá lâu; đừng báo unhealthy trong lúc đó.
       start_period: 180s
 
+  # Máy chủ game. Nằm sau profile "server" để `docker compose up -d` trên máy dev
+  # vẫn chỉ bật database như trước (dev chạy Gopet.exe native). Trên máy chủ:
+  #
+  #   docker compose --profile server up -d --build
+  #
+  # Hướng dẫn đầy đủ: docs/deployment-linux-backend.md
+  gserver:
+    profiles: ["server"]
+    build:
+      context: ../SRCGOPETGOC/GServer
+    image: gopet-gserver:latest
+    container_name: gopet-gserver
+    restart: unless-stopped
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    environment:
+      # Nối DB qua mạng nội bộ của compose (tên service), không qua cổng của host.
+      GOPET_DB_HOST: mariadb
+      GOPET_DB_PORT: "3306"
+      # Mặc định dùng root; production nên tạo user riêng rồi đặt 2 biến này trong .env.
+      GOPET_DB_USER: ${GOPET_DB_USER:-root}
+      GOPET_DB_PASSWORD: ${GOPET_DB_PASSWORD:-${MARIADB_ROOT_PASSWORD}}
+
+    ports:
+      # CHỈ cổng game. HTTP 8082 là API quản trị (shutdown, mở SQL...) — không publish.
+      # GOPET_GAME_PORT đổi cổng phía host (vd. thử container khi Gopet.exe native
+      # đang giữ 19180).
+      - "${GOPET_GAME_PORT:-19180}:19180"
+
+    volumes:
+      # Cấu hình cho container: gameBindAddress 0.0.0.0, tắt packet log.
+      - ./gserver/server.json:/app/config/server.json:ro
+      - gopet-gserver-log:/app/log
+      - gopet-gserver-backup:/app/backup_sql
+
+    # Không cấp stdin: server tự ngừng đọc lệnh console và vẫn chạy.
+    stdin_open: false
+    tty: false
+
+    # `docker stop` gửi SIGTERM → App/GracefulShutdown.cs lưu market, clan, người
+    # chơi rồi thoát. Mặc định Docker chỉ chờ 10s rồi SIGKILL — không đủ để lưu.
+    stop_grace_period: 60s
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/19180' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # Nạp template item/pet/map lúc khởi động mất một lúc.
+      start_period: 120s
+
 volumes:
   gopet-db-data:
     name: gopet-db-data
+  gopet-gserver-log:
+    name: gopet-gserver-log
+  gopet-gserver-backup:
+    name: gopet-gserver-backup

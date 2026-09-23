@@ -91,6 +91,7 @@ namespace Gopet.PlayModeTests
             };
             RaiseRegister(_screens.LoginForm);
             _screens.RegistrationForm.SetCredentials("newuser123", "pass1234");
+            _screens.RegistrationForm.SetConfirmPassword("pass1234");
 
             FindButton(_screens.RegistrationForm, "Button_DangKy").onClick.Invoke();
 
@@ -122,6 +123,7 @@ namespace Gopet.PlayModeTests
             RaiseRegister(_screens.LoginForm);
             var registerForm = _screens.RegistrationForm;
             registerForm.SetCredentials("newuser123", "pass1234");
+            registerForm.SetConfirmPassword("pass1234");
             FindButton(registerForm, "Button_DangKy").onClick.Invoke();
 
             _flow.OnDialog("Đăng ký tài khoản thành công.");

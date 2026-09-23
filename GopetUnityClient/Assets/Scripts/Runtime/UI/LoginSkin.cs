@@ -56,9 +56,10 @@ namespace Gopet.Runtime.UI
         /// thay vì đặt trong Sprite Editor: file <c>.meta</c> do Unity sinh, sửa tay là
         /// thứ dễ mất khi ai đó re-import.</para>
         /// </summary>
-        public static Sprite GetSliced(string name)
+        /// <param name="border">Viền 9-slice (px sprite). Âm = tự tính cho ảnh bo góc một màu.</param>
+        public static Sprite GetSliced(string name, float border = -1f)
         {
-            var key = name + "#9slice";
+            var key = name + "#9slice" + border;
             // Sprite ở đây do Sprite.Create sinh ra lúc chạy nên CHẮC CHẮN bị huỷ khi
             // thoát Play — xem ghi chú ở Get.
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
@@ -76,11 +77,10 @@ namespace Gopet.Runtime.UI
             // trăm: viền 9-slice đo bằng pixel của SPRITE, không co giãn theo khung
             // hiển thị, nên phần trăm trên một sprite cao sẽ cho ra góc tròn to hơn
             // hẳn ảnh gốc — đúng cái đã xảy ra khi để 35%.
-            var inset = Mathf.Min(source.rect.width, source.rect.height) * 0.5f - 4f;
-            var border = new Vector4(inset, inset, inset, inset);
+            var inset = border >= 0f ? border : Mathf.Min(source.rect.width, source.rect.height) * 0.5f - 4f;
 
             var sliced = Sprite.Create(source.texture, source.rect, new Vector2(0.5f, 0.5f),
-                source.pixelsPerUnit, 0, SpriteMeshType.FullRect, border);
+                source.pixelsPerUnit, 0, SpriteMeshType.FullRect, new Vector4(inset, inset, inset, inset));
             sliced.name = source.name + " (9-slice)";
             return Cache[key] = sliced;
         }

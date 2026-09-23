@@ -8,6 +8,10 @@ namespace Gopet.Runtime.UI
     /// <summary>Dòng nhiệm vụ đầu tiên nằm ngay dưới khung HP/MP.</summary>
     public sealed class TaskTrackerWidget : MonoBehaviour
     {
+        /// <summary>Khe giữa HUD nhân vật và dòng nhiệm vụ.</summary>
+        public const float Gap = 5f;
+        public const float Height = 34f;
+
         private Text _label;
         public event Action Clicked;
 
@@ -18,8 +22,9 @@ namespace Gopet.Runtime.UI
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(0f, -94f);
-            rect.sizeDelta = new Vector2(240f, 34f);
+            // Cách mép dưới HUD nhân vật đúng Gap.
+            rect.anchoredPosition = new Vector2(0f, -(World.CharacterHud.PanelHeight + Gap));
+            rect.sizeDelta = new Vector2(240f, Height);
             RoundedUiSprite.Apply(go.GetComponent<Image>());
             go.GetComponent<Image>().color = new Color(0.08f, 0.11f, 0.16f, 0.88f);
 

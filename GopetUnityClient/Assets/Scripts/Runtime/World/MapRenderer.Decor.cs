@@ -40,5 +40,40 @@ namespace Gopet.Runtime.World
             var sprite = TileAssetProvider.FootObject($"newMapData/{LotusPondImageId}");
             PlaceObject(pond.transform, sprite, LotusPondX, LotusPondY, order);
         }
+
+        /// <summary>Hồ sen có con ếch (tools/image-gen, arena-lotus-pond-frog) — 110x63, neo giữa-đáy.</summary>
+        private const int ArenaPondImageId = 14201;
+
+        /// <summary>
+        /// Đặt vào giữa mảnh sân riêng của cửa hàng Thức ăn cũ: ô nền x 192..384, y 24..96
+        /// (dưới là đường lát đá, bắt đầu từ y = 96). Neo theo TÂM MẢNH SÂN (x = 288) chứ
+        /// không theo toạ độ cửa hàng (274) — cửa hàng vốn lệch trái trên sân của nó.
+        /// Đáy 92 chừa 4px trước mép đường đá.
+        /// </summary>
+        private const int ArenaPondX = 288;
+        private const int ArenaPondY = 92;
+
+        /// <summary>
+        /// Vật thể .dat của Đấu trường bị bỏ vì hồ sen chiếm chỗ: nền + hoạt ảnh cửa hàng
+        /// Thức ăn (189/190), hai bụi cây nhỏ hai bên cửa hàng (175 ở y=68) và đống tuyết
+        /// dưới chân nó (30 tại (253, 91)) — để lại thì chúng mọc lên giữa mặt nước.
+        /// </summary>
+        private bool IsHiddenArenaObject(int resourceId, JarMapObject item)
+        {
+            if (_mapId != ArenaMapId) return false;
+            if (resourceId == ShopBuildingAnimationId || resourceId == ShopBuildingBaseImageId) return true;
+            if (resourceId == 175 && item.Y == 68 && item.X > 200 && item.X < 340) return true;
+            return resourceId == 30 && item.X == 253 && item.Y == 91;
+        }
+
+        private void BuildArenaPond()
+        {
+            var pond = new GameObject("Arena Lotus Pond");
+            pond.transform.SetParent(transform, false);
+            // Như ao Đại Linh Cảnh: dưới mọi vật thể .dat, trên các lớp nền.
+            var order = MapPlacement.ObjectSortingOrder(0) - 1;
+            var sprite = TileAssetProvider.FootObject($"newMapData/{ArenaPondImageId}");
+            PlaceObject(pond.transform, sprite, ArenaPondX, ArenaPondY, order);
+        }
     }
 }

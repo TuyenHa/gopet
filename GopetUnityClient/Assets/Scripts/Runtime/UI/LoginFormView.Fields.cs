@@ -4,8 +4,9 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Hai ô nhập của <see cref="LoginFormView"/>: nền tối bo góc, icon vuông bên
-    /// trái, và ở ô mật khẩu có thêm nút con mắt để xem lại thứ mình vừa gõ.
+    /// Hai ô nhập của <see cref="LoginFormView"/>: nền trắng viền vàng mảnh (cùng bộ với
+    /// panel), icon nét (không khung) bên trái + vạch ngăn, và ở ô mật khẩu có nút con mắt
+    /// (không viền) để xem lại thứ mình vừa gõ.
     /// </summary>
     public sealed partial class LoginFormView
     {
@@ -26,6 +27,17 @@ namespace Gopet.Runtime.UI
         private const float NoticeHeight = 0.135f;
 
         /// <summary>
+        /// Form đăng ký có thêm ô nhập lại mật khẩu nên thông báo lỗi dời xuống dưới ô
+        /// đó, thấp hơn để không đè hàng nút (nút đăng ký bắt đầu ở 0.73).
+        /// </summary>
+        private const float RegistrationNoticeTop = 0.59f;
+        private const float RegistrationNoticeHeight = 0.12f;
+        /// <summary>Hàng form đăng ký: cùng cỡ thật với form đăng nhập, khe giữa rộng hơn.</summary>
+        private const float RegistrationRowHeight = RowHeight * RegistrationScale;
+        private const float RegistrationRowGap = 0.05f;
+        private const string ConfirmPlaceholder = "Nhập lại mật khẩu";
+
+        /// <summary>
         /// Icon đầu ô chiếm TRỌN chiều cao ô và vuông (bề ngang do
         /// <see cref="AspectRatioFitter"/> tính), sát mép trái — đúng như mockup.
         /// Đặt bề ngang theo tỉ lệ ô như trước thì icon không vuông, và phần ô đen
@@ -36,21 +48,40 @@ namespace Gopet.Runtime.UI
         /// <summary>Chữ bắt đầu sau icon; icon vuông nên bề ngang nó xấp xỉ chiều cao ô.</summary>
         private const float TextLeft = 0.16f;
 
-        /// <summary>Nền ô nhập icy blue, đồng bộ HUD map.</summary>
-        private static readonly Color FieldFill = new Color(0.82f, 0.90f, 0.98f, 1f);
+        /// <summary>Trắng để ô nhập nổi trên mặt panel xanh nhạt.</summary>
+        private static readonly Color FieldFill = Color.white;
+        /// <summary>Viền vàng mảnh — cùng tông viền panel và ô trang bị.</summary>
+        private static readonly Color FieldBorder = new Color(0.93f, 0.74f, 0.30f, 1f);
+        private const float FieldBorderPx = 2f;
+        /// <summary>Icon nét tô xanh thương hiệu; con mắt nhạt hơn khi đang che mật khẩu.</summary>
+        private static readonly Color IconTint = new Color(0.16f, 0.40f, 0.78f, 1f);
+        private const float IconPadX = 10f;
 
         /// <summary>Chữ dark navy — đọc tốt trên nền icy blue.</summary>
         private static readonly Color FieldText = new Color(0.08f, 0.25f, 0.62f, 1f);
 
         private void BuildFields(Font font, RectTransform content)
         {
-            _username = MakeField(font, Frac(content, "Field_TaiKhoan", FirstRowTop, RowHeight, typeof(Image)),
+            var rowHeight = _registrationMode ? RegistrationRowHeight : RowHeight;
+            var rowGap = _registrationMode ? RegistrationRowGap : RowGap;
+            _username = MakeField(font, Frac(content, "Field_TaiKhoan", FirstRowTop, rowHeight, typeof(Image)),
                 LoginSkin.IconUser, JarStrings.Vi(298));
 
-            var passwordRow = Frac(content, "Field_MatKhau", FirstRowTop + RowHeight + RowGap, RowHeight, typeof(Image));
+            var passwordRow = Frac(content, "Field_MatKhau", FirstRowTop + rowHeight + rowGap, rowHeight, typeof(Image));
             _password = MakeField(font, passwordRow, LoginSkin.IconLock, JarStrings.Vi(375));
             _password.contentType = InputField.ContentType.Password;
             MakeEyeToggle(passwordRow);
+
+            if (_registrationMode)
+            {
+                var confirmRow = Frac(content, "Field_NhapLaiMatKhau",
+                    FirstRowTop + 2f * (rowHeight + rowGap), rowHeight, typeof(Image));
+                _confirmPassword = MakeField(font, confirmRow, LoginSkin.IconLock, ConfirmPlaceholder);
+                _confirmPassword.contentType = InputField.ContentType.Password;
+                _notice = MakeNotice(font, Frac(content, "Notice",
+                    RegistrationNoticeTop, RegistrationNoticeHeight, typeof(Text)));
+                return;
+            }
 
             // Đặt lỗi sát bên dưới mật khẩu để người chơi thấy ngay nơi cần sửa.
             // Vùng riêng đủ cao cho thông báo dài tự xuống dòng mà không đè lên hàng thao tác.
@@ -72,27 +103,43 @@ namespace Gopet.Runtime.UI
 
         private InputField MakeField(Font font, RectTransform rect, string iconName, string placeholder)
         {
-            // Nền procedural icy blue thay sprite dark navy cũ → sync HUD blue frame.
+            // Ảnh của ô = VIỀN vàng; lớp "Fill" trắng lót bên trong chừa FieldBorderPx.
             var background = rect.gameObject.GetComponent<Image>();
             RoundedUiSprite.Apply(background);
-            background.color = FieldFill;
+            background.color = FieldBorder;
+
+            var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+            fill.transform.SetParent(rect, false);
+            var fillImage = fill.GetComponent<Image>();
+            RoundedUiSprite.Apply(fillImage);
+            fillImage.color = FieldFill;
+            fillImage.raycastTarget = false;
+            var fillRect = (RectTransform)fill.transform;
+            UiBuilder.Stretch(fillRect);
+            fillRect.offsetMin = new Vector2(FieldBorderPx, FieldBorderPx);
+            fillRect.offsetMax = new Vector2(-FieldBorderPx, -FieldBorderPx);
 
             var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(AspectRatioFitter));
             icon.transform.SetParent(rect, false);
             var iconImage = icon.GetComponent<Image>();
             iconImage.sprite = LoginSkin.Get(iconName);
+            iconImage.color = IconTint;
+            iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
             iconImage.enabled = iconImage.sprite != null;
 
+            // Icon nét nhỏ hơn ô, cách mép trái IconPadX — không còn khung vuông sát mép.
             var iconRect = (RectTransform)icon.transform;
-            iconRect.anchorMin = new Vector2(0f, 0f);
-            iconRect.anchorMax = new Vector2(0f, 1f);
+            iconRect.anchorMin = new Vector2(0f, 0.22f);
+            iconRect.anchorMax = new Vector2(0f, 0.78f);
             iconRect.pivot = new Vector2(0f, 0.5f);
             iconRect.offsetMin = iconRect.offsetMax = Vector2.zero;
+            iconRect.anchoredPosition = new Vector2(IconPadX, 0f);
 
             var iconFitter = icon.GetComponent<AspectRatioFitter>();
             iconFitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
             iconFitter.aspectRatio = IconAspect;
+            MakeDivider(rect);
 
             // Chữ bắt đầu SAU icon, chừa thêm một khoảng thở; mép phải chừa chỗ cho
             // nút con mắt của ô mật khẩu (ô tài khoản thừa ra một chút cũng không sao).
@@ -126,44 +173,18 @@ namespace Gopet.Runtime.UI
             return text;
         }
 
-        /// <summary>
-        /// Nút con mắt: đổi qua lại giữa che và hiện mật khẩu.
-        ///
-        /// <para>Có ích thật chứ không phải trang trí — bàn gõ tiếng Việt kiểu Telex
-        /// nuốt phím trong ô nhập (đã trả giá ở P1: gõ <c>test1234</c> ra <c>tét1234</c>),
-        /// mà ô bị che thì không thể nhìn ra mình gõ hỏng ở đâu.</para>
-        /// </summary>
-        private void MakeEyeToggle(RectTransform row)
+        /// <summary>Vạch dọc mảnh ngăn icon với chữ.</summary>
+        private static void MakeDivider(RectTransform row)
         {
-            var go = new GameObject("ToggleReveal", typeof(RectTransform), typeof(Image), typeof(Button), typeof(AspectRatioFitter));
+            var go = new GameObject("Divider", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(row, false);
-
             var image = go.GetComponent<Image>();
-            image.sprite = LoginSkin.Get(LoginSkin.IconEye);
-            image.color = image.sprite == null ? new Color(1f, 1f, 1f, 0.35f) : Color.white;
-
-            // Vuông và neo mép phải, giống icon đầu ô — để khung chữ nhật thì con mắt
-            // bị kéo bẹt theo bề ngang ô.
+            image.color = new Color(IconTint.r, IconTint.g, IconTint.b, 0.25f);
+            image.raycastTarget = false;
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(1f, 0.14f);
-            rect.anchorMax = new Vector2(1f, 0.86f);
-            rect.pivot = new Vector2(1f, 0.5f);
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
-
-            var fitter = go.GetComponent<AspectRatioFitter>();
-            fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
-            fitter.aspectRatio = IconAspect;
-
-            go.GetComponent<Button>().onClick.AddListener(ToggleReveal);
-        }
-
-        private void ToggleReveal()
-        {
-            var hidden = _password.contentType == InputField.ContentType.Password;
-            _password.contentType = hidden ? InputField.ContentType.Standard : InputField.ContentType.Password;
-
-            // InputField chỉ vẽ lại khi text đổi; không ép thì chữ vẫn hiện dấu sao.
-            _password.ForceLabelUpdate();
+            rect.anchorMin = new Vector2(TextLeft - 0.025f, 0.25f);
+            rect.anchorMax = new Vector2(TextLeft - 0.025f, 0.75f);
+            rect.sizeDelta = new Vector2(1.5f, 0f);
         }
 
         /// <param name="fill">Phần chiều cao ô mà chữ được phép chiếm.</param>

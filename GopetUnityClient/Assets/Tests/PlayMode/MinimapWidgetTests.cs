@@ -61,5 +61,28 @@ namespace Gopet.PlayModeTests
             Assert.IsNull(image.texture);
             Assert.Less(image.color.grayscale, 0.3f, "Ruột minimap đang trắng.");
         }
+
+        /// <summary>Tên map nằm ở dải trên đỉnh minimap, ảnh map chỉ nằm bên dưới dải đó.</summary>
+        [Test]
+        public void Minimap_HienTenMapTrenDinh_KhongDeLenAnhMap()
+        {
+            var widget = MinimapWidget.Create(_root.transform, null);
+            var texture = new RenderTexture(64, 32, 0);
+            try
+            {
+                widget.SetLiveMap(texture, 640, 320, 11);
+
+                Assert.AreEqual(MapDisplayNames.Get(11), widget.MapName);
+                var title = (RectTransform)widget.transform.Find("Map Title");
+                var map = (RectTransform)widget.transform.Find("Map");
+                Assert.IsNotNull(title, "Thiếu dải tên map trên minimap.");
+                Assert.AreEqual(1f, title.anchorMax.y, 0.001f, "Tên map phải nằm trên đỉnh.");
+                Assert.LessOrEqual(map.anchorMax.y, title.anchorMin.y + 0.001f, "Ảnh map đè lên tên map.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(texture);
+            }
+        }
     }
 }

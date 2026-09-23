@@ -5,8 +5,22 @@ using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    public sealed class TattooView : MonoBehaviour
+    /// <summary>
+    /// Popup "Hình xăm pet": khung <see cref="GamePopupFrame"/> như Cửa hàng, danh sách ô
+    /// xăm trong <see cref="PopupItemList"/> (các dòng ngăn bằng vạch kẻ ngang) và nút
+    /// "Tạo hình xăm" xanh dương ở chân. Dòng ô xăm dựng ở <c>TattooView.Rows.cs</c>.
+    /// </summary>
+    public sealed partial class TattooView : MonoBehaviour
     {
+        private const string Title = "Hình xăm pet";
+        private const float PopupWidth = 440f;
+        private const float PopupHeight = 330f;
+        private const float GenerateWidth = 180f;
+        private const float GenerateHeight = 34f;
+        private const float GenerateGap = 8f;
+
+        private Font _font;
+
         public event Action CloseRequested;
         public event Action GenerateRequested;
         public event Action<int> RemoveRequested;
@@ -14,49 +28,74 @@ namespace Gopet.Runtime.UI
 
         public static TattooView Create(Transform parent, TattooScreen screen)
         {
-            var root = LegacyOverlayUi.Overlay(parent, "Tattoo");
+            var root = new GameObject("Tattoo", typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            UiBuilder.Stretch((RectTransform)root.transform);
             var view = root.AddComponent<TattooView>();
-            var panel = LegacyOverlayUi.Panel(root.transform, new Vector2(440f, 380f));
-            var title = LegacyOverlayUi.Text(panel, "Title", "Hình xăm pet", 18, 10f, 34f);
-            title.alignment = TextAnchor.MiddleCenter;
-            for (var i = 0; i < screen.Slots.Length && i < 5; i++)
-                view.Row(panel, screen.Slots[i], 52f + i * 48f);
-            LegacyOverlayUi.Button(panel, "Tạo hình xăm", 18f, () => view.GenerateRequested?.Invoke());
-            LegacyOverlayUi.Button(panel, "Đóng", 298f, () => view.CloseRequested?.Invoke());
+            view._font = UiBuilder.DefaultFont();
+
+            // Lớp tối là ANH EM với khung: Unity dò handler click ngược lên cây cha, nên
+            // nút đóng mà nằm ở cha thì bấm đâu trong popup cũng đóng.
+            var dim = new GameObject("Dim", typeof(RectTransform), typeof(Image), typeof(Button));
+            dim.transform.SetParent(root.transform, false);
+            UiBuilder.Stretch((RectTransform)dim.transform);
+            dim.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
+            dim.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
+
+            var frame = GamePopupFrame.Create(root.transform, view._font, Title, PopupWidth, PopupHeight);
+            frame.Closed += () => view.CloseRequested?.Invoke();
+            view.BuildList(frame.Content, screen?.Slots ?? Array.Empty<TattooSlot>());
+            view.BuildGenerateButton(frame.Content);
             return view;
         }
 
-        private void Row(Transform parent, TattooSlot slot, float top)
+        private void BuildList(Transform content, TattooSlot[] slots)
         {
-            var go = new GameObject($"Tattoo:{slot.Position}", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            UiBuilder.PlaceRow((RectTransform)go.transform, top, 40f, 18f);
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
-            text.text = $"Ô {slot.Position}: {slot.Name}";
-            text.alignment = TextAnchor.MiddleLeft;
-            text.rectTransform.offsetMin = new Vector2(10f, 0f);
-            text.rectTransform.offsetMax = new Vector2(-150f, 0f);
-            if (slot.TattooId != 0)
-            {
-                RowButton(go.transform, "Nâng", -132f, () => EnchantRequested?.Invoke(slot.TattooId));
-                RowButton(go.transform, "Xoá", -66f, () => RemoveRequested?.Invoke(slot.TattooId));
-            }
+            var area = new GameObject("ListArea", typeof(RectTransform));
+            area.transform.SetParent(content, false);
+            var rect = (RectTransform)area.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(0f, GenerateHeight + GenerateGap);
+            rect.offsetMax = Vector2.zero;
+
+            var list = PopupItemList.Create(area.transform, _font);
+            for (var i = 0; i < slots.Length; i++)
+                BuildRow(list.Rows, slots[i], i, i < slots.Length - 1);
+            list.SetRowsHeight(slots.Length * RowHeight);
+            list.ShowPlaceholder(slots.Length == 0 ? "Pet chưa có ô xăm nào." : null);
         }
 
-        private static void RowButton(Transform parent, string label, float right, Action action)
+        /// <summary>Nút chính ở chân popup: nền xanh dương, viền sẫm hơn một nấc.</summary>
+        private void BuildGenerateButton(Transform content)
+        {
+            var button = MakePillButton(content, "Tạo hình xăm", 15, PopupPalette.ButtonBlue,
+                PopupPalette.HeaderBlue, () => GenerateRequested?.Invoke());
+            var rect = (RectTransform)button.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.sizeDelta = new Vector2(GenerateWidth, GenerateHeight);
+            rect.anchoredPosition = Vector2.zero;
+        }
+
+        /// <summary>Nút viên thuốc: viền 2 đơn vị màu <paramref name="edge"/>, ruột <paramref name="fill"/>, chữ trắng đậm.</summary>
+        private Button MakePillButton(Transform parent, string label, int fontSize, Color fill,
+            Color edge, Action action)
         {
             var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, .5f);
-            rect.anchoredPosition = new Vector2(right, 0f);
-            rect.sizeDelta = new Vector2(60f, 30f);
-            go.GetComponent<Image>().color = new Color(.25f, .45f, .65f, 1f);
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 12, true);
+            RoundedBorder.Apply(go, RoundedUiSprite.DefaultRadius, fill, edge, 2f);
+
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", fontSize, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            go.GetComponent<Button>().onClick.AddListener(() => action());
+            text.color = Color.white;
+            text.raycastTarget = false;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
+
+            var button = go.GetComponent<Button>();
+            button.onClick.AddListener(() => action());
+            return button;
         }
     }
 }

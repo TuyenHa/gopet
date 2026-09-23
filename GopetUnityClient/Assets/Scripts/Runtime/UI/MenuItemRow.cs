@@ -161,7 +161,7 @@ namespace Gopet.Runtime.UI
             // hiển thị và bỏ qua mọi callback không còn khớp.
             var expected = path;
 
-            assets.Get(path, ImagePackets.TypeIcon, texture =>
+            assets.Get(path, ImagePackets.TypeIcon, _icon, texture =>
             {
                 if (this == null || _icon == null) return;
                 if (!ReferenceEquals(Item, null) && Item.ImagePath != expected) return;

@@ -8,7 +8,7 @@ namespace Gopet.Runtime.World
     /// gốc toạ độ. Dùng chung cho người chơi, pet, NPC/quái, cổng map, nhà, bang hội.
     ///
     /// <para><b>Dùng font TTF của HUD</b> (<see cref="UiBuilder.DefaultFont"/>) thay cho bitmap
-    /// font jar. Bảng glyph của jar (<see cref="JarFont"/>) thiếu phần lớn CHỮ HOA có dấu — nó
+    /// font jar. Bảng glyph của jar  thiếu phần lớn CHỮ HOA có dấu — nó
     /// chỉ có <c>Đ Ă Á Â</c> — nên tên nào chứa chữ hoa có dấu khác đều rơi về ô trắng.</para>
     ///
     /// <para><c>TextMesh</c> chứ không phải canvas world-space: mỗi canvas là một batch riêng,
@@ -60,6 +60,17 @@ namespace Gopet.Runtime.World
         {
             if (_mesh != null) _mesh.text = text ?? string.Empty;
         }
+
+        /// <summary>
+        /// Đỉnh nét chữ thật (không phải khung dòng) trong hệ toạ độ <paramref name="space"/>.
+        /// Tên rỗng thì không có nét nào — trả <paramref name="fallback"/>.
+        /// </summary>
+        public float VisibleTopIn(Transform space, float fallback) =>
+            // Renderer tắt/ẩn trả bounds rỗng ở gốc world → danh hiệu văng xuống đáy map.
+            _renderer == null || !_renderer.enabled || !_renderer.gameObject.activeInHierarchy
+                || string.IsNullOrWhiteSpace(_mesh.text)
+                ? fallback
+                : space.InverseTransformPoint(_renderer.bounds.max).y;
 
         public void SetSortingOrder(int order)
         {

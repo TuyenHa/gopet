@@ -95,12 +95,13 @@ namespace Gopet.Runtime.UI
             hiddenRect.anchorMin = hiddenRect.anchorMax = new Vector2(1f, 1f);
             hiddenRect.pivot = new Vector2(1f, 1f);
             hiddenRect.anchoredPosition = new Vector2(-12f, -10f);
-            hiddenRect.sizeDelta = new Vector2(92f, 26f);
-            hiddenStats.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            var hiddenLabel = UiBuilder.MakeText(hiddenStats.transform, font, "Nhãn", 11, false);
+            hiddenRect.sizeDelta = new Vector2(92f, 30f);
+            var hiddenImage = hiddenStats.GetComponent<Image>();
+            if (!GameButtonSkin.Apply(hiddenImage, hiddenRect.sizeDelta.y)) hiddenImage.color = UiBuilder.ButtonFace;
+            var hiddenLabel = UiBuilder.MakeText(hiddenStats.transform, font, "Nhãn", 12, false);
             UiBuilder.Stretch(hiddenLabel.rectTransform);
-            hiddenLabel.alignment = TextAnchor.MiddleCenter;
             hiddenLabel.text = "Kích ẩn";
+            GameButtonSkin.StyleLabel(hiddenLabel);
             hiddenStats.GetComponent<Button>().onClick.AddListener(() => HiddenStatsRequested?.Invoke());
 
             AddSlot(panel, EquipSlot.Hat,    "Nón",    0);

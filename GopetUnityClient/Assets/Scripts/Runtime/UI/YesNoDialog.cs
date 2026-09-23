@@ -28,12 +28,8 @@ namespace Gopet.Runtime.UI
             var rect = (RectTransform)panel.transform;
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(420f, 210f);
-            var img = panel.GetComponent<Image>();
-            RoundedUiSprite.Apply(img);
-            img.color = new Color(0.96f, 0.98f, 1f, 1f);
-            var outline = panel.AddComponent<Outline>();
-            outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            // Viền 2 lớp như GamePopupFrame — Outline cũ làm viền nhoè và góc bị trắng.
+            RoundedBorder.Apply(panel, 14f, PopupPalette.Panel, PopupPalette.Border, 2f);
 
             view.BuildContent(panel.transform, message, yesLabel, noLabel);
             view.BuildClose(panel.transform);
@@ -46,41 +42,26 @@ namespace Gopet.Runtime.UI
             var text = UiBuilder.MakeText(panel, font, "Message", 14, false);
             text.text = message;
             text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.black;
+            // Nền trắng → chữ tối.
+            text.color = PopupPalette.TextDark;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            // Kéo giãn cả hai chiều: từ trên hàng nút (12 + 40 + 12) tới dưới nút X. Bản cũ
+            // neo cả hai mép theo đỉnh panel mà mép dưới lại cao hơn mép trên → cao âm,
+            // chữ không bao giờ hiện.
             var rect = text.rectTransform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.offsetMin = new Vector2(28f, 86f);
-            rect.offsetMax = new Vector2(-28f, -46f);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(28f, 64f);
+            rect.offsetMax = new Vector2(-28f, -40f);
 
             MakeBtn(panel, font, yesLabel, new Color(0.75f, 0.3f, 0.3f, 1f), 0f, () => Confirmed?.Invoke());
             MakeBtn(panel, font, noLabel,  UiBuilder.ButtonFace,             1f, () => Cancelled?.Invoke());
         }
 
-        private void BuildClose(Transform panel)
-        {
-            var go = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(panel, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(34f, 34f);
-            rect.anchoredPosition = new Vector2(-18f, -18f);
-            var image = go.GetComponent<Image>();
-            var sprite = HudSkin.Get(HudSkin.Close);
-            if (sprite != null) image.sprite = sprite;
-            else
-            {
-                image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
-                RoundedUiSprite.Apply(image);
-            }
-            var label = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "X", 18, true);
-            label.text = "×";
-            label.alignment = TextAnchor.MiddleCenter;
-            label.color = Color.white;
-            go.GetComponent<Button>().onClick.AddListener(() => Cancelled?.Invoke());
-        }
+        /// <summary>Nút X dùng chung với khung popup — sát góc trên-phải, không nhoè.</summary>
+        private void BuildClose(Transform panel) =>
+            GamePopupFrame.CreateCloseButton(panel, UiBuilder.DefaultFont(), () => Cancelled?.Invoke());
 
         private static void MakeBtn(Transform panel, Font font, string label, Color color, float side, Action onClick)
         {
@@ -99,7 +80,8 @@ namespace Gopet.Runtime.UI
             t.text = label;
             UiBuilder.SetFontStyle(t, FontStyle.Bold);
             t.alignment = TextAnchor.MiddleCenter;
-            t.color = Color.black;
+            // Nút nền màu đậm (đỏ/xanh) → chữ trắng.
+            t.color = Color.white;
             go.GetComponent<Button>().onClick.AddListener(() => onClick());
         }
     }

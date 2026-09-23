@@ -53,7 +53,7 @@ namespace Gopet.Runtime.UI
             var mins = Math.Max(0, listing.RemainingSeconds) / 60;
             _details.text = $"{listing.Name}\n{listing.Description}\nCòn {mins} phút";
             if (assets == null || string.IsNullOrEmpty(listing.FrameImagePath)) return;
-            assets.Get(listing.FrameImagePath, ImagePackets.TypeNpc, texture =>
+            assets.Get(listing.FrameImagePath, ImagePackets.TypeNpc, _frame, texture =>
             {
                 if (this != null && _frame != null) _frame.texture = texture;
             });

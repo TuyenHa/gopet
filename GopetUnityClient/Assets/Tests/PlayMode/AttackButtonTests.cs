@@ -68,15 +68,15 @@ namespace Gopet.PlayModeTests
             Assert.AreEqual(1, clicks);
         }
 
-        /// <summary>Nút nằm góc dưới-phải, bên trái cụm PET/menu (chiếm 14..70px từ mép phải).</summary>
+        /// <summary>Nút nằm góc dưới-phải, cách lề phải đúng 10px.</summary>
         [Test]
-        public void NutDanh_KhongDeLenCumNutPhai()
+        public void NutDanh_SatLePhai10px()
         {
             var rect = (RectTransform)AttackButton.Create(_root.transform).transform;
 
             Assert.AreEqual(new Vector2(1f, 0f), rect.anchorMin, "Phải neo góc dưới-phải.");
             var rightEdge = -rect.anchoredPosition.x - rect.sizeDelta.x * 0.5f;
-            Assert.Greater(rightEdge, 70f, "Nút đè lên cụm nút PET/menu bên phải.");
+            Assert.AreEqual(10f, rightEdge, 0.001f, "Nút đánh phải cách lề phải 10px.");
         }
 
         /// <summary>Nút đánh xấp xỉ cần điều khiển — hai nút ngón cái hai bên màn.</summary>

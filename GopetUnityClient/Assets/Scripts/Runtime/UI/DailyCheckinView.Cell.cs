@@ -78,7 +78,7 @@ namespace Gopet.Runtime.UI
             iconRect.sizeDelta = new Vector2(IconSize, IconSize);
             var raw = iconGo.GetComponent<RawImage>();
             raw.color = new Color(1f, 1f, 1f, 0f);
-            _assets.Get(day.IconPath, ImagePackets.TypeIcon, tex =>
+            _assets.Get(day.IconPath, ImagePackets.TypeIcon, raw, tex =>
             {
                 if (raw == null) return;
                 raw.texture = tex; raw.color = Color.white;

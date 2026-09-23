@@ -22,7 +22,7 @@ namespace Gopet.Runtime.UI
         private void ShowGemInventory(GemInventory inventory)
         {
             if (_gemView != null) Close(_gemView);
-            var view = GemInventoryView.Create(transform, _font);
+            var view = GemInventoryView.Create(transform, _font, _assets);
             _gemView = view;
             view.ApplyInventory(inventory);
             view.CloseRequested += () => CloseGemInventory(view);
@@ -40,7 +40,9 @@ namespace Gopet.Runtime.UI
         {
             var dialog = ChoiceDialogView.Create(transform, _font);
             dialog.Bind($"{item.Name} — Lv {item.Level}",
-                new[] { "Cường hoá", "Tiến hoá", "Huỷ ngọc", "Đóng" });
+                new[] { "Cường hoá", "Tiến hoá", "Huỷ ngọc" });
+            // Không còn nút "Đóng" — nút X của dialog đảm nhiệm việc đóng.
+            dialog.Closed += () => Close(dialog);
             dialog.Chosen += index =>
             {
                 Close(dialog);

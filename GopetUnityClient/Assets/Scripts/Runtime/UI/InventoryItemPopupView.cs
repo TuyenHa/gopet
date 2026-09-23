@@ -63,7 +63,7 @@ namespace Gopet.Runtime.UI
             raw.raycastTarget = false;
             if (assets == null || string.IsNullOrEmpty(item.ImagePath)) return;
             var expected = item.ImagePath;
-            assets.Get(expected, ImagePackets.TypeIcon, texture =>
+            assets.Get(expected, ImagePackets.TypeIcon, raw, texture =>
             {
                 if (raw != null && item.ImagePath == expected) raw.texture = texture;
             });

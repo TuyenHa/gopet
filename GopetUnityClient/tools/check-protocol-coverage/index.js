@@ -31,7 +31,10 @@ function constants(file, className) {
 }
 
 const serverConstants = constants(serverConstantsPath, "GopetCMD");
-const unityConstants = constants(unityConstantsPath, "GopetCmd");
+const unityConstants = new Map([
+  ...constants(unityConstantsPath, "GopetCmd"),
+  ...constants(unityConstantsPath.replace(".cs", ".Social.cs"), "GopetCmd"),
+]);
 const constantsByName = new Map([...serverConstants, ...unityConstants]);
 const serverNamesByValue = new Map();
 for (const [name, value] of serverConstants) {

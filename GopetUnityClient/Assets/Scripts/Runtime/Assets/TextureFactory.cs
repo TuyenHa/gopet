@@ -16,7 +16,7 @@ namespace Gopet.Runtime.Assets
         {
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
 
-            if (!texture.LoadImage(png))
+            if (!texture.LoadImage(png, markNonReadable: true))
             {
                 Object.Destroy(texture);
                 return null;

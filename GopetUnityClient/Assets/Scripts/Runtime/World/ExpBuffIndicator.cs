@@ -20,11 +20,12 @@ namespace Gopet.Runtime.World
             var go = new GameObject("EXP Buff", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(hudParent, false);
             var rect = (RectTransform)go.transform;
-            // Neo vào dòng ngay bên dưới thanh sao/vàng/đậu/lượng, cùng mép trái.
-            // Bỏ qua layout chính: indicator không làm thay đổi kích thước CurrencyBar.
+            // Ngay dưới dòng nhiệm vụ (dưới HUD nhân vật), cùng mép trái với HUD.
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(12f, -144f);
+            var top = CharacterHud.Margin + CharacterHud.PanelHeight
+                      + TaskTrackerWidget.Gap + TaskTrackerWidget.Height + TaskTrackerWidget.Gap;
+            rect.anchoredPosition = new Vector2(CharacterHud.Margin, -top);
             rect.sizeDelta = new Vector2(42f, 42f);
             var layout = go.AddComponent<LayoutElement>();
             layout.ignoreLayout = true;
@@ -60,7 +61,7 @@ namespace Gopet.Runtime.World
             _expiresAt = status.ExpiresAtUnixSeconds;
             gameObject.SetActive(_expiresAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             if (assets != null && !string.IsNullOrEmpty(status.IconPath))
-                assets.Get(status.IconPath, ImagePackets.TypeIcon, texture =>
+                assets.Get(status.IconPath, ImagePackets.TypeIcon, _icon, texture =>
                 {
                     if (_icon != null) _icon.texture = texture;
                 });

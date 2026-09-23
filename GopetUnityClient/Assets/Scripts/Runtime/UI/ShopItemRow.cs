@@ -94,7 +94,7 @@ namespace Gopet.Runtime.UI
             if (assets == null || string.IsNullOrEmpty(path)) return;
 
             var expected = path;
-            assets.Get(path, ImagePackets.TypeIcon, texture =>
+            assets.Get(path, ImagePackets.TypeIcon, _icon, texture =>
             {
                 if (this == null || _icon == null) return;
                 if (_iconPath != expected) return;   // đã đổi tab / đổi item trong lúc chờ

@@ -79,7 +79,7 @@ namespace Gopet.Runtime.World
             _points.Clear();
             foreach (var pair in _npcs)
             {
-                if (pair.Value == null) continue;
+                if (pair.Value == null || !pair.Value.IsInteractive) continue;
                 var pos = pair.Value.transform.localPosition;
                 // NPC dựng với pivot ở CHÂN (0.5, 0), nên transform.localPosition = vị trí chân.
                 // NPC cao ~64px, nếu tính khoảng cách chân-chân thì đứng "trên đầu" NPC vẫn xa

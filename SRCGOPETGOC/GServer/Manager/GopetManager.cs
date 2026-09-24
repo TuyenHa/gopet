@@ -191,6 +191,14 @@ public class GopetManager
     public const int ITEM_NATIVE_TITLE = 26;
     public const int ITEM_THẺ_KỸ_NĂNG = 27;
     public const int ITEM_CARD_REINCARNATION = 28;
+    /// <summary>Đá mài sửa chữa: sửa đầy độ bền 1 trang bị pet ở Thợ Rèn (xem EquipDurability).</summary>
+    public const int ITEM_REPAIR_STONE = 29;
+    public const int REPAIR_STONE_ID = 1000091;
+    /// <summary>Tỉ lệ (0..100) rơi 1 Đá mài mỗi trận thắng quái thường, tung RIÊNG với bảng drop_item.
+    /// Đá rơi từ quái bị KHOÁ giao dịch (chặn bot cày đá đem bán).</summary>
+    public const float REPAIR_STONE_DROP_PERCENT = 5f;
+    /// <summary>Số Đá mài người kết liễu boss nhận thêm.</summary>
+    public const int REPAIR_STONE_BOSS_COUNT = 5;
     public const int GIFT_GOLD = 0;
     public const int GIFT_COIN = 1;
     public const int GIFT_ITEM = 2;
@@ -832,32 +840,32 @@ public class GopetManager
     {
         /* 01 */ new int[][] { new int[] { GIFT_ITEM, 198, 3, 0 } },
         /* 02 */ new int[][] { new int[] { GIFT_ITEM, 191, 5, 0 }, new int[] { GIFT_ITEM, 194, 5, 0 } },
-        /* 03 */ new int[][] { new int[] { GIFT_ITEM, 179, 3, 0 } },
+        /* 03 */ new int[][] { new int[] { GIFT_ITEM, 179, 3, 0 }, new int[] { GIFT_ITEM, REPAIR_STONE_ID, 1, 1 } },
         /* 04 */ new int[][] { new int[] { GIFT_ITEM, 198, 5, 0 } },
         /* 05 */ new int[][] { new int[] { GIFT_ITEM, 180, 3, 0 } },
         /* 06 */ new int[][] { new int[] { GIFT_ITEM, 199, 2, 0 } },
         /* 07 */ new int[][] { new int[] { GIFT_ITEM, 185, 3, 0 }, new int[] { GIFT_ITEM, 199, 3, 0 } },
         /* 08 */ new int[][] { new int[] { GIFT_ITEM, 125, 3, 0 } },
         /* 09 */ new int[][] { new int[] { GIFT_ITEM, 178, 3, 0 } },
-        /* 10 */ new int[][] { new int[] { GIFT_ITEM, 199, 3, 0 } },
+        /* 10 */ new int[][] { new int[] { GIFT_ITEM, 199, 3, 0 }, new int[] { GIFT_ITEM, REPAIR_STONE_ID, 1, 1 } },
         /* 11 */ new int[][] { new int[] { GIFT_ITEM, 184, 5, 0 } },
         /* 12 */ new int[][] { new int[] { GIFT_ENERGY, 10 } },
         /* 13 */ new int[][] { new int[] { GIFT_ITEM, 181, 3, 0 } },
         /* 14 */ new int[][] { new int[] { GIFT_ITEM, 121, 2, 0 }, new int[] { GIFT_ITEM, 185, 5, 0 } },
         /* 15 */ new int[][] { new int[] { GIFT_ITEM, 200, 2, 0 } },
         /* 16 */ new int[][] { new int[] { GIFT_ITEM, 184, 8, 0 } },
-        /* 17 */ new int[][] { new int[] { GIFT_ITEM, 188, 3, 0 } },
+        /* 17 */ new int[][] { new int[] { GIFT_ITEM, 188, 3, 0 }, new int[] { GIFT_ITEM, REPAIR_STONE_ID, 1, 1 } },
         /* 18 */ new int[][] { new int[] { GIFT_ITEM, 200, 3, 0 } },
         /* 19 */ new int[][] { new int[] { GIFT_ITEM, 180, 5, 0 } },
         /* 20 */ new int[][] { new int[] { GIFT_ITEM, 127, 1, 0 } },
         /* 21 */ new int[][] { new int[] { GIFT_ITEM, 122, 1, 0 }, new int[] { GIFT_COIN, 100 } },
         /* 22 */ new int[][] { new int[] { GIFT_ITEM, 200, 3, 0 } },
         /* 23 */ new int[][] { new int[] { GIFT_ITEM, 185, 5, 0 } },
-        /* 24 */ new int[][] { new int[] { GIFT_ITEM, 125, 5, 0 } },
+        /* 24 */ new int[][] { new int[] { GIFT_ITEM, 125, 5, 0 }, new int[] { GIFT_ITEM, REPAIR_STONE_ID, 1, 1 } },
         /* 25 */ new int[][] { new int[] { GIFT_ITEM, 185, 8, 0 } },
         /* 26 */ new int[][] { new int[] { GIFT_ITEM, 121, 3, 0 } },
         /* 27 */ new int[][] { new int[] { GIFT_ENERGY, 15 } },
-        /* 28 */ new int[][] { new int[] { GIFT_ITEM, ID_BOX_CHECKIN_TUAN4, 1, 0 } },
+        /* 28 */ new int[][] { new int[] { GIFT_ITEM, ID_BOX_CHECKIN_TUAN4, 1, 0 }, new int[] { GIFT_ITEM, REPAIR_STONE_ID, 2, 1 } },
         /* 29 */ new int[][] { new int[] { GIFT_ITEM, ID_BOX_CHECKIN_CUOITHANG, 1, 0 } },
         /* 30 */ new int[][] { new int[] { GIFT_ITEM, 122, 2, 0 }, new int[] { GIFT_ITEM, 140, 1, 0 } },
         /* 31 */ new int[][] { new int[] { GIFT_COIN, 200 } },

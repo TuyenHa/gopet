@@ -26,6 +26,9 @@ public partial class MenuController
     {
         switch (menuId)
         {
+            case MENU_REPAIR_EQUIP:
+                selectRepairEquip(player, index);
+                break;
             case MENU_ARENA_HUB:
                 switch (index)
                 {
@@ -1169,6 +1172,8 @@ public partial class MenuController
                 break;
 
             case MENU_NORMAL_INVENTORY:
+                // Dòng trang bị pet nối cuối Rương đồ: "Dùng" = mặc/tháo cho pet đang theo.
+                if (selectInventoryPetEquip(player, index)) break;
                 /*VUI LÒNG CHÚ Ý HÀM TRỪ VP CUỐI HÀNG*/
                 CopyOnWriteArrayList<Item> listItemNormal = player.playerData.getInventoryOrCreate(GopetManager.NORMAL_INVENTORY);
                 if (index >= 0 && listItemNormal.Count > index)
@@ -1342,6 +1347,10 @@ public partial class MenuController
                                 }
                             }
                             break;
+                        case GopetManager.ITEM_REPAIR_STONE:
+                            // Không dùng trực tiếp: phải chọn món cần sửa ở Thợ Rèn.
+                            player.redDialog("Mang Đá mài sửa chữa tới Thợ Rèn ở Thành phố Linh Thú để sửa trang bị pet.");
+                            return;
                         /*VUI LÒNG CHÚ Ý HÀM TRỪ VP CUỐI HÀNG*/
                         default:
                             {

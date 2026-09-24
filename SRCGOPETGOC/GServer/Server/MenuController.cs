@@ -1087,6 +1087,7 @@ public partial class MenuController
             i++;
         }
 
+        if (menuId == MENU_NORMAL_INVENTORY) appendPetEquipsForView(player, menuList, i);
         player.controller.showMenuItem(menuId, TYPE_MENU_SELECT_ELEMENT, title, menuList);
     }
 

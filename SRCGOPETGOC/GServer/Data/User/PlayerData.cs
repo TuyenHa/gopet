@@ -131,6 +131,9 @@ public class PlayerData
     /// <summary>Khoá mua/chọn khung cảnh, chống trừ vàng hai lần khi gói đến dồn dập.</summary>
     [JsonIgnore]
     public readonly object BattleBgLock = new();
+    /// <summary>Khoá sửa trang bị ở Thợ Rèn, chống tiêu 2 Đá mài cho một lần sửa.</summary>
+    [JsonIgnore]
+    public readonly object EquipRepairLock = new();
     /// <summary>
     /// Trường thuộc sự kiện sinh nhật trò chơi
     /// Để ghi tổng số lần ăn bánh chưng

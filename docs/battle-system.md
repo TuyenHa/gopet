@@ -309,6 +309,8 @@ Nay `OnRemoved` bỏ qua nếu `_view.HasResult` — để panel tự hết gi�
 - **Thắng** (`getWinId() == activePlayer`): cộng coin + exp, `place.mobDie(mob)`,
   quay drop item theo `GopetManager.dropItem[mapID]`. Boss chỉ thưởng cho
   `getLastHitPlayer()`.
+  Quái hồi lại ở đúng vị trí sau `GopetPlace.TIME_NEW_MOB` = **3s** (gốc 25s), khớp lúc
+  người chơi về map. Quái mới random theo `gopet_map_moblvl` của map, không phải đúng con cũ.
 - **Thua** (hết máu HOẶC xin thua): **không phạt gì** ngoài `delayTimeHealPet`.
   **KHÔNG trừ EXP.** Trừ EXP là hành vi riêng của nhánh PK (`isPK`, 10%/5% exp cấp hiện
   tại qua `Pet.subExpPK`, sàn `MIN_PET_EXP_PK = -20_000_000`) — đừng bê sang PvE.
@@ -645,3 +647,80 @@ Id đã chọn mà không sở hữu hoặc ngoài danh mục → được coi l
 
 - Server: `tests/GServer.Performance.Tests/BattleBackgroundTests.cs`
 - Client: `Assets/Tests/PlayMode/BattleSceneTests.cs`
+
+## 16. Độ bền trang bị pet
+
+Trang bị (mũ, áo, vũ khí, giày, găng tay) mài mòn qua chiến đấu. Hỏng sẽ mất chỉ số tấn công / phòng thủ / HP / MP.
+
+### 16.1 Luật mài mòn
+
+Áp dụng cho `WEAPON` (1), `ARMOUR` (2), `HAT` (3), `SHOE` (104), `GLOVE` (105) — `ItemTemplate.IsEquip`.
+Hằng số ở `Data/item/EquipDurability.cs`: `Max = 80`, `WearWin = 1`, `WearLose = 2`, `WarnAt = 8`.
+
+- Hook duy nhất: `EquipWearService.Apply` ở đầu `PetBattle.win(Popup[], coin, exp)` — mọi loại trận
+  (quái, boss, PK, thách đấu, đấu trường, xin thua) đều qua đây, đúng một lần nhờ `hadFinished`.
+- MỌI món pet đang mặc: thắng `−1`, thua (kể cả xin thua) `−2`. PvP trừ cả hai bên; bên thua xác định bằng `getWinId()`.
+- `Close()` (đổi map, rớt mạng) không gọi `win()` ⇒ **không mòn**.
+- Hook bọc `try/catch`: lỗi mòn đồ không được chặn gói kết thúc trận (overlay treo).
+- Trừ độ bền giữ `PlayerData.EquipRepairLock` — cùng khoá với sửa, tránh sửa xong bị ghi đè số cũ.
+- Thông báo **gộp một popup mỗi trận**: "sắp hỏng" khi món vượt qua mốc `≤ 8`, "đã hỏng" khi về 0 (mỗi mốc báo một lần).
+- Có món vừa hỏng ⇒ gọi lại `pet.applyInfo` (tự gửi `MY_PET_INFO`).
+
+### 16.2 Món hỏng và hiển thị
+
+- `Pet.applyInfo`: món hỏng vẫn ghi `ItemEquipType[...]` (bonus set/hidden stat **giữ nguyên**) rồi
+  `continue` — chỉ mất atk/def/hp/mp **riêng** của món đó.
+- `Item.durability` là field JSON trong `player.items`, **không có cột DB**. Item cũ không có trường này
+  được Newtonsoft dựng qua `Item()` nên nhận giá trị khởi tạo `Max` (đầy). `ShouldSerializedurability()`
+  chỉ ghi trường này cho trang bị pet — JSON các item khác không phình.
+- Chữ: `EquipDurability.Describe` nối vào `Item.getEquipName` (tên hiện ở màn pet, túi đồ):
+  " Độ bền: n/80" hoặc " (Hỏng - mang tới Thợ Rèn để sửa)". Không nối vào `getDescription` để menu
+  hiện cả tên lẫn mô tả không lặp hai lần.
+
+### 16.3 Sửa chữa (NPC -42 "Thợ Rèn", map 11)
+
+NPC ở vị trí `x=262, y=172` (bên phải, đối diện cột đèn) (Thành phố Linh Thú), ảnh `npcs/Tho_Ren.png` (migration tự thêm).
+
+**Menu MENU_REPAIR_EQUIP = 1092** (`Server/MenuController.equipRepair.cs`): liệt kê mọi trang bị pet
+**chưa đầy** độ bền, thấp nhất trước.
+- Chỉ mở/chọn được khi đứng ở map 11 và **không trong trận** (chặn gói tự chế sửa từ xa và đua luồng với hook mòn).
+- Tiêu đề hiện số Đá mài đang có. Danh sách itemId lưu ở `objectPerformed[74]` để chỉ số dòng luôn trỏ đúng món đã hiện.
+- Chọn → hộp xác nhận (ghi độ bền hiện tại) → trừ **1 viên** từ bất kỳ chồng nào → `durability = 80` → `pet.applyInfo()`.
+
+**Lock**: `PlayerData.EquipRepairLock` tránh dùng 2 viên đá cùng lúc (tính tiền 2 lần giữa tick).
+
+**Sau sửa**: gửi `MY_PET_INFO` để client cập nhật chỉ số + tên item (có/không còn chữ "Hỏng").
+
+Hai option thêm: 98 "Sửa trang bị", 99 "Độ bền là gì?" (hỏi thêm hint).
+
+### 16.4 Đá mài sửa chữa (item 1000091)
+
+Tên: "Đá mài sửa chữa", type 29 (`GopetManager.ITEM_REPAIR_STONE`), stackable, tradable.
+
+**Ảnh**: `SRCGOPETGOC/GServer/assets/items/1000091.png` (sinh bằng `tools/image-gen/gen-repair-stone-icon.py`).
+
+**Dùng từ túi**: chỉ hiện hint "Đổi trực tiếp ở Thợ Rèn", không tiêu.
+
+**Nguồn**:
+- **Mob thường** (5% xác suất mỗi trận, roll độc lập — không trong `drop_item`): `REPAIR_STONE_DROP_PERCENT`. Đá từ quái **khoá giao dịch** (chặn bot cày đá đem bán); khi sửa ưu tiên tiêu đá khoá trước
+- **Boss** (kết liễu cuối): `+5` viên (`REPAIR_STONE_BOSS_COUNT`)
+- **Hàng ngày** (danh sách quà 28 ngày): ngày 3, 10, 17, 24 `+1`; ngày 28 `+2` (tradable flag = 1)
+
+### 16.5 Cân bằng
+
+Nếu mob respawn 3s, ~150–200 trận/giờ → mỗi trang bị hỏng sau ~25–30 phút cày liên tục.
+Mỗi trận thắng tốn 5/80 = 1/16 viên (5 món × −1); rơi 5% = 1/20 viên ⇒ cày liên tục **hụt ~20%**
+(~9–12 viên cần/giờ, ~7–10 viên rơi/giờ), bù bằng boss/điểm danh (đá giao dịch được) — đá là chỗ tiêu hao thật.
+
+**Điều chỉnh**: sửa hằng số trong `EquipDurability.cs` và `GopetManager.cs`, không cần schema thay đổi.
+
+### 16.6 Database
+
+Migration `SRCGOPETGOC/MariaDB_SQL/migration-260924-equip-durability-repair.sql` (runner `docker/migrate-db.sh` chạy đúng một lần):
+- Thêm item 1000091 "Đá mài sửa chữa" — **không** `ON DUPLICATE KEY`: prod đã có id này thì lỗi rõ ràng thay vì âm thầm ghi đè món khác.
+- Thêm NPC -42 "THO REN".
+- **Nối** `-42` vào cuối `map.npc` của map 11 (không ghi đè danh sách, prod có thể đã thêm/bớt NPC).
+
+### 16.7 Tests
+
+Server: `tests/GServer.Performance.Tests/EquipDurabilityTests.cs`

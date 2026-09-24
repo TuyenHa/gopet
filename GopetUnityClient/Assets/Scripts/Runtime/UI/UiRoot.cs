@@ -107,6 +107,10 @@ namespace Gopet.Runtime.UI
 
             if (_guildNpcTabs != null && _guildNpcTabs.TryConsumeMenu(screen, _assets, _guider)) return;
 
+            if (_blacksmithNpcTabs != null && _blacksmithNpcTabs.TryConsumeMenu(screen)) return;
+            // Lưới Thợ Rèn về muộn sau khi popup đã đóng: bỏ, đừng dựng danh sách thô.
+            if (screen?.ListId == BlacksmithNpcTabsView.MenuRepairEquipListId) return;
+
             if (MenuInterceptor != null && MenuInterceptor(screen)) return;
 
             if (TaskListPopupView.IsTaskMenu(screen))
@@ -281,6 +285,12 @@ namespace Gopet.Runtime.UI
                 return;
             }
 
+            if (options != null && options.NpcId == BlacksmithNpcId)
+            {
+                ShowBlacksmithNpcTabs(options);
+                return;
+            }
+
             if (options != null && options.NpcId == GuildNpcId)
             {
                 ShowGuildNpcTabs(options);
@@ -406,6 +416,7 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
             if (ReferenceEquals(screen, _bacSiNpcTabs)) _bacSiNpcTabs = null;
             if (ReferenceEquals(screen, _guildNpcTabs)) _guildNpcTabs = null;
+            if (ReferenceEquals(screen, _blacksmithNpcTabs)) _blacksmithNpcTabs = null;
             if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
         }
 

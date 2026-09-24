@@ -9,9 +9,11 @@ namespace Gopet.Runtime.World
     {
         private const float NameScale = 0.75f; // cỡ tên NPC/quái, đồng bộ với PlayerAvatar
         // Nút "Nói chuyện" đặt sát NGỰC NPC (~1/2 chiều cao sprite), lệch sang TRÁI khỏi thân —
-        // không đè lên NPC, không đè nhãn tên (nhãn ở trên đầu). Panel 50x14; nửa panel 25px +
-        // nửa thân NPC 24px + đệm 4px = 53px lệch trái.
-        private const float PromptOffsetX = -53f;
+        // không đè lên NPC, không đè nhãn tên (nhãn ở trên đầu). Lệch = nửa panel 25px + nửa
+        // bề ngang sprite + đệm 4px (NPC 48px → 53px). Tính theo sprite thật: NPC to (Thợ Rèn)
+        // mà lệch cố định thì nút chui vào thân NPC.
+        private const float PromptHalfWidth = 25f;
+        private const float PromptGap = 4f;
         private const float PromptChestFactor = 0.5f;
         private SpriteRenderer _renderer;
         private Transform _visual;   // node chứa sprite; idle-bob ép scale.y node NÀY, không đụng nhãn tên
@@ -51,14 +53,19 @@ namespace Gopet.Runtime.World
 
         /// <summary>Hiện/ẩn nút "Nói chuyện" cạnh NPC (xem <see cref="WorldActorLayer"/>,
         /// nơi quét khoảng cách người chơi để gọi hàm này). Dựng lười — chỉ tạo lần đầu cần hiện.</summary>
+        /// <summary>Có nhận bấm không; NPC trang trí thì không — không hiện nút "Nói chuyện".</summary>
+        internal bool IsInteractive => _clicked != null;
+
         internal void SetTalkPromptVisible(bool value)
         {
             if (_talkPrompt == null)
             {
                 if (!value) return;
-                var spriteHeight = _renderer != null && _renderer.sprite != null
-                    ? _renderer.sprite.rect.height : 48f;
-                var offset = new Vector2(PromptOffsetX, spriteHeight * PromptChestFactor);
+                var hasSprite = _renderer != null && _renderer.sprite != null;
+                var spriteHeight = hasSprite ? _renderer.sprite.rect.height : 48f;
+                var spriteWidth = hasSprite ? _renderer.sprite.rect.width : 48f;
+                var offsetX = -(PromptHalfWidth + spriteWidth * 0.5f + PromptGap);
+                var offset = new Vector2(offsetX, spriteHeight * PromptChestFactor);
                 _talkPrompt = NpcTalkPrompt.Attach(transform, offset, () => _clicked?.Invoke());
             }
             _talkPrompt.SetVisible(value);

@@ -23,6 +23,7 @@ namespace Gopet.Runtime.World
                 && result.WinnerId == _start.LocalPet.ActorId;
             if (_actionBar != null) _actionBar.gameObject.SetActive(false);
             _skillPopup?.SetOpen(false);
+            _scenePopup?.SetOpen(false);
             RefreshLocks();
             if (_animator != null && !_animator.Idle)
             {

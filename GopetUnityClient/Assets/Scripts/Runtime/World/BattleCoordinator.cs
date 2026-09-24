@@ -26,15 +26,20 @@ namespace Gopet.Runtime.World
         private readonly Action<bool> _setBattleMode;
         private readonly Action<string> _toast;
         private readonly PlayerStatsHandler _playerStats;
+        private readonly BattleSceneSettings _scenes;
         private BattleView _view;
         private float _lastPacketAt;
         private float _timeoutSeconds;
 
         public BattleCoordinator(Transform parent, RemoteAssetCache assets, BattleHandler handler,
-            Action<bool> setBattleMode, Action<string> toast = null, PlayerStatsHandler playerStats = null)
+            Action<bool> setBattleMode, Action<string> toast = null, PlayerStatsHandler playerStats = null,
+            BattleSceneSettings scenes = null)
         {
             _parent = parent; _assets = assets; _setBattleMode = setBattleMode;
-            _toast = toast; _playerStats = playerStats;
+            _toast = toast; _playerStats = playerStats; _scenes = scenes;
+            // Thanh tiền trong trận trước đây chỉ đọc snapshot lúc mở trận; mua khung cảnh
+            // giữa trận phải thấy vàng giảm ngay.
+            if (_playerStats != null) _playerStats.StatsUpdated += stats => _view?.ApplyPlayerStats(stats);
             handler.BattleStarted += start => OnStarted(start, handler);
             handler.TurnReceived += OnTurn;
             handler.BattleEnded += OnEnded;
@@ -58,7 +63,7 @@ namespace Gopet.Runtime.World
             // Không thay thế popup hoặc trả điều khiển map khi chưa xác nhận OK.
             if (_view != null && _view.AwaitingVictoryConfirmation) return;
             Close();
-            _view = BattleView.Create(_parent, start, handler, _assets, _playerStats?.Snapshot);
+            _view = BattleView.Create(_parent, start, handler, _assets, _playerStats?.Snapshot, _scenes);
             _view.Closed += Close;
             _view.Ticked += CheckStalled;
             _setBattleMode?.Invoke(true);

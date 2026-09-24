@@ -539,17 +539,7 @@ public class GopetPlace : Place
                     goto REMOVE_LABEL;
                 }
             }
-            if (mob.hp <= 0)
-            {
-                if (mob.TimeEndUpdate.HasValue && mob.TimeEndUpdate < DateTime.Now)
-                {
-                    goto REMOVE_LABEL;
-                }
-                else
-                {
-                    mob.TimeEndUpdate = DateTime.Now.AddSeconds(5);
-                }
-            }
+            if (mob.IsRemovalDue(DateTime.Now)) goto REMOVE_LABEL;
         }
 
         foreach (PetBattle petBattle in petBattles)
@@ -592,10 +582,17 @@ public class GopetPlace : Place
     private void createNewMob(MobLocation[] locations)
     {
         MobLocation[] mobLocations = locations;
+        if (mobLocations.Length == 0) return;
         MobLvlMap[] mobLvlMaps = GopetManager.MOBLVL_MAP.get(map.mapID);
         if (mobLvlMaps != null)
         {
-            if (mobLocations.Length > 0 && mobLvlMaps.Length > 0)
+            bool hasConfiguredTemplates = mobLvlMaps.Length > 0;
+            // Rejection sampling over uniform templates is uniform over valid entries.
+            // Filter once instead of spinning for three seconds per spawn location.
+            mobLvlMaps = mobLvlMaps.Where(x => GopetManager.PETTEMPLATE_HASH_MAP.ContainsKey(x.getPetId())).ToArray();
+            if (mobLocations.Length > 0 && mobLvlMaps.Length == 0)
+                GopetManager.ServerMonitor.LogError($"Map {map.mapID}: no valid mob templates");
+            if (hasConfiguredTemplates)
             {
                 JArrayList<Mob> nGopetMobs = new();
                 int index = -1;
@@ -647,8 +644,7 @@ public class GopetPlace : Place
                             }
                         }
                     }
-                    long deltaTime = Utilities.CurrentTimeMillis + 3000;
-                    while (deltaTime > Utilities.CurrentTimeMillis)
+                    if (mobLvlMaps.Length > 0)
                     {
                         MobLvlMap mobLvlMap = Utilities.RandomArray(mobLvlMaps);
                         if (GopetManager.PETTEMPLATE_HASH_MAP.ContainsKey(mobLvlMap.getPetId()))
@@ -658,7 +654,6 @@ public class GopetPlace : Place
 
                             addNewMob(m);
                             nGopetMobs.add(m);
-                            break;
                         }
                     }
                     for (global::System.Int32 i = 0; i < map.mapTemplate.boss.Length; i++)
@@ -690,7 +685,7 @@ public class GopetPlace : Place
 
     private void sendWing(Player player)
     {
-        CopyOnWriteArrayList<Player> currentPlayers = (CopyOnWriteArrayList<Player>)players.clone();
+        var currentPlayers = players;
         HashMap<int, Item> wingPlayer = new();
         foreach (Player currentPlayer in currentPlayers)
         {
@@ -746,7 +741,7 @@ public class GopetPlace : Place
 
     private void sendSkin(Player player)
     {
-        CopyOnWriteArrayList<Player> currentPlayers = (CopyOnWriteArrayList<Player>)players.clone();
+        var currentPlayers = players;
         HashMap<int, Item> skinPlayer = new();
         foreach (Player currentPlayer in currentPlayers)
         {

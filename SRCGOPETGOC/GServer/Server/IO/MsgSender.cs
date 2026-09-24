@@ -1,153 +1,108 @@
 using Gopet.Data.Collections;
-using Gopet.Util;
-using System.Collections.Concurrent;
 
 namespace Gopet.IO
 {
     public class MsgSender
     {
-
-        protected Session session;
-        protected ConcurrentQueue<Message> sendingMessage = new ConcurrentQueue<Message>();
-        protected AutoResetEvent messageEvent = new AutoResetEvent(false);
-        public static CopyOnWriteArrayList<MsgSender> msgSenders = new CopyOnWriteArrayList<MsgSender>();
-        public static readonly Random random = new Random();
-        private bool isClose = false;
-
-        /// <summary>Đang đẩy nốt hàng đợi để đóng phiên — đẩy xong thì thoát luôn.</summary>
-        private volatile bool draining = false;
-
-        /// <summary>Bật khi luồng gửi đã thoát. <c>Session.Close()</c> chờ tín hiệu này.</summary>
-        private readonly ManualResetEventSlim drained = new ManualResetEventSlim(false);
+        private readonly Session session;
+        private readonly object gate = new();
+        private readonly Queue<(sbyte[] Data, bool Encrypted, sbyte Id, long At)> queue = new();
+        private readonly TaskCompletionSource drained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public static CopyOnWriteArrayList<MsgSender> msgSenders = new();
+        private bool stopped;
+        private bool draining;
+        private long queuedBytes;
+        public const int MaxQueuedMessages = 1024;
+        public const long MaxQueuedBytes = 16 * 1024 * 1024;
+        public int QueuedMessages { get { lock (gate) return queue.Count; } }
+        public long QueuedBytes { get { lock (gate) return queuedBytes; } }
+        public long OldestMessageAgeMs { get { lock (gate) return queue.TryPeek(out var item) ? Environment.TickCount64 - item.At : 0; } }
 
         public MsgSender(Session session)
         {
-            this.session = session;
-            if (session == null)
-            {
-                throw new ArgumentNullException();
-            }
+            this.session = session ?? throw new ArgumentNullException(nameof(session));
             msgSenders.Add(this);
         }
-
         public void addMessage(Message message)
         {
-            sendingMessage.Enqueue(message);
-            messageEvent.Set();
+            lock (gate)
+            {
+                if (stopped || draining || session.IsClosing) return;
+                var payload = message.Freeze();
+                var data = payload.Data;
+                if (queue.Count < MaxQueuedMessages && data.LongLength <= MaxQueuedBytes - queuedBytes)
+                {
+                    queue.Enqueue((data, payload.Encrypted, payload.Id, Environment.TickCount64));
+                    queuedBytes += data.Length;
+                    System.Threading.Monitor.PulseAll(gate);
+                    return;
+                }
+                // Disconnect rather than drop an arbitrary transaction packet.
+                draining = true;
+            }
+            session.Close();
         }
-
-
         public void run()
         {
+            bool failed = false;
             try
             {
                 while (true)
                 {
-                    try
+                    (sbyte[] Data, bool Encrypted, sbyte Id, long At) item;
+                    lock (gate)
                     {
-                        if (session.isConnected() && !isClose)
-                        {
-                            while (sendingMessage.TryDequeue(out Message message))
-                            {
-                                if (message != null)
-                                {
-                                    doSendMessage(message);
-                                }
-                            }
-
-                            // Đang đóng phiên: hàng đợi vừa đẩy hết ở vòng trên rồi,
-                            // thoát ngay thay vì ngủ tiếp 5-30 giây.
-                            if (draining)
-                            {
-                                return;
-                            }
-
-                            messageEvent.WaitOne(random.Next(5000, 30000));
-                            continue;
-                        }
+                        while (queue.Count == 0 && !stopped && !draining)
+                            System.Threading.Monitor.Wait(gate);
+                        if (stopped || !session.isSocketConnected || queue.Count == 0) return;
+                        item = queue.Dequeue();
+                        queuedBytes -= item.Data.Length;
                     }
-                    catch (Exception var6)
-                    {
-                    }
-                    return;
+                    if (Environment.TickCount64 - item.At > 10000)
+                        throw new IOException("Send queue deadline exceeded");
+                    Send(item.Data, item.Encrypted, item.Id);
                 }
             }
+            catch (Exception) { failed = true; }
             finally
             {
-                // Phải báo dù thoát bằng đường nào, nếu không Session.Close()
-                // sẽ đứng chờ hết hạn một cách vô ích.
-                drained.Set();
+                stop();
+                drained.TrySetResult();
+                if (failed || !session.IsClosing) session.Close();
             }
         }
-
-        /// <summary>
-        /// Yêu cầu đẩy nốt gói đang chờ rồi kết thúc. Gọi TRƯỚC khi đóng socket.
-        /// </summary>
         public void requestDrain()
         {
-            draining = true;
-            messageEvent.Set();
+            lock (gate) { draining = true; System.Threading.Monitor.PulseAll(gate); }
         }
-
-        /// <summary>Chờ luồng gửi thoát. Trả <c>false</c> nếu quá hạn.</summary>
-        public bool waitDrained(int milliseconds)
+        public bool waitDrained(int milliseconds) => drained.Task.Wait(milliseconds);
+        public void doSendMessage(Message message)
         {
-            return drained.Wait(milliseconds);
+            var payload = message.Freeze();
+            Send(payload.Data, payload.Encrypted, payload.Id);
         }
-
-        public void doSendMessage(Message m)
+        private void Send(sbyte[] data, bool encrypted, sbyte id)
         {
-            sbyte[] data = m.getBuffer();
-            Session var10000;
-            if (data != null)
-            {
-                // Ghi log TRƯỚC khi mã hoá: dump phải là nội dung đọc được thì
-                // mới so được với dump phía client.
-                Gopet.Logging.PacketLogger.Instance?.Log(
-                    Gopet.Logging.PacketDirection.Out, m.id, m.isEncrypted, data);
-
-                if (m.isEncrypted)
-                {
-                    data = session.tea.encrypt(data);
-                }
-
-                session.dos.WriteInt(data.Length + 1);
-                session.dos.Write(((sbyte)(m.isEncrypted ? 1 : 0)).toByte());
-                session.dos.Write(data);
-                var10000 = session;
-                var10000.sendsbyteCount += data.Length;
-            }
-            else
-            {
-                session.dos.WriteInt(0);
-            }
-            var10000 = session;
-            var10000.sendsbyteCount += 4;
+            Gopet.Logging.PacketLogger.Instance?.Log(Gopet.Logging.PacketDirection.Out, id, encrypted, data);
+            if (encrypted) data = session.tea.encrypt(data);
+            session.dos.WriteInt(data.Length + 1);
+            session.dos.Write((byte)(encrypted ? 1 : 0));
+            session.dos.Write(data);
             session.dos.Flush();
+            session.sendsbyteCount += data.Length + 5;
         }
-
-        /// <summary>
-        /// Dừng cứng: xoá sạch hàng đợi. Muốn gói cuối tới được client thì phải
-        /// <see cref="requestDrain"/> trước — <c>Session.Close()</c> làm việc đó.
-        /// </summary>
         public void stop()
         {
-            isClose = true;
-            draining = true;
-            sendingMessage.Clear();
-            drained.Set();
+            lock (gate)
+            {
+                stopped = true;
+                draining = true;
+                queue.Clear();
+                queuedBytes = 0;
+                System.Threading.Monitor.PulseAll(gate);
+            }
             msgSenders.Remove(this);
-            messageEvent.Set();
         }
-
-        public void Release()
-        {
-            messageEvent.Set();
-        }
-
-        ~MsgSender()
-        {
-            stop();
-        }
+        public void Release() { lock (gate) System.Threading.Monitor.PulseAll(gate); }
     }
 }

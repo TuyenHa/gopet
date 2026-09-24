@@ -18,8 +18,6 @@ namespace Gopet.Runtime.World
         {
             _client.Ticked += TickAutoAttack;
             InitializeChatHistory();
-            _chatHandler.GlobalChatReceived += value =>
-                _hud?.Ticker?.Show($"[Cộng đồng] {value.Sender}: {value.Text}");
 
             _petProfileHandler = new PetProfileHandler();
             _petProfileHandler.RegisterOn(_client.Router);

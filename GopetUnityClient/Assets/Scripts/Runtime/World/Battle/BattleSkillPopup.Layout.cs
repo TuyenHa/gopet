@@ -36,19 +36,7 @@ namespace Gopet.Runtime.World.Battle
             rect.anchoredPosition = anchorTo.anchoredPosition + new Vector2(38f, -14f);
             rect.sizeDelta = new Vector2(Width, height);
 
-            var bg = go.GetComponent<Image>();
-            bg.sprite = PanelSprites.Rounded(8);
-            bg.type = Image.Type.Sliced;
-            bg.color = new Color(0.09f, 0.14f, 0.24f, 0.97f);
-
-            var borderGo = new GameObject("Viền", typeof(RectTransform), typeof(Image));
-            borderGo.transform.SetParent(go.transform, false);
-            UiBuilder.Stretch((RectTransform)borderGo.transform);
-            var border = borderGo.GetComponent<Image>();
-            border.sprite = PanelSprites.Rounded(8, 2);
-            border.type = Image.Type.Sliced;
-            border.color = new Color(0.62f, 0.72f, 0.88f, 0.9f);
-            border.raycastTarget = false;
+            BattlePopupChrome.ApplyPanel(go);
 
             var popup = go.AddComponent<BattleSkillPopup>();
             popup._cooldowns = cooldowns;
@@ -61,81 +49,11 @@ namespace Gopet.Runtime.World.Battle
             return popup;
         }
 
-        private static void AddTitle(Transform parent, Font font, BattleSkillPopup popup)
-        {
-            var label = UiBuilder.MakeText(parent, font, "Tiêu đề", 12, false);
-            var rect = label.rectTransform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.offsetMin = new Vector2(Pad + 4f, -TitleHeight);
-            rect.offsetMax = new Vector2(-(TitleHeight + Pad), -Pad);
-            label.text = "KỸ NĂNG";
-            label.alignment = TextAnchor.MiddleLeft;
-            UiBuilder.SetFontStyle(label, FontStyle.Bold);
-            label.color = new Color(1f, 0.85f, 0.35f);
+        private static void AddTitle(Transform parent, Font font, BattleSkillPopup popup) =>
+            BattlePopupChrome.AddTitle(parent, font, "KỸ NĂNG", 12, TitleHeight, Pad,
+                () => popup.SetOpen(false));
 
-            var btnGo = new GameObject("Đóng", typeof(RectTransform), typeof(Image), typeof(Button));
-            btnGo.transform.SetParent(parent, false);
-            var bRect = (RectTransform)btnGo.transform;
-            bRect.anchorMin = bRect.anchorMax = new Vector2(1f, 1f);
-            bRect.pivot = new Vector2(1f, 1f);
-            bRect.anchoredPosition = new Vector2(-Pad, -Pad);
-            bRect.sizeDelta = new Vector2(18f, 18f);
-            var img = btnGo.GetComponent<Image>();
-            img.sprite = PanelSprites.Rounded(4, 1);
-            img.type = Image.Type.Sliced;
-            img.color = new Color(0.75f, 0.80f, 0.90f, 0.85f);
-            var x = UiBuilder.MakeText(btnGo.transform, font, "X", 12, true);
-            x.text = "✕";
-            x.alignment = TextAnchor.MiddleCenter;
-            UiBuilder.SetFontStyle(x, FontStyle.Bold);
-            x.color = Color.white;
-            btnGo.GetComponent<Button>().onClick.AddListener(() => popup.SetOpen(false));
-        }
-
-        private static Transform AddScrollList(Transform parent, float listHeight)
-        {
-            var viewGo = new GameObject("Khung cuộn", typeof(RectTransform), typeof(Image),
-                typeof(Mask), typeof(ScrollRect));
-            viewGo.transform.SetParent(parent, false);
-            var vRect = (RectTransform)viewGo.transform;
-            vRect.anchorMin = new Vector2(0f, 1f);
-            vRect.anchorMax = new Vector2(1f, 1f);
-            vRect.pivot = new Vector2(0.5f, 1f);
-            vRect.offsetMin = new Vector2(Pad, -(TitleHeight + listHeight));
-            vRect.offsetMax = new Vector2(-Pad, -TitleHeight);
-
-            var maskImg = viewGo.GetComponent<Image>();
-            maskImg.sprite = PanelSprites.Rounded(6);
-            maskImg.type = Image.Type.Sliced;
-            viewGo.GetComponent<Mask>().showMaskGraphic = false;
-
-            var contentGo = new GameObject("Nội dung", typeof(RectTransform),
-                typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            contentGo.transform.SetParent(viewGo.transform, false);
-            var cRect = (RectTransform)contentGo.transform;
-            cRect.anchorMin = new Vector2(0f, 1f);
-            cRect.anchorMax = new Vector2(1f, 1f);
-            cRect.pivot = new Vector2(0.5f, 1f);
-            cRect.offsetMin = cRect.offsetMax = Vector2.zero;
-
-            var layout = contentGo.GetComponent<VerticalLayoutGroup>();
-            layout.spacing = RowGap;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-            layout.childControlHeight = false;
-            layout.childControlWidth = true;
-            contentGo.GetComponent<ContentSizeFitter>().verticalFit =
-                ContentSizeFitter.FitMode.PreferredSize;
-
-            var scroll = viewGo.GetComponent<ScrollRect>();
-            scroll.content = cRect;
-            scroll.viewport = vRect;
-            scroll.horizontal = false;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 16f;
-            return contentGo.transform;
-        }
+        private static Transform AddScrollList(Transform parent, float listHeight) =>
+            BattlePopupChrome.AddScrollList(parent, TitleHeight, listHeight, Pad, RowGap);
     }
 }

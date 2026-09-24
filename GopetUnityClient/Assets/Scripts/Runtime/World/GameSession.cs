@@ -45,6 +45,7 @@ namespace Gopet.Runtime.World
         private readonly GopetClient _client;
         private readonly LoginSuccess _login;
         private GuiderHandler _guider;
+        private BattleSceneSettings _battleScenes;
         private MapScene _scene;
         private MapHandler _mapHandler;
         private ChatHandler _chatHandler;
@@ -179,8 +180,11 @@ namespace Gopet.Runtime.World
             s._worldStatusHandler.BigTextShown += s._hud.ShowBigText;
             s._statsHandler = new PlayerStatsHandler();
             s._statsHandler.RegisterOn(client.Router);
+            // Xin khung cảnh đã chọn ngay khi vào game để trận đầu tiên đã đúng nền.
+            s._battleScenes = new BattleSceneSettings(guider);
+            s._battleScenes.Refresh();
             s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
-                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler);
+                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes);
             s._mapHandler.MapUpdated += _ => s._battle?.OnPlaceChanged();
             s.RestoreAutoRecoveryOnLogin();
             s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");

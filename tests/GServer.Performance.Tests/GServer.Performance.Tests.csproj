@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../SRCGOPETGOC/GServer/Gopet.csproj" />
+    <Compile Include="../../GopetUnityClient/Assets/Scripts/Net/Tea.cs" Link="Client/Tea.cs" />
+    <Compile Include="../../GopetUnityClient/Assets/Scripts/Net/PacketFramer.cs" Link="Client/PacketFramer.cs" />
+    <Compile Include="../../GopetUnityClient/Assets/Scripts/Net/JavaBinaryReader.cs" Link="Client/JavaBinaryReader.cs" />
+    <None Include="config/server.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+</Project>

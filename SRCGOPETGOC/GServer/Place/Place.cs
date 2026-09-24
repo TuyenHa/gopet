@@ -74,7 +74,7 @@ public abstract class Place
 
     public void sendMessageWithCheckVersion(Dictionary<Message, Func<Version, bool>> messages)
     {
-        List<Player> sentPlayer = new List<Player>();
+        HashSet<Player> sentPlayer = new();
 
         foreach (Player player in players)
         {
@@ -90,8 +90,6 @@ public abstract class Place
                 }
             }
         }
-        sentPlayer.Clear();
-        sentPlayer = null;
     }
 
     public virtual void loadInfo(Player player)

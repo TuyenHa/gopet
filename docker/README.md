@@ -2,6 +2,11 @@
 
 MariaDB trong Docker, nạp sẵn 3 dump của goPet.
 
+> Service `gserver` (profile `server`) chạy luôn máy chủ game trong container — dùng khi
+> deploy lên Linux: `docker compose --profile server up -d --build`. Máy dev không bật
+> profile nên `docker compose up -d` vẫn chỉ chạy database. Hướng dẫn đầy đủ:
+> [`docs/deployment-linux-backend.md`](../docs/deployment-linux-backend.md).
+
 ## Chạy
 
 ```bash

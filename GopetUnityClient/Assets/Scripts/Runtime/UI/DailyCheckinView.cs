@@ -32,6 +32,7 @@ namespace Gopet.Runtime.UI
 
         private static readonly Color BtnActive = new Color(0.22f, 0.34f, 0.52f, 1f);
         private static readonly Color BtnDisabled = new Color(0.70f, 0.74f, 0.80f, 1f);
+        private static readonly Color SkinnedDisabledTint = new Color(0.6f, 0.6f, 0.6f, 1f);
 
         // ==== Kích thước popup (canvas ref rộng 720, chiều cao khả kiến ~405) ====
         // Nhỏ lại theo yêu cầu user: 660×400 → 560×340 → 408×296.
@@ -72,6 +73,7 @@ namespace Gopet.Runtime.UI
         private Text _streakText;
         private Button _mainButton;
         private Text _mainButtonLabel;
+        private bool _mainButtonSkinned;
         private RawImage _chestImage;
 
         public event Action Closed;
@@ -150,9 +152,16 @@ namespace Gopet.Runtime.UI
 
             _countdownText.text = FormatMonthlyRemaining(DateTime.Now);
             _streakText.text = $"Chuỗi liên tục: {state.Streak} ngày";
-            bool can = state.CanCheckinToday;
+            SetMainButtonState(state.CanCheckinToday);
+        }
+
+        private void SetMainButtonState(bool can)
+        {
             _mainButton.interactable = can;
-            _mainButton.image.color = can ? BtnActive : BtnDisabled;
+            // Nút có skin: giữ màu gốc của ảnh, chỉ phủ xám khi đã điểm danh.
+            _mainButton.image.color = _mainButtonSkinned
+                ? (can ? Color.white : SkinnedDisabledTint)
+                : (can ? BtnActive : BtnDisabled);
             _mainButtonLabel.text = can ? "Điểm danh" : "Đã điểm danh";
         }
     }

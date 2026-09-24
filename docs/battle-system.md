@@ -559,3 +559,89 @@ thật sự lên cấp (`GameController.cs:1745-1771`).
 - Opcode mở rộng (PET_BATTLE_BUFF, và các opcode tương lai) gate theo
   `VERSION_150` (1.5.0). Jar cũ vào được nhưng không nhận opcode lạ.
 - Unity `ClientInfo.Version = "1.5.0"` (`Assets/Scripts/Net/Auth/ClientInfo.cs`).
+
+## 15. Khung cảnh màn đấu (mua bằng vàng)
+
+Client chọn khung cảnh nền qua nút tròn bên phải sân đấu (`BattleSceneButton`, sprite
+`Battle/btn-scene-round`). Popup `BattleScenePopup` liệt kê toàn bộ danh mục, hiện giá và nút
+mua/chọn. Chọn sẽ áp được ngay kể cả giữa trận, mỗi người chơi thấy lựa chọn của riêng họ.
+Mua tự động bôi đen lựa chọn. Lựa chọn được lưu DB giữa các phiên.
+
+### 15.1 Danh mục khung cảnh
+
+Server quản lý giá; client nhận danh sách kèm số vàng từ gói `TYPE_BATTLE_BG_STATE` (43).
+
+| Id | Tên | Giá (vàng) | Ảnh | Hiệu ứng |
+|---|---|---:|---|---|
+| 0 | Rừng | 0 (free) | `Battle/bg-forest` | Không | mặc định |
+| 1 | Rừng cây che | 7.000 | `Battle/bg/bg-canopy` | Bướm + chuồn chuồn |
+| 2 | Hoa anh đào | 10.000 | `Battle/bg/bg-sakura` | Lá hoa rơi |
+| 3 | Tuyết trắng | 12.000 | `Battle/bg/bg-snow` | Tuyết rơi (2 lớp) |
+| 4 | Hang động đá | 17.000 | `Battle/bg/bg-cave` | Dơi treo + bay |
+| 5 | Mưa lửa | 22.000 | `Battle/bg/bg-fire` | Lửa rơi + cánh lửa |
+
+Thêm khung cảnh mới: nối vào CUỐI mảng trong cả server (`BattleBackgroundCatalog`) và client
+(`BattleSceneCatalog`), id **phải khớp**.
+
+### 15.2 Gói điều khiển khung cảnh
+
+Toàn bộ là sub-command của `PET_SERVICE` (81):
+
+| Opcode | Tên | Hướng | Nội dung |
+|---:|---|---|---|
+| 43 | `TYPE_BATTLE_BG_STATE` | S→C | Danh sách khung cảnh: `sbyte selectedId, sbyte n, [sbyte id, utf name, long priceGold, bool owned]×n` |
+| 44 | `TYPE_BATTLE_BG_OPEN` | C→S | (trống) Xin cập nhật STATE |
+| 45 | `TYPE_BATTLE_BG_BUY` | C→S | `sbyte id` Mua khung cảnh |
+| 46 | `TYPE_BATTLE_BG_SELECT` | C→S | `sbyte id` Đặt làm lựa chọn hiện tại |
+
+Server **luôn trả STATE sau BUY/SELECT** kể cả khi từ chối (nên nút không bị khoá sai), và client
+**yêu cầu OPEN ngay sau login** (`GameSession`) để trận đầu tiên có khung cảnh đúng. Các server
+cũ không hỗ trợ sẽ không trả gói, client rơi về rừng mặc định.
+
+### 15.3 Database
+
+Migration `migration-260924-battle-background.sql` thêm hai cột:
+- `player.BattleBgOwned`: mediumtext JSON list (mảng id), mặc định `'[]'` (chỉ rừng id 0 không lưu)
+- `player.BattleBgSelected`: int, mặc định `0` (rừng)
+
+Cả hai được lưu qua `PlayerData.saveStatic()`.
+
+### 15.4 Luật mua
+
+`BattleBackgroundRules` (hàm thuần):
+
+- Khoá theo người chơi: `Player.BattleBgLock` tránh tính tiền hai lần trong tick
+- Từ chối id 0 (rừng) và id lạ ngoài danh mục
+- Kiểm tra sở hữu: không bán lại
+- Kiểm tra vàng: `Player.checkGold()` + `Player.mineGold()` (mineGold tính thêm
+  spendGold hàng đợi)
+
+Nếu từ chối, server gửi dialog `notEnoughGold` nhưng vẫn gửi STATE để nút không bị khoá lạc.
+Id đã chọn mà không sở hữu hoặc ngoài danh mục → được coi là 0 (rừng).
+
+### 15.5 Hiển thị nền
+
+`BattleBackdrop` chứa `Image` nền + `BattleAmbientFx` là CON của nó.
+
+- Ảnh: `BattleSkin.Load(BattleSceneCatalog.BackgroundPath(sceneId))`, thiếu thì rơi về rừng,
+  vẫn thiếu thì tô màu nền gelid mặc định
+- Hiệu ứng: `BattleAmbientFx.Create()` tái dùng hạt theo pool cố định, motion (Fall/Wander/Static)
+  cấu hình bằng `BattleAmbientPresets` — đổi cơ số/tốc độ ở đó không cần code
+- Raycast: tắt trên cả nền lẫn hiệu ứng nên không chặn click
+- Áp dụng: `BattleBackdrop.Apply()` đổi được kể cả giữa trận, gọi lại cùng id không làm gì
+
+### 15.6 Cách thêm khung cảnh mới
+
+1. Thêm `BattleBackgroundDef(id, "Tên", giá)` vào `BattleBackgroundCatalog.All` (server)
+2. Thêm ảnh nền `Resources/Battle/bg/` (960×640, sinh bằng `tools/image-gen/gen-battle-backgrounds.py`
+   dùng `bg-forest.png` làm layout tham chiếu)
+3. Thêm preset `BattleAmbientKind` enum + `BattleAmbientPresets.For()` + cấu hình hiệu ứng
+4. Thêm cùng id vào `BattleSceneCatalog.Backgrounds` và `.Ambients` (client)
+5. Sprite hiệu ứng: `Resources/Battle/ambient/*.png` sinh bằng `tools/image-gen/gen-ambient-sprites.py`
+   (ASCII lưới pixel, ghi .meta với Point filter)
+6. Nút: `Resources/Battle/btn-scene-round.png` sinh bằng `tools/image-gen/gen-scene-button.py`
+
+### 15.7 Tests
+
+- Server: `tests/GServer.Performance.Tests/BattleBackgroundTests.cs`
+- Client: `Assets/Tests/PlayMode/BattleSceneTests.cs`

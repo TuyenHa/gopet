@@ -12,7 +12,7 @@ namespace Gopet.IO
         public BinaryWriter dos;
         public BinaryReader dis;
         public Socket sc;
-        public bool isSocketConnected;
+        public volatile bool isSocketConnected;
         private MsgSender sender;
         private MsgReader reader;
         public int sendsbyteCount;
@@ -24,9 +24,21 @@ namespace Gopet.IO
         public long msgCount = 0;
         private Thread sendThread;
         private Thread readThread;
-        public Session(Socket socket)
+        private readonly object lifecycle = new();
+        private readonly object dispatchGate = new();
+        private int closing;
+        private int exited;
+        private readonly bool counted;
+        private readonly Action<Session>? onClosed;
+        private readonly TaskCompletionSource closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task Completion => closed.Task;
+        public bool IsClosing => Volatile.Read(ref closing) != 0;
+        public Session(Socket socket, Action<Session>? onClosed = null)
         {
             sc = socket;
+            this.onClosed = onClosed;
+            counted = socket != null;
+            if (counted) Interlocked.Increment(ref socketCount);
         }
 
         public void setClientOK(bool ok)
@@ -40,7 +52,7 @@ namespace Gopet.IO
 
         public bool isConnected()
         {
-            return this.isSocketConnected;
+            return this.isSocketConnected && !IsClosing;
         }
 
 
@@ -48,12 +60,22 @@ namespace Gopet.IO
         {
             try
             {
-                isSocketConnected = true;
-                this.messageHandler = new Player(this);
-                NetworkStream networkStream = new NetworkStream(sc);
-                dis = new BinaryReader(networkStream);
-                dos = new BinaryWriter(networkStream);
+                lock (lifecycle)
+                {
+                    if (IsClosing) return;
+                    isSocketConnected = true;
+                    this.messageHandler ??= new Player(this);
+                    sc.SendTimeout = 5000;
+                    sc.ReceiveTimeout = 5000;
+                    NetworkStream networkStream = new NetworkStream(sc);
+                    dis = new BinaryReader(networkStream);
+                    dos = new BinaryWriter(networkStream);
+                }
                 readKey();
+                lock (lifecycle)
+                {
+                if (IsClosing) return;
+                sc.ReceiveTimeout = 0;
                 setSender(new MsgSender(this));
                 setReader(new MsgReader(this));
                 sendThread = new Thread(this.sender.run);
@@ -66,6 +88,7 @@ namespace Gopet.IO
                 readThread.Start();
                 ThreadManager.AddThread(sendThread);
                 ThreadManager.AddThread(readThread);
+                }
             }
             catch (Exception e)
             {
@@ -77,7 +100,17 @@ namespace Gopet.IO
         public void readKey()
         {
             byte[] keys = new byte[9];
-            dis.Read(keys, 0, 9);
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            int offset = 0;
+            while (offset < keys.Length)
+            {
+                int remaining = 5000 - (int)started.ElapsedMilliseconds;
+                if (remaining <= 0) throw new IOException("Handshake deadline exceeded");
+                if (sc != null) sc.ReceiveTimeout = remaining;
+                int count = dis.Read(keys, offset, keys.Length - offset);
+                if (count == 0) throw new EndOfStreamException("Truncated handshake");
+                offset += count;
+            }
             long key = readKey(keys.sbytes());
             tea = new TEA(key);
         }
@@ -108,6 +141,16 @@ namespace Gopet.IO
             this.messageHandler = messageHandler;
         }
 
+        internal void Dispatch(Message message)
+        {
+            lock (dispatchGate)
+            {
+                if (IsClosing) return;
+                messageHandler?.onMessage(message);
+                msgCount++;
+            }
+        }
+
         public void setSender(MsgSender s)
         {
             this.sender = s;
@@ -125,7 +168,7 @@ namespace Gopet.IO
 
         public void sendMessage(Message message)
         {
-            this.sender.addMessage(message);
+            if (!IsClosing) this.sender?.addMessage(message);
         }
 
         public static int socketCount = 0;
@@ -147,21 +190,22 @@ namespace Gopet.IO
             //
             // Vì vậy vài chỗ trước đây phải Thread.Sleep() trước Close() để gói kịp
             // đi. Nay không cần nữa.
-            if (sender != null && Thread.CurrentThread != sendThread)
+            lock (lifecycle)
             {
-                sender.requestDrain();
-                sender.waitDrained(DrainTimeoutMs);
+                if (Interlocked.Exchange(ref closing, 1) != 0) return;
+                sender?.requestDrain();
             }
-
-            this.sendThread?.Interrupt();
-            this.sendThread = null;
-            this.readThread = null;
-            ThreadPool.QueueUserWorkItem(Exit);
-            GC.Collect();
+            _ = Task.Run(() =>
+            {
+                try { sender?.waitDrained(DrainTimeoutMs); }
+                finally { Exit(null); }
+            });
         }
 
         public void Exit(object state)
         {
+            if (Interlocked.Exchange(ref exited, 1) != 0) return;
+            Interlocked.Exchange(ref closing, 1);
             try
             {
                 currentIp = null;
@@ -174,19 +218,35 @@ namespace Gopet.IO
                 try { sc?.Shutdown(SocketShutdown.Send); }
                 catch (Exception) { /* phía kia đóng trước, hoặc chưa từng kết nối */ }
 
-                dos?.Close();
-                dos = null;
-                dis?.Close();
-                dis = null;
-                sc?.Close();
-                sc = null;
+                // Closing the socket unblocks synchronous I/O before disposal.
+                try { sc?.Close(); } catch (Exception) { }
+                try { dos?.Close(); } catch (Exception) { }
+                try { dis?.Close(); } catch (Exception) { }
                 sendsbyteCount = 0;
                 recvsbyteCount = 0;
-                messageHandler?.onDisconnected();
+                lock (dispatchGate)
+                {
+                    var handler = messageHandler;
+                    messageHandler = null;
+                    handler?.onDisconnected();
+                }
             }
             catch (Exception var2)
             {
                 var2.printStackTrace();
+            }
+            finally
+            {
+                dos = null;
+                dis = null;
+                sc = null;
+                sender = null;
+                reader = null;
+                sendThread = null;
+                readThread = null;
+                if (counted) Interlocked.Decrement(ref socketCount);
+                try { onClosed?.Invoke(this); }
+                finally { closed.TrySetResult(); }
             }
         }
     }

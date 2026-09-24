@@ -45,10 +45,14 @@ public static class SystemLetterService
     public static bool SendWelcome(int userId, string playerName)
     {
         return SendTo(userId, Letter.ADMIN, "Ban quản trị",
-            $"Chào mừng {playerName} đến với thế giới Gopet!",
-            $"Chào mừng {playerName} đến với thế giới Gopet!\n\n" +
-            "Hãy ghé NPC trong thành để nhận pet miễn phí, nhận nhiệm vụ hằng ngày và " +
-            "khám phá các bản đồ. Chúc bạn chơi vui!");
+            "Chào mừng thành viên mới đến với Gopet!",
+            $"Xin chào {playerName}!\n\n" +
+            "Chào mừng thành viên mới đến với Gopet! Ban quản trị rất vui khi có bạn đồng hành.\n\n" +
+            "Để bắt đầu:\n" +
+            "- Ghé NPC trong thành để nhận pet miễn phí\n" +
+            "- Nhận nhiệm vụ hằng ngày để lên cấp nhanh hơn\n" +
+            "- Khám phá các bản đồ và kết bạn với người chơi khác\n\n" +
+            "Chúc bạn chơi vui!");
     }
 
     /// <summary>Gửi cho một người chơi theo <c>user_id</c>. Trả về <c>false</c> nếu hỏng.</summary>

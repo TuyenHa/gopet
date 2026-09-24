@@ -30,9 +30,8 @@ public class History
 
     public string charName(MySqlConnection MySqlConnection) {
         if (this.player == null) {
-            using(var conn = MYSQLManager.create())
             {
-                dynamic dynamicData = conn.QuerySingleOrDefault("Select name from player where user_id = @user_id", new { user_id = this.user_id });
+                dynamic dynamicData = MySqlConnection.QuerySingleOrDefault("Select name from player where user_id = @user_id", new { user_id = this.user_id });
                 if (dynamicData != null) return dynamicData.name;
             }
         } else {
@@ -130,33 +129,4 @@ public class History
         return spceialType;
     }
 
-    public HistoryMongoDB Get()
-    {
-        return new HistoryMongoDB(this);
-    }
-
-    public class HistoryMongoDB
-    {
-        public int UserId { get; set; }
-
-        public string charName { get; set; }
-
-        public object obj { get; set; }
-
-        public string log { get; set; }
-
-        public DateTime Time { get; set; }
-
-        public PlayerData PlayerData { get; set; }
-
-        public HistoryMongoDB(History history)
-        {
-            UserId = history.user_id;
-            PlayerData = history.player?.playerData;
-            charName = PlayerData?.name;
-            obj = history.obj;
-            Time = history.DateTime;
-            log = history.log;
-        }
-    }
 }

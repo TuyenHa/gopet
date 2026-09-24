@@ -4,7 +4,6 @@
     {
 
         protected Session session;
-        private long idleTime = 0L;
         public MsgReader(Session session)
         {
             this.session = session;
@@ -21,8 +20,7 @@
                         Message message = readMessage();
                         if (message != null)
                         {
-                            session.messageHandler.onMessage(message);
-                            session.msgCount++;
+                            session.Dispatch(message);
                             continue;
                         }
                     }
@@ -37,10 +35,6 @@
 
                 if (session.isConnected())
                 {
-                    if (session.messageHandler != null)
-                    {
-                        session.messageHandler.onDisconnected();
-                    }
                     session.Close();
                 }
                 return;
@@ -59,22 +53,19 @@
             else
             {
                 Length = hi - 1;
-                if (Length > 10000)
+                if (hi < 1 || hi > 10001)
                 {
                     throw new IOException("Dữ liệu quá lớn");
                 }
                 sbyte isEncrypted = session.dis.ReadSByte();
                 byte[] data = new byte[Length];
-                int len = 0;
                 int sbyteRead = 0;
 
-                while (len != -1 && sbyteRead < Length)
+                while (sbyteRead < Length)
                 {
-                    len = session.dis.Read(data, sbyteRead, Length - sbyteRead);
-                    if (len > 0)
-                    {
-                        sbyteRead += len;
-                    }
+                    int len = session.dis.Read(data, sbyteRead, Length - sbyteRead);
+                    if (len == 0) throw new EndOfStreamException("Truncated packet payload");
+                    sbyteRead += len;
                 }
 
                 if (Length == 0)

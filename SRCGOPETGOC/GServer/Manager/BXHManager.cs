@@ -46,6 +46,7 @@ public class BXHManager
             {
                 foreach (Top next in listTop)
                 {
+                    using var measurement = Gopet.Logging.PerformanceMetrics.Measure(next.GetType().Name);
                     next.Update();
                 }
                 lastTime = Utilities.CurrentTimeMillis + 1000 * 60 * 15;

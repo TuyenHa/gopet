@@ -751,7 +751,6 @@ public class GameController
                 if (playerData != null)
                 {
                     player.redDialog(player.Language.DuplicateNameChar);
-                    Thread.Sleep(1000);
                     player.session.Close();
                     return;
                 }

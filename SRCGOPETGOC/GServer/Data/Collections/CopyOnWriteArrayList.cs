@@ -7,10 +7,11 @@ namespace Gopet.Data.Collections
 {
     [Serializable]
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-    public class CopyOnWriteArrayList<T> : IEnumerable<T>
+    public class CopyOnWriteArrayList<T> : IEnumerable<T>, IIndexedSnapshot<T>
     {
 
         private ImmutableList<T> values = ImmutableList<T>.Empty;
+        public IReadOnlyList<T> Snapshot => values;
 
         private Mutex mutex = new Mutex();
 
@@ -187,7 +188,7 @@ namespace Gopet.Data.Collections
 
         public CopyOnWriteArrayList<T> clone()
         {
-            return new CopyOnWriteArrayList<T>(this.values.ToArray());
+            return new CopyOnWriteArrayList<T>(this.values);
         }
 
         public int IndexOf(T data)

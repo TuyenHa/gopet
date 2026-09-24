@@ -17,7 +17,7 @@ namespace Gopet.Data.Map
         // Danh sách các địa điểm trong bản đồ
         public CopyOnWriteArrayList<Place> places = new CopyOnWriteArrayList<Place>();
         // Trạng thái chạy của bản đồ
-        public bool isRunning = false;
+        public volatile bool isRunning = false;
         // Luồng chạy của bản đồ
         public Thread MyThread;
 
@@ -82,14 +82,11 @@ namespace Gopet.Data.Map
             isRunning = true;
             while (isRunning)
             {
+                long started = System.Diagnostics.Stopwatch.GetTimestamp();
                 try
                 {
-                    long lastTime = Utilities.CurrentTimeMillis;
+                    using var measurement = Gopet.Logging.PerformanceMetrics.Measure("map-tick");
                     update();
-                    if (Utilities.CurrentTimeMillis - lastTime < 500)
-                    {
-                        Thread.Sleep(500);
-                    }
                 }
                 catch (Exception e)
                 {
@@ -102,6 +99,12 @@ namespace Gopet.Data.Map
                         Console.WriteLine(e);
                         Console.WriteLine(ex);
                     }
+                }
+                finally
+                {
+                    // No catch-up burst: yield at least 1ms when the tick exceeds its budget.
+                    int remaining = 500 - (int)System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                    if (isRunning) Thread.Sleep(Math.Max(1, remaining));
                 }
             }
         }

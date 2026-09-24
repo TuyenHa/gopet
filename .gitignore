@@ -18,7 +18,9 @@ SRCGOPETGOC/GServer/*.log
 # Chi chan dump nam THANG trong backup_sql/; backup_sql/migrations/ la script
 # doi schema that cua du an nen van phai theo doi.
 SRCGOPETGOC/GServer/backup_sql/*.sql
+SRCGOPETGOC/GServer/backup_sql/*.sql.partial-*
 SRCGOPETGOC/GServer/log/
+SRCGOPETGOC/GServer/history-spool/
 
 # Python bytecode cache cua tools/image-gen
 __pycache__/

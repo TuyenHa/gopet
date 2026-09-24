@@ -7,6 +7,10 @@ namespace Gopet.IO
         private DataInputStream dis;
         public bool isEncrypted;
         public static bool isiWin = false;
+        private readonly object freezeGate = new();
+        private sbyte[]? frozenPayload;
+        private bool frozenEncrypted;
+        private sbyte frozenId;
 
         public Message(int command) : this(command, false)
         {
@@ -31,30 +35,33 @@ namespace Gopet.IO
 
         public sbyte[] getBuffer()
         {
-            if (this.dos == null)
+            return (sbyte[])Freeze().Data.Clone();
+        }
+
+        // Only the sender may share this immutable payload. TEA encrypt allocates its output.
+        internal (sbyte[] Data, bool Encrypted, sbyte Id) Freeze()
+        {
+            lock (freezeGate)
             {
-                return new sbyte[] { (sbyte)this.id };
-            }
-            else
-            {
-                sbyte[] data = this.dos.BaseStream.ToArray().sbytes();
-                sbyte[] buffer;
-                if (isiWin)
+                if (frozenPayload == null)
                 {
-                    buffer = new sbyte[data.Length + 3];
-                    buffer[0] = 40;
-                    buffer[1] = (sbyte)(this.id >>> 8 & 255);
-                    buffer[2] = (sbyte)(this.id >>> 0 & 255);
-                    Buffer.BlockCopy(data, 0, buffer, 3, data.Length);
-                    return buffer;
+                    int prefix = dos != null && isiWin ? 3 : 1;
+                    int length = dos == null ? 0 : checked((int)dos.BaseStream.Length);
+                    frozenPayload = new sbyte[length + prefix];
+                    if (prefix == 3)
+                    {
+                        frozenPayload[0] = 40;
+                        frozenPayload[1] = (sbyte)(id >>> 8 & 255);
+                        frozenPayload[2] = id;
+                    }
+                    else frozenPayload[0] = id;
+                    if (length > 0)
+                        Buffer.BlockCopy(dos!.BaseStream.GetBuffer(), 0, frozenPayload, prefix, length);
+                    frozenEncrypted = isEncrypted;
+                    frozenId = id;
+                    dos?.BaseStream.Dispose();
                 }
-                else
-                {
-                    buffer = new sbyte[data.Length + 1];
-                    buffer[0] = (sbyte)this.id;
-                    Buffer.BlockCopy(data, 0, buffer, 1, data.Length);
-                    return buffer;
-                }
+                return (frozenPayload, frozenEncrypted, frozenId);
             }
         }
 
@@ -65,6 +72,7 @@ namespace Gopet.IO
 
         public DataOutputStream<MemoryStream> writer()
         {
+            if (frozenPayload != null) throw new InvalidOperationException("Message has already been finalized");
             if (this.dos == null)
             {
                 this.dos = new DataOutputStream<MemoryStream>(new MemoryStream());

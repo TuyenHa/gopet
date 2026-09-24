@@ -50,6 +50,7 @@ namespace Gopet.App
             {
                 e.printStackTrace();
             }
+            Gopet.Logging.Monitor.Flush(TimeSpan.FromSeconds(3));
             Environment.Exit(0);
         }
     }

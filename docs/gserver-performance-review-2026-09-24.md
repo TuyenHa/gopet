@@ -2,6 +2,8 @@
 
 Ngày kiểm tra: 24/09/2026. Mã nguồn tham chiếu: commit `3f4a816`, thư mục `SRCGOPETGOC/GServer`, target `net8.0`.
 
+Theo dõi triển khai và các điều kiện kiểm chứng còn lại tại [bản ghi triển khai](gserver-performance-implementation-2026-09-24.md). Các bằng chứng/dòng nguồn bên dưới mô tả trạng thái trước sửa.
+
 ## 1. Kết luận
 
 Có các vấn đề đáng sửa ở tầng mạng, vòng đời session và ghi lịch sử. Đáng chú ý nhất là gửi dữ liệu từng byte, vòng đọc có thể chạy liên tục khi gặp EOF, giữ tham chiếu đến session đã đóng, và gọi `GC.Collect()` mỗi lần đóng kết nối. Ngoài ra có code không được gọi, đối tượng được tạo rồi ghi đè ngay, truy vấn/kết nối thừa và thao tác sao chép không cần thiết.

@@ -25,7 +25,6 @@ namespace Gopet.Runtime.UI
         private static readonly Vector4 Border = new Vector4(32f, 32f, 32f, 32f); // L, B, R, T
 
         private static Sprite _frame;
-        private static bool _loaded;
 
         /// <summary>
         /// Phủ khung lên <paramref name="image"/> của nút cao <paramref name="height"/>.
@@ -61,8 +60,10 @@ namespace Gopet.Runtime.UI
 
         private static Sprite Frame()
         {
-            if (_loaded) return _frame;
-            _loaded = true;
+            // So sánh null kiểu Unity, không dùng cờ "đã nạp": project tắt Domain Reload khi vào
+            // Play Mode nên biến static sống qua các lần Play, còn sprite tạo lúc chạy thì bị huỷ
+            // khi thoát Play Mode. Giữ cờ thì từ lần Play thứ hai mọi nút mất khung.
+            if (_frame != null) return _frame;
             var texture = Resources.Load<Texture2D>(FramePath);
             if (texture == null) return null;
             _frame = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height),

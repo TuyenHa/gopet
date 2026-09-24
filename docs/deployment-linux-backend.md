@@ -120,6 +120,14 @@ khi thay container**:
 - Tên file có chữ `seed` (dữ liệu thử cho tài khoản test) thì **không bao giờ** chạy tự động.
 - Mặc định chạy trên `gopettae_tae2`. File cho DB khác thì ghi ở dòng đầu, ví dụ `-- database: gp_log`.
 
+**Danh sách migration (production)**:
+
+| Tên file | Mô tả | Database |
+|---|---|---|
+| `migration-260919-mob-atk-def.sql` | Thêm cột `atk`, `def` vào `gopet_mob` | gopettae_tae2 |
+| `migration-260924-battle-background.sql` | Khung cảnh trận đấu: `BattleBgOwned`, `BattleBgSelected` vào `player` | gopettae_tae2 |
+| `migration-260924-equip-durability-repair.sql` | Độ bền trang bị: item 1000091, NPC -42, set NPC map 11 | gopettae_tae2 |
+
 ```bash
 cd /opt/gopet
 bash docker/migrate-db.sh              # chạy tay các migration còn thiếu

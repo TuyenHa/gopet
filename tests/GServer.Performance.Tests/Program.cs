@@ -31,6 +31,10 @@ var tests = new (string, Action)[] {
     ("battle background buy charges price, selects, blocks re-buy", BattleBackgroundTests.BuyAndSelect),
     ("battle background rejects bad ids, unowned, no gold", BattleBackgroundTests.Rejections),
     ("battle background concurrent buys charge once", BattleBackgroundTests.ConcurrentBuyChargesOnce),
+    ("equip durability wear, thresholds, repair", EquipDurabilityTests.WearAndThresholds),
+    ("equip durability persists and legacy items load full", EquipDurabilityTests.JsonRoundTrip),
+    ("equip repair uses one stone and rejects invalid", EquipDurabilityTests.RepairRules),
+    ("equip concurrent repairs use one stone", EquipDurabilityTests.ConcurrentRepairUsesOneStone),
 };
 int failed = 0;
 foreach (var (name, test) in tests) {

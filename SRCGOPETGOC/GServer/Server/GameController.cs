@@ -2387,7 +2387,7 @@ public class GameController
         }
     }
 
-    private void useEquipItem(int itemId)
+    internal void useEquipItem(int itemId)
     {
         if (isHasBattleAndShowDialog())
         {
@@ -2519,7 +2519,7 @@ public class GameController
 
     }
 
-    private void unEquipItem(int itemId)
+    internal void unEquipItem(int itemId)
     {
         if (isHasBattleAndShowDialog())
         {

@@ -1,6 +1,7 @@
 ﻿using Gopet.Data.GopetClan;
 using Gopet.Data.Collections;
 using Gopet.Data.GopetItem;
+using Gopet.Data.item;
 using Gopet.Data.Mob;
 using Gopet.IO;
 using Gopet.Util;
@@ -883,6 +884,10 @@ namespace Gopet.Battle
                                 }
                             }
                         }
+                        // Đá mài tung riêng: chèn vào drop_item sẽ pha loãng mọi món rơi khác
+                        // (mỗi trận chỉ chọn 1 dòng drop_item rồi mới tung tỉ lệ).
+                        if (Utilities.NextFloatPer() < GopetManager.REPAIR_STONE_DROP_PERCENT)
+                            petBattleTexts.add(new PetBattleText(GiveRepairStones(activePlayer, 1, Data.item.ItemSource.TỪ_QUÁI, canTrade: false)));
                         activePlayer.controller.getTaskCalculator().onKillMob(mob.getPetTemplate().petId);
                         if (place is ChallengePlace)
                         {
@@ -895,6 +900,7 @@ namespace Gopet.Battle
                         if (boss.getLastHitPlayer() == activePlayer)
                         {
                             petBattleTexts.AddRange(activePlayer.controller.onReiceiveGift(boss.Template.gift));
+                            petBattleTexts.add(new PetBattleText(GiveRepairStones(activePlayer, GopetManager.REPAIR_STONE_BOSS_COUNT, Data.item.ItemSource.TỪ_QUÁI, canTrade: true)));
                             place.mobDie(mob);
                             JArrayList<string> txtInfo = new();
                             foreach (Popup petBattleText in petBattleTexts)
@@ -984,8 +990,32 @@ namespace Gopet.Battle
 
         }
 
+        /// <summary>Phát Đá mài sửa chữa, trả chữ cho bảng phần thưởng. Đá khoá và đá giao dịch được
+        /// nằm ở hai chồng riêng (addItemToInventory gộp theo cả canTrade).</summary>
+        private static string GiveRepairStones(Player player, int count, Data.item.ItemSource source, bool canTrade)
+        {
+            Item stone = new Item(GopetManager.REPAIR_STONE_ID, count) { canTrade = canTrade };
+            stone.SourcesItem.Add(source);
+            player.addItemToInventory(stone);
+            return stone.getTemp().getName(player) + " x" + count;
+        }
+
         private void win(Popup[] petBattleTexts, int coin, int exp)
         {
+            // Mòn trang bị TRƯỚC sendMyPetInfo bên dưới để chỉ số mới (món vừa hỏng) đi luôn.
+            // Mòn đồ KHÔNG được làm hỏng việc chốt trận: ném ở đây là không gói kết thúc nào
+            // được gửi và win() không chạy lại được (hadFinished đã bật) ⇒ overlay treo.
+            try
+            {
+                int winId = getWinId();
+                EquipWearService.Apply(activePlayer, activePet, winId != activePlayer.user.user_id);
+                if (!petAttackMob && passivePlayer != null)
+                    EquipWearService.Apply(passivePlayer, passivePet, winId != passivePlayer.user.user_id);
+            }
+            catch (Exception e)
+            {
+                GopetManager.ServerMonitor.LogError("Lỗi trừ độ bền trang bị: " + e);
+            }
             place?.sendMessage(win(petBattleTexts, coin, exp, activePlayer.user.user_id));
             if (this.mob?.hp <= 0)
             {

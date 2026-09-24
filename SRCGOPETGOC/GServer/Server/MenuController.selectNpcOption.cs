@@ -480,6 +480,12 @@ public partial class MenuController
             case OP_DUNG_HỢP:
                 sendMenu(MENU_OPTION_SHOW_FUSION_MENU, player);
                 break;
+            case OP_REPAIR_EQUIP:
+                sendRepairEquipMenu(player);
+                break;
+            case OP_DURABILITY_HELP:
+                player.okDialog(EquipRepairService.HelpText);
+                break;
             case OP_ĐIỂM_DANH:
                 player.controller.noelDaily();
                 break;

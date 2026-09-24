@@ -11,6 +11,7 @@ on:
       - tests/GServer.Performance.Tests/**
       - GopetUnityClient/Assets/Scripts/Net/** # test dùng chung bộ giải mã gói tin
       - docker/**
+      - SRCGOPETGOC/MariaDB_SQL/migration-*.sql
       - .github/workflows/gserver-ci-cd.yml
   workflow_dispatch: # deploy tay từ tab Actions
 

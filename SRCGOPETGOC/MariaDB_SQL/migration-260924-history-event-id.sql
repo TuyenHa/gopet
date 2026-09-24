@@ -1,3 +1,4 @@
+-- database: gp_log
 -- Apply to the LOG database before deploying the performance changes.
 -- Existing rows remain NULL; all new queued events supply a unique ID.
 ALTER TABLE `history`

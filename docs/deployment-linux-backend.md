@@ -107,23 +107,32 @@ Dump chỉ nạp **một lần** khi volume `gopet-db-data` còn rỗng. Nạp l
 
 ### 3.3 Chạy migration
 
-Các file `migration-*.sql` KHÔNG tự chạy. Chạy theo thứ tự ngày, **bỏ file seed dữ liệu test**:
+Mọi thay đổi schema nằm ở `SRCGOPETGOC/MariaDB_SQL/migration-<yymmdd>-<mô-tả>.sql`, chạy bằng
+`docker/migrate-db.sh`. Mỗi lần deploy (mục 4.6), CI/CD tự gọi script này **sau khi build image và trước
+khi thay container**:
 
-| File | Chạy trên production? |
-|---|---|
-| `migration-260919-mob-atk-def.sql` | Có |
-| `migration-260921-remove-santa-npc.sql` | Có |
-| `migration-260922-seed-social-data-gopettest.sql` | **Không** — dữ liệu thử giao diện cho tài khoản test |
-| `migration-260924-battle-background.sql` | Có — **bắt buộc trước khi deploy** bản có khung cảnh màn đấu: thiếu 2 cột `BattleBg*` thì mọi lần lưu người chơi lỗi `Unknown column` |
+- Chạy các file **chưa chạy**, theo thứ tự tên file. File đã chạy được ghi vào bảng
+  `gopettae_tae2.schema_migrations` và **không bao giờ chạy lại**. Muốn sửa gì thì viết file mới,
+  đừng sửa file cũ.
+- Trước khi chạy có backup cả 3 DB vào `/opt/gopet/backups/pre-migrate-*.sql.gz`, vì DDL của MariaDB
+  không rollback được.
+- Một file lỗi thì dừng: không chạy các file sau, không deploy, server cũ vẫn chạy.
+- Tên file có chữ `seed` (dữ liệu thử cho tài khoản test) thì **không bao giờ** chạy tự động.
+- Mặc định chạy trên `gopettae_tae2`. File cho DB khác thì ghi ở dòng đầu, ví dụ `-- database: gp_log`.
 
 ```bash
-cd /opt/gopet/SRCGOPETGOC/MariaDB_SQL
-PASS=$(grep ^MARIADB_ROOT_PASSWORD= /opt/gopet/docker/.env | cut -d= -f2)
-for f in migration-260919-mob-atk-def.sql migration-260921-remove-santa-npc.sql \n         migration-260924-battle-background.sql; do
-  echo ">> $f"
-  docker exec -i gopet-mariadb mysql -uroot -p"$PASS" --default-character-set=utf8mb4 gopettae_tae2 < "$f"
-done
+cd /opt/gopet
+bash docker/migrate-db.sh              # chạy tay các migration còn thiếu
+bash docker/migrate-db.sh --baseline   # xem bên dưới
 ```
+
+**Máy chủ đã từng chạy migration bằng tay** (trước khi có script này): chạy `--baseline` **đúng một
+lần** trước lần deploy tự động đầu tiên. Lệnh này ghi mọi file hiện có là đã chạy nhưng không thực thi
+file nào. Nếu quên bước này, lần deploy đầu sẽ dừng ở lỗi `Duplicate column` (server cũ vẫn chạy):
+khi đó kiểm tra xem DB đã có đủ các thay đổi chưa, rồi mới chạy baseline. Nếu thiếu file nào thì chạy
+file đó bằng tay trước, rồi mới baseline.
+
+DB mới nạp từ dump (mục 3.2) thì **không** chạy baseline: script sẽ tự chạy hết các migration.
 
 ### 3.4 User riêng cho GServer (khuyến nghị)
 
@@ -223,16 +232,13 @@ Gọi API quản trị (chỉ nghe trong container):
 
 ```bash
 cd /opt/gopet
-# 1. Backup DB trước (mục 8)
-# 2. Lấy mã mới
 git pull                      # hoặc rsync lại SRCGOPETGOC/GServer như mục 2.1
-# 3. Giữ image cũ để rollback
-docker tag gopet-gserver:latest gopet-gserver:prev
-# 4. Build image mới rồi thay container (container cũ được dừng AN TOÀN, có lưu)
-cd docker && docker compose --profile server up -d --build gserver
-# 5. Chạy migration mới nếu có (mục 3.3)
-docker compose --profile server logs -f gserver
+bash docker/deploy-gserver.sh
 ```
+
+Script làm giống CI/CD (mục 4.6): gắn tag `prev` cho image cũ, build image mới, chạy migration
+(mục 3.3, có backup trước), thay container (container cũ được dừng an toàn, có lưu dữ liệu), chờ
+healthy; không healthy thì tự rollback image.
 
 Nếu bản mới thêm khoá vào `SRCGOPETGOC/GServer/config/server.json`, thêm khoá đó vào `docker/gserver/server.json`.
 
@@ -264,7 +270,8 @@ cd /opt/gopet/docker && docker compose --profile server up -d --no-build gserver
 
 1. **test** — chạy `tests/GServer.Performance.Tests` trên Ubuntu. Có test FAIL thì dừng, không deploy.
 2. **deploy** — SSH vào máy chủ → `git merge --ff-only` mã mới → `docker/deploy-gserver.sh`:
-   gắn tag `prev` cho image cũ, build image mới (build lỗi thì server cũ vẫn chạy), thay container
+   gắn tag `prev` cho image cũ, build image mới (build lỗi thì server cũ vẫn chạy), chạy migration
+   (mục 3.3; lỗi thì dừng, server cũ vẫn chạy), thay container
    (có lưu dữ liệu), chờ `healthy` tối đa 5 phút; không healthy thì **tự rollback** về `prev`.
 
 Chạy tay: tab **Actions → GServer CI/CD → Run workflow**, hoặc trên máy chủ `bash docker/deploy-gserver.sh`.
@@ -302,8 +309,9 @@ Variable tuỳ chọn `DEPLOY_PATH` (mặc định `/opt/gopet`). Trong environm
 bật **Required reviewers** nếu muốn duyệt tay trước mỗi lần deploy.
 
 Lưu ý:
-- Workflow **không** chạy migration SQL (mục 3.3) — bản có migration thì chạy tay trước khi merge,
-  hoặc ngay sau khi deploy.
+- Migration SQL chạy tự động (mục 3.3). Nếu phải rollback image thì schema **không** tự quay lại;
+  migration chỉ thêm cột có giá trị mặc định thì code cũ vẫn chạy được, còn không thì khôi phục từ
+  file `pre-migrate-*.sql.gz`.
 - Sửa file đang được git theo dõi ngay trên máy chủ (vd. `docker/gserver/server.json`) mà trùng chỗ
   với commit mới thì `git merge --ff-only` báo lỗi và deploy dừng, server cũ vẫn chạy. Nên sửa
   cấu hình qua commit thay vì sửa tay trên máy chủ.

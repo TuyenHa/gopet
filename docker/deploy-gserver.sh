@@ -36,6 +36,8 @@ fi
 
 # Build trước khi đụng vào container: build lỗi thì server cũ vẫn chạy nguyên.
 compose build gserver
+# Đổi schema trước khi code mới chạy. Migration lỗi thì dừng, server cũ vẫn chạy.
+bash ./migrate-db.sh
 # Container cũ nhận SIGTERM và được 60s (stop_grace_period) để lưu dữ liệu.
 compose up -d --no-build gserver
 

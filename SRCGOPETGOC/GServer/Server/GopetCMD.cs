@@ -129,6 +129,11 @@ public class GopetCMD
     public const sbyte TYPE_DAILY_CHECKIN_STATE = 40; // server→client: gửi trạng thái tháng
     public const sbyte TYPE_DAILY_CHECKIN_OPEN = 41;  // client→server: xin trạng thái (mở tab)
     public const sbyte TYPE_DAILY_CHECKIN_DO = 42;    // client→server: bấm điểm danh
+    // Khung cảnh màn đấu (sub-command của COMMAND_GUIDER=122).
+    public const sbyte TYPE_BATTLE_BG_STATE = 43;  // server→client: danh mục + sở hữu + đang chọn
+    public const sbyte TYPE_BATTLE_BG_OPEN = 44;   // client→server: xin STATE
+    public const sbyte TYPE_BATTLE_BG_BUY = 45;    // client→server: sbyte id
+    public const sbyte TYPE_BATTLE_BG_SELECT = 46; // client→server: sbyte id
     public const sbyte REMOVE_SELL_ITEM = 87;
     public const sbyte PLAYER_CHALLENGE = 12;
     public const sbyte PLAYER_PK = 96;

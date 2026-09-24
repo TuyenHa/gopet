@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace Gopet.Runtime.UI
 {
     /// <summary>
-    /// Hàng hai nút chia đôi bề ngang ở chân form popup: nút chính xanh chữ trắng, nút
-    /// phụ xám nhạt chữ navy.
+    /// Hàng hai nút chia đôi bề ngang ở chân form popup, cả hai dùng
+    /// <see cref="GameButtonSkin"/> (thiếu ảnh thì về nút chính xanh, nút phụ xám nhạt).
     ///
     /// <para>Dùng chung cho mọi form trong popup (nhập mã quà tặng, soạn thư…) — mỗi form
     /// tự dựng thì chỉ lệch một con số bo góc hay bề rộng khe là hai popup khác nhau.</para>
@@ -56,10 +56,20 @@ namespace Gopet.Runtime.UI
         private static void Fill(RectTransform row, Font font, string primaryLabel,
             Action onPrimary, string secondaryLabel, Action onSecondary)
         {
-            MakeButton(row, font, primaryLabel, 0, PopupPalette.ButtonBlue,
-                Color.white, onPrimary);
-            MakeButton(row, font, secondaryLabel, 1, SecondaryFace,
-                PopupPalette.TextDark, onSecondary);
+            ApplyGameSkin(MakeButton(row, font, primaryLabel, 0, PopupPalette.ButtonBlue,
+                Color.white, onPrimary));
+            ApplyGameSkin(MakeButton(row, font, secondaryLabel, 1, SecondaryFace,
+                PopupPalette.TextDark, onSecondary));
+        }
+
+        /// <summary>
+        /// Kiểu nút chung (khung vàng, mặt xanh) như nút "Kích ẩn". Thiếu ảnh thì giữ nút
+        /// bo góc màu phẳng đã dựng sẵn.
+        /// </summary>
+        private static void ApplyGameSkin(Button button)
+        {
+            if (!GameButtonSkin.Apply(button.image, Height)) return;
+            GameButtonSkin.StyleLabel(button.GetComponentInChildren<Text>());
         }
 
         /// <summary>

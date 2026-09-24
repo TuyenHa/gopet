@@ -15,11 +15,16 @@ SRCGOPETGOC/GServer/*.log
 # moi lan lai la mot file moi. Khong ignore thi `git add -A` nuot ca dump chua
 # mat khau, email, so dien thoai va IP cua nguoi choi.
 #
-# Chi chan dump nam THANG trong backup_sql/; backup_sql/migrations/ la script
-# doi schema that cua du an nen van phai theo doi.
+# Migration schema nam o SRCGOPETGOC/MariaDB_SQL/migration-*.sql (docker/migrate-db.sh).
 SRCGOPETGOC/GServer/backup_sql/*.sql
+SRCGOPETGOC/GServer/backup_sql/*.sql.partial-*
 SRCGOPETGOC/GServer/log/
+SRCGOPETGOC/GServer/history-spool/
 
 # Python bytecode cache cua tools/image-gen
 __pycache__/
 *.pyc
+
+# Backup DB tren may chu (docker/migrate-db.sh, cron muc 8 docs/deployment-linux-backend.md):
+# repo clone thang vao /opt/gopet nen /opt/gopet/backups nam trong working tree.
+/backups/

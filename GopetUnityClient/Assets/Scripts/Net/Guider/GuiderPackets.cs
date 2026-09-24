@@ -146,5 +146,28 @@ namespace Gopet.Net.Guider
             return Message.Create(GopetCmd.COMMAND_GUIDER)
                 .PutSByte(GopetCmd.TYPE_DAILY_CHECKIN_DO);
         }
+
+        /// <summary>Xin danh mục khung cảnh màn đấu. Server đáp TYPE_BATTLE_BG_STATE.</summary>
+        public static Message RequestBattleScenes()
+        {
+            return Message.Create(GopetCmd.COMMAND_GUIDER)
+                .PutSByte(GopetCmd.TYPE_BATTLE_BG_OPEN);
+        }
+
+        /// <summary>Mua khung cảnh (server tự trừ vàng, chọn luôn rồi gửi lại STATE).</summary>
+        public static Message BuyBattleScene(int sceneId)
+        {
+            return Message.Create(GopetCmd.COMMAND_GUIDER)
+                .PutSByte(GopetCmd.TYPE_BATTLE_BG_BUY)
+                .PutSByte((sbyte)sceneId);
+        }
+
+        /// <summary>Chọn khung cảnh đã sở hữu.</summary>
+        public static Message SelectBattleScene(int sceneId)
+        {
+            return Message.Create(GopetCmd.COMMAND_GUIDER)
+                .PutSByte(GopetCmd.TYPE_BATTLE_BG_SELECT)
+                .PutSByte((sbyte)sceneId);
+        }
     }
 }

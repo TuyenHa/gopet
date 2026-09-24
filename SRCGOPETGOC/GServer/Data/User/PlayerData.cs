@@ -124,6 +124,13 @@ public class PlayerData
     /// Khác tháng hiện tại → reset mask.
     /// </summary>
     public int DailyCheckinMonthKey { get; set; } = 0;
+    /// <summary>Khung cảnh màn đấu đã mua (id theo BattleBackgroundCatalog; id 0 không lưu).</summary>
+    public CopyOnWriteArrayList<int> BattleBgOwned { get; set; } = new();
+    /// <summary>Khung cảnh màn đấu đang chọn; 0 = rừng mặc định.</summary>
+    public int BattleBgSelected { get; set; } = 0;
+    /// <summary>Khoá mua/chọn khung cảnh, chống trừ vàng hai lần khi gói đến dồn dập.</summary>
+    [JsonIgnore]
+    public readonly object BattleBgLock = new();
     /// <summary>
     /// Trường thuộc sự kiện sinh nhật trò chơi
     /// Để ghi tổng số lần ăn bánh chưng
@@ -250,7 +257,9 @@ public class PlayerData
                             IndexMilistoneBirthdayEvent = @IndexMilistoneBirthdayEvent,
                             NumUseGiftBox2025 = @NumUseGiftBox2025,
                             DailyCheckinMask = @DailyCheckinMask,
-                            DailyCheckinMonthKey = @DailyCheckinMonthKey
+                            DailyCheckinMonthKey = @DailyCheckinMonthKey,
+                            BattleBgOwned = @BattleBgOwned,
+                            BattleBgSelected = @BattleBgSelected
                             WHERE ID = @ID", playerData);
     }
     /// <summary>

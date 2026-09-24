@@ -47,6 +47,9 @@ namespace Gopet.Net.Guider
         /// <summary>Server gửi trạng thái lịch điểm danh theo tháng.</summary>
         public event Action<DailyCheckinState> DailyCheckinShown;
 
+        /// <summary>Server gửi danh mục/sở hữu/lựa chọn khung cảnh màn đấu.</summary>
+        public event Action<BattleSceneState> BattleSceneStateReceived;
+
         public void RegisterOn(MessageRouter router)
         {
             router.RegisterEnvelope(GopetCmd.COMMAND_GUIDER);
@@ -65,6 +68,8 @@ namespace Gopet.Net.Guider
                 m => ImageDialogShown?.Invoke(ImageDialogSpec.Parse(m)));
             router.RegisterSub(GopetCmd.COMMAND_GUIDER, GopetCmd.TYPE_DAILY_CHECKIN_STATE,
                 m => DailyCheckinShown?.Invoke(DailyCheckinState.Parse(m)));
+            router.RegisterSub(GopetCmd.COMMAND_GUIDER, GopetCmd.TYPE_BATTLE_BG_STATE,
+                m => BattleSceneStateReceived?.Invoke(BattleSceneState.Parse(m)));
 
             router.RegisterEnvelope(GopetCmd.SERVER_MESSAGE);
             router.RegisterSub(GopetCmd.SERVER_MESSAGE, GopetCmd.SEND_YES_NO,
@@ -155,5 +160,11 @@ namespace Gopet.Net.Guider
 
         /// <summary>Bấm nút điểm danh — server phát quà rồi gửi lại trạng thái mới.</summary>
         public void DoDailyCheckin() => _send(GuiderPackets.DoDailyCheckin());
+
+        public void RequestBattleScenes() => _send(GuiderPackets.RequestBattleScenes());
+
+        public void BuyBattleScene(int sceneId) => _send(GuiderPackets.BuyBattleScene(sceneId));
+
+        public void SelectBattleScene(int sceneId) => _send(GuiderPackets.SelectBattleScene(sceneId));
     }
 }

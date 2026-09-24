@@ -345,12 +345,15 @@ namespace Gopet.Util
 
         public static T BinarySearch<T>(this IEnumerable<IBinaryObject<T>> binaryObjects, int Id)
         {
+            // Snapshot once: ImmutableList indexes cost O(log n), without repeated enumeration.
+            var snapshot = binaryObjects is Gopet.Data.Collections.IIndexedSnapshot<IBinaryObject<T>> indexed
+                ? indexed.Snapshot : binaryObjects.ToArray();
             int left = 0;
-            int right = binaryObjects.Count() - 1;
+            int right = snapshot.Count - 1;
             while (left <= right)
             {
                 int mid = left + (right - left) / 2;
-                IBinaryObject<T> midItem = binaryObjects.ElementAt(mid);
+                IBinaryObject<T> midItem = snapshot[mid];
                 if (midItem.GetId() == Id)
                     return midItem.Instance;
                 if (midItem.GetId() < Id)

@@ -42,7 +42,7 @@ try:
 except ImportError:
     sys.exit("pip install Pillow")
 
-MODEL = "gpt-image-2"
+MODEL = "gpt-image-1.5"
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent / "GopetUnityClient" / "Assets" / "Resources" / "Battle" / "skills"
 ICON_SIZE = 64
 

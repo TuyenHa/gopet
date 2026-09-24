@@ -1,96 +1,73 @@
-﻿using Gopet.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
-namespace Gopet.Logging
+namespace Gopet.Logging;
+
+public class Monitor
 {
-    public class Monitor
+    private sealed record Entry(string? Message, ConsoleColor Color, TaskCompletionSource? Barrier = null);
+    private static readonly BlockingCollection<Entry> queue = new(8192);
+    private static long dropped;
+    public static long DroppedMessages => Interlocked.Read(ref dropped);
+    public string LogName { get; }
+
+    static Monitor()
     {
-        readonly static object __LOCK = new object();
-        public string LogName { get; }
-
-        public Monitor(string logName)
+        new Thread(Drain) { Name = "Server logger", IsBackground = true }.Start();
+    }
+    public Monitor(string logName) => LogName = logName;
+    public void LogDebug(string message) => Write(message, ConsoleColor.White);
+    public void LogError(string message) => Write(message, ConsoleColor.Red);
+    public void LogWarning(string message) => Write(message, ConsoleColor.Yellow);
+    public void LogInfo(string message) => Write(message, ConsoleColor.Green);
+    private void Write(string message, ConsoleColor color)
+    {
+        string prefix = $"[{LogName} {DateTime.Now}] ";
+        // Bound both entry count and individual retained text size.
+        if (message.Length > 16384) message = message[..16384] + " [truncated]";
+        var entry = new Entry(prefix + message.Replace("\n", "\n" + prefix), color);
+        if (!queue.TryAdd(entry))
         {
-            LogName = logName;
+            long count = Interlocked.Increment(ref dropped);
+            if (count == 1 || count % 1024 == 0) Fallback($"Logger queue full; dropped {count} messages");
         }
-
-        public void LogDebug(string message)
+    }
+    private static void Drain()
+    {
+        foreach (var entry in queue.GetConsumingEnumerable())
         {
-            WriteCustom(message, LogLevel.Debug);
-        }
-        public void LogError(string message)
-        {
-            WriteCustom(message, LogLevel.Error);
-        }
-        public void LogWarning(string message)
-        {
-            WriteCustom(message, LogLevel.Warning);
-        }
-        public void LogInfo(string message)
-        {
-            WriteCustom(message, LogLevel.Info);
-        }
-
-        private void WriteCustom(string message, LogLevel logLevel = LogLevel.Debug)
-        {
-            WriteLine($"[{this.LogName} {DateTime.Now}] {message.Replace("\n", $"\n[{this.LogName} {DateTime.Now}] ")}", logLevel);
-        }
-
-        static void WriteLine(string message, LogLevel logLevel = LogLevel.Debug)
-        {
-            Write(message + '\n', logLevel);
-        }
-
-        static void Write(string message, LogLevel logLevel = LogLevel.Debug)
-        {
-            switch (logLevel)
+            if (entry.Barrier != null)
             {
-                case LogLevel.Debug:
-                    Write(message, ConsoleColor.White);
-                    break;
-                case LogLevel.Info:
-                    Write(message, ConsoleColor.Green);
-                    break;
-                case LogLevel.Warning:
-                    Write(message, ConsoleColor.Yellow);
-                    break;
-                case LogLevel.Error:
-                    Write(message, ConsoleColor.Red);
-                    break;
+                try { GopetManager.Writer.Flush(); }
+                catch (Exception error) { Fallback(error.Message); }
+                entry.Barrier.TrySetResult();
+                continue;
             }
-        }
-
-
-        static readonly Mutex mutex = new Mutex();
-
-        static void Write(string message, ConsoleColor consoleColor)
-        {
-            mutex.WaitOne();
             try
             {
-
-                Console.ForegroundColor = consoleColor;
-                Console.Write(message);
+                Console.ForegroundColor = entry.Color;
+                Console.WriteLine(entry.Message);
                 Console.ResetColor();
-                var Writer = GopetManager.Writer;
-                if (Writer != null)
-                {
-                    Writer.WriteLine(message);
-                    Writer.Flush();
-                }
             }
-            catch (Exception e)
+            catch (Exception error) { Fallback(error.Message); }
+            try
             {
-                e.printStackTrace();
+                var writer = GopetManager.Writer;
+                writer.WriteLine(entry.Message);
+                if (queue.Count == 0) writer.Flush();
             }
-            finally
-            {
-                mutex.ReleaseMutex();
-            }
+            catch (Exception error) { Fallback(error.Message); }
         }
+    }
+    private static void Fallback(string message)
+    {
+        try { Console.Error.WriteLine("Logger failure: " + message); }
+        catch { } // Never re-enter this logger from its error path.
+    }
+    public static bool Flush(TimeSpan timeout)
+    {
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!queue.TryAdd(new Entry(null, default, done), timeout)) return false;
+        return done.Task.Wait(TimeSpan.FromMilliseconds(Math.Max(0, (timeout - timer.Elapsed).TotalMilliseconds)));
     }
 }

@@ -58,22 +58,15 @@ namespace Gopet.IO
         {
             if (writer == null)
                 throw new ArgumentNullException();
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                writer.Write(buffer[i]);
-            }
-            writer.Flush();
+            writer.Write(System.Runtime.InteropServices.MemoryMarshal.AsBytes(buffer.AsSpan()));
         }
 
         public static void WriteInt(this BinaryWriter writer, int value)
         {
             if (writer == null)
                 throw new ArgumentNullException();
-            sbyte[] buffer = new sbyte[4];
-            buffer[0] = (sbyte)((value >> 24) & 0xFF);
-            buffer[1] = (sbyte)((value >> 16) & 0xFF);
-            buffer[2] = (sbyte)((value >> 8) & 0xFF);
-            buffer[3] = (sbyte)((value) & 0xFF);
+            Span<byte> buffer = stackalloc byte[4];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(buffer, value);
             writer.Write(buffer);
         }
 

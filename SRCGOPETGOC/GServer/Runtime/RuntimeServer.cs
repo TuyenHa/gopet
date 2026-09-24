@@ -42,6 +42,7 @@ public class RuntimeServer
         {
             try
             {
+                using var measurement = Gopet.Logging.PerformanceMetrics.Measure(r.GetType().Name);
                 r.Update();
             }
             catch (Exception e)

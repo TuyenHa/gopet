@@ -1,0 +1,77 @@
+# CI/CD cho máy chủ game (GServer): merge vào master → chạy test → deploy lên máy chủ Linux.
+# Cài đặt secret và máy chủ: docs/deployment-linux-backend.md, mục 4.6.
+name: GServer CI/CD
+
+on:
+  push:
+    branches: [master]
+    # Chỉ chạy khi phần server đổi — sửa client Unity không phải deploy lại.
+    paths:
+      - SRCGOPETGOC/GServer/**
+      - tests/GServer.Performance.Tests/**
+      - GopetUnityClient/Assets/Scripts/Net/** # test dùng chung bộ giải mã gói tin
+      - docker/**
+      - SRCGOPETGOC/MariaDB_SQL/migration-*.sql
+      - .github/workflows/gserver-ci-cd.yml
+  workflow_dispatch: # deploy tay từ tab Actions
+
+# Không cho hai lần deploy chồng nhau; lần sau xếp hàng chứ không huỷ lần đang chạy
+# (huỷ giữa chừng có thể để container ở trạng thái dở dang).
+concurrency:
+  group: gserver-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build + test
+        # Bộ test là console app, trả exit code 1 nếu có test FAIL.
+        run: dotnet run -c Release --project tests/GServer.Performance.Tests
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    # Environment "production" cho phép bật duyệt tay / giới hạn nhánh trong Settings.
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - name: Cấu hình SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # Ghim host key (không dùng StrictHostKeyChecking=no) để chống giả mạo máy chủ.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Cập nhật mã nguồn và deploy
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/gopet' }}
+        # Cập nhật git TRƯỚC rồi mới gọi script, để luôn chạy bản script mới nhất.
+        # --ff-only: nếu trên máy chủ có commit/sửa đổi xung đột thì dừng, không ghi đè.
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "$PORT" -o BatchMode=yes "$SSH_USER@$HOST" bash -s -- "$DEPLOY_PATH" <<'EOF'
+          set -euo pipefail
+          cd "$1"
+          git fetch --quiet origin master
+          git merge --ff-only FETCH_HEAD
+          echo "[deploy] commit: $(git log -1 --format='%h %s')"
+          bash docker/deploy-gserver.sh
+          EOF
+
+      - name: Dọn khoá SSH
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

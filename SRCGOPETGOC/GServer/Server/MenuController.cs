@@ -643,10 +643,14 @@ public partial class MenuController
             }
         }
 
-        for (int i = 0; i < price.Item1.Length; i++)
+        if (!BoundedSelection.TryChoose(GopetManager.TradeGift[type].ToArray(),
+            t => t.Percent > Utilities.NextFloatPer(), count => Utilities.nextInt(count), out var selectedGift))
         {
-            addMoney((sbyte)price.Item1[i], -price.Item2[i], player);
+            player.redDialog("Không chọn được phần thưởng. Vui lòng thử lại; bạn chưa bị trừ tiền.");
+            return;
         }
+        for (int i = 0; i < price.Item1.Length; i++)
+            addMoney((sbyte)price.Item1[i], -price.Item2[i], player);
         string join = string.Empty;
         Dictionary<int, int> keyValuePairs = new Dictionary<int, int>();
         /*
@@ -654,12 +658,8 @@ public partial class MenuController
          * for (int i = 0; i < 50000; i++)
          */
         {
-            DateTime breakTime = DateTime.Now.AddMilliseconds(20);
-            while (breakTime > DateTime.Now)
             {
-                var queryItem = GopetManager.TradeGift[type].Where(t => t.Percent > Utilities.NextFloatPer()).ToArray();
-                if (!queryItem.Any()) continue;
-                TradeGiftTemplate tradeGift = Utilities.RandomArray(queryItem);
+                TradeGiftTemplate tradeGift = selectedGift;
                 var it = new Item(tradeGift.ItemTemplateId, tradeGift.Count);
                 it.SourcesItem.Add(ItemSource.ĐỔI_THỎI);
                 if (keyValuePairs.ContainsKey(tradeGift.ItemTemplateId))
@@ -672,7 +672,6 @@ public partial class MenuController
                 }
                 player.addItemToInventory(it);
                 //join += ($"{it.Template.getName(player)} x{tradeGift.Count},");
-                break;
             }
         }
         foreach (var item in keyValuePairs)

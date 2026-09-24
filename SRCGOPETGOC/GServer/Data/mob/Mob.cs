@@ -19,6 +19,13 @@ namespace Gopet.Data.Mob
 
         public DateTime? TimeEndUpdate { get; set; } = null;
 
+        public bool IsRemovalDue(DateTime now)
+        {
+            if (hp > 0) return false;
+            TimeEndUpdate ??= now.AddSeconds(5);
+            return TimeEndUpdate <= now;
+        }
+
         public Rectangle bound;
 
         public virtual PetBattle getPetBattle(Player player)

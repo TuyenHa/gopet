@@ -18,7 +18,8 @@ namespace Gopet.MServer
         public CopyOnWriteArrayList<Session> sessions { get; } = new();
         public bool IsRunning { get; set; } = false;
 
-        private SocketAsyncEventArgs _event = new SocketAsyncEventArgs();
+        private readonly SemaphoreSlim handshakes = new(64, 64);
+        private readonly object sessionGate = new();
 
         private ConcurrentDictionary<string, DateTime> ConnectionWait = new();
 
@@ -78,6 +79,7 @@ namespace Gopet.MServer
                     }
                     else ConnectionWait[clientIP] = DateTime.Now.AddSeconds(2);
                     this.CleanupConnectionWait();
+                    if (!handshakes.Wait(0)) { client.Close(); continue; }
                     ThreadPool.QueueUserWorkItem(setupClient, client);
                 }
                 catch (Exception e)
@@ -89,11 +91,18 @@ namespace Gopet.MServer
         private void setupClient(object obj)
         {
             TcpClient client = (TcpClient)obj;
-            Session session = new Session(client.Client);
-            session.setHandler(new Player(session));
-            session.run();
-            sessions.Add(session);
-            Session.socketCount++;
+            try
+            {
+                Session session;
+                lock (sessionGate)
+                {
+                    if (!IsRunning) { client.Close(); return; }
+                    session = new Session(client.Client, closed => sessions.Remove(closed));
+                    sessions.Add(session);
+                }
+                session.run();
+            }
+            finally { handshakes.Release(); }
         }
 
         private void CleanupConnectionWait()
@@ -109,7 +118,14 @@ namespace Gopet.MServer
 
         public void StopServer()
         {
-            IsRunning = false;
+            lock (sessionGate)
+            {
+                IsRunning = false;
+                _listener.Stop();
+                foreach (var session in sessions) session.Close();
+            }
         }
+
+        public Task WaitForSessionsClosed() => Task.WhenAll(sessions.Select(s => s.Completion));
     }
 }

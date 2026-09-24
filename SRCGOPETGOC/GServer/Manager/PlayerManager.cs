@@ -18,7 +18,6 @@ public class PlayerManager : UpdateThread
     public static ConcurrentHashMap<int, Player> player_ID = new ConcurrentHashMap<int, Player>();
     public static ConcurrentHashMap<String, Player> player_name = new ConcurrentHashMap<String, Player>();
     public static ConcurrentHashMap<int, long> waitLogin = new ConcurrentHashMap<int, long>();
-    private static ConcurrentDictionary<string, Tuple<int, DateTime>> WaitLogin = new ConcurrentDictionary<string, Tuple<int, DateTime>>();
     public CopyOnWriteArrayList<WaitUserPK> waitUserPKs = new CopyOnWriteArrayList<WaitUserPK>();
     public static readonly TimeTracker<string> Ipv4Tracker = new TimeTracker<string>(TimeSpan.FromMinutes(1), 400);
     public static readonly TimeTracker<string> OtpTracker = new TimeTracker<string>(TimeSpan.FromMinutes(30), 10);
@@ -127,7 +126,7 @@ public class PlayerManager : UpdateThread
         PlayerManager.sendMessage(message);
     }
 
-    public async static void sendMessage(Message ms)
+    public static void sendMessage(Message ms)
     {
         foreach (Player player in players)
         {

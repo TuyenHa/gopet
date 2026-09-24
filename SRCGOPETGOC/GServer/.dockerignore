@@ -1,0 +1,13 @@
+# Chỉ gửi mã nguồn + assets vào build context; build output và dữ liệu runtime
+# vừa nặng vừa có thể chứa dữ liệu thật (log, dump SQL).
+bin/
+obj/
+publish/
+packages/
+log/
+backup_sql/
+*.log
+*.user
+.vs/
+Dockerfile
+.dockerignore

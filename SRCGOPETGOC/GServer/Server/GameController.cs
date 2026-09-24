@@ -1,6 +1,7 @@
 ﻿
 using Gopet.App;
 using Gopet.Data.Event.DailyCheckin;
+using Gopet.Data.BattleBackground;
 using Gopet.Battle;
 using Gopet.Data.GopetClan;
 using Gopet.Data.Collections;
@@ -751,7 +752,6 @@ public class GameController
                 if (playerData != null)
                 {
                     player.redDialog(player.Language.DuplicateNameChar);
-                    Thread.Sleep(1000);
                     player.session.Close();
                     return;
                 }
@@ -836,6 +836,16 @@ public class GameController
                 break;
             case GopetCMD.TYPE_DAILY_CHECKIN_DO:
                 DailyCheckinEvent.Instance.DoCheckin(player);
+                break;
+            // Chưa tạo nhân vật thì chưa có playerData: bỏ qua thay vì NRE rác log.
+            case GopetCMD.TYPE_BATTLE_BG_OPEN when player.playerData != null:
+                BattleBackgroundService.SendState(player);
+                break;
+            case GopetCMD.TYPE_BATTLE_BG_BUY when player.playerData != null:
+                BattleBackgroundService.Buy(player, message.reader().readsbyte());
+                break;
+            case GopetCMD.TYPE_BATTLE_BG_SELECT when player.playerData != null:
+                BattleBackgroundService.Select(player, message.reader().readsbyte());
                 break;
         }
     }

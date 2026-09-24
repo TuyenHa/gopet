@@ -27,9 +27,7 @@ namespace Gopet.Runtime.World
                 case -20: return "Nhận và xem tiến độ nhiệm vụ";
                 case -21: return "Tham gia hoạt động sự kiện";
                 case -28: return "Đấu trường, vượt ải và thách đấu";
-                case -29: return "Hướng dẫn các hoạt động Thiên Thần";
-                case -30: return "Quản lý và nâng cấp bang hội";
-                case -40: return "Tạo bang hội và vào khu bang";
+                case -42: return "Sửa độ bền trang bị pet bằng Đá mài";
             }
 
             // Chat của NPC được cấu hình từ server. Đây là đường dự phòng cho

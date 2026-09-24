@@ -20,10 +20,14 @@ namespace Gopet.Runtime.World
             // bám đất y như jar.
             // Tên NPC trong DB là HOA TOÀN BỘ vì font bitmap jar thiếu chữ hoa có dấu —
             // xem NpcDisplayNames. Tên object giữ nguyên bản gốc cho dễ tra trong Hierarchy.
+            // NPC trang trí: không tên, không nhận bấm (null → không có nhãn, tắt collider).
+            var decoration = npc.IsDecoration;
             var view = Create(parent, $"NPC {npc.Id} {npc.Name}", npc.ImagePath,
-                NpcDisplayNames.Prettify(npc.Name),
-                npc.X, npc.Y, mapHeight, npc.FrameCount, assets, () => clicked?.Invoke(npc.Id), npc.Bounds);
+                decoration ? null : NpcDisplayNames.Prettify(npc.Name),
+                npc.X, npc.Y, mapHeight, npc.FrameCount, assets,
+                decoration ? null : () => clicked?.Invoke(npc.Id), npc.Bounds);
             view.EnableIdleBob();
+            if (decoration) return view;
             var hint = NpcPurposeHints.Get(npc);
             if (!string.IsNullOrWhiteSpace(hint))
             {
@@ -63,8 +67,10 @@ namespace Gopet.Runtime.World
             PixelSnapVisual.Attach(spriteGo.transform);
             view._renderer.sortingOrder = MapPlacement.ActorSortingOrder(jarY);
             view._clicked = clicked;
-            view.MakeLabel(labelText, view._renderer.sortingOrder + 20);
+            if (labelText != null) view.MakeLabel(labelText, view._renderer.sortingOrder + 20);
             view.ConfigureCollider(bounds);
+            // Không nhận bấm thì không chặn cú chạm đi xuyên xuống mặt đất phía sau.
+            go.GetComponent<BoxCollider2D>().enabled = clicked != null;
 
             // Ảnh NPC/quái vốn do jar tải qua mạng (`dg.a` gọi `cp.a(path, 2)`), nhưng
             // phần lớn đã có sẵn cục bộ (unpack từ asset gốc vào Resources/Jar/Art/Raw/npcs).

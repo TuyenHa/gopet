@@ -28,6 +28,9 @@ var tests = new (string, Action)[] {
     ("backup shutdown waits and prevents new work", RuntimeTests.BackupShutdown),
     ("packet-size rejection splits history without losing records", HistoryTests.SplitRejectedBatch),
     ("backup publishes only completed exports", RuntimeTests.BackupPublication),
+    ("battle background buy charges price, selects, blocks re-buy", BattleBackgroundTests.BuyAndSelect),
+    ("battle background rejects bad ids, unowned, no gold", BattleBackgroundTests.Rejections),
+    ("battle background concurrent buys charge once", BattleBackgroundTests.ConcurrentBuyChargesOnce),
 };
 int failed = 0;
 foreach (var (name, test) in tests) {

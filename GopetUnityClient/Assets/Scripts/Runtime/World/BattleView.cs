@@ -52,7 +52,7 @@ namespace Gopet.Runtime.World
         public event Action Ticked;
 
         public static BattleView Create(Transform parent, BattleStart start, BattleHandler handler,
-            RemoteAssetCache assets, PlayerStats playerStats = null)
+            RemoteAssetCache assets, PlayerStats playerStats = null, BattleSceneSettings scenes = null)
         {
             var startedAt = Time.realtimeSinceStartupAsDouble;
             var go = new GameObject("Pet Battle", typeof(RectTransform), typeof(Canvas),
@@ -64,7 +64,8 @@ namespace Gopet.Runtime.World
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(960f, 540f); scaler.matchWidthOrHeight = 1f;
             var view = go.AddComponent<BattleView>();
-            view._handler = handler; view._start = start;
+            view._handler = handler; view._start = start; view._scenes = scenes;
+            view._gold = playerStats?.Gold;
             view._summaryTracker = new BattleSummaryTracker(start, startedAt);
             view.Build(assets, UiBuilder.DefaultFont(), playerStats);
             handler.BuffStateReceived += view.OnBuff;
@@ -75,6 +76,7 @@ namespace Gopet.Runtime.World
 
         private void OnDestroy()
         {
+            UnbindScenes();
             if (_handler == null) return;
             _handler.BuffStateReceived -= OnBuff;
             _handler.StatsReceived -= OnStats;
@@ -125,6 +127,7 @@ namespace Gopet.Runtime.World
             _skillPopup?.RefreshState(_left.Mp, !canAct);
             // Nút tròn luôn bấm được để xem kỹ năng; từng dòng mới khoá theo lượt.
             if (_skillButton != null) _skillButton.interactable = !HasResult && !_closeRequested;
+            if (_sceneButton != null) _sceneButton.interactable = !HasResult && !_closeRequested;
         }
 
         private void Build(RemoteAssetCache assets, Font font, PlayerStats playerStats)
@@ -135,14 +138,7 @@ namespace Gopet.Runtime.World
             _turn = new BattleTurnState(_start.LocalPet.ActorId, _start.LocalStarts);
             BeginOpening();
 
-            var bg = new GameObject("Nền", typeof(RectTransform), typeof(Image));
-            bg.transform.SetParent(transform, false);
-            UiBuilder.Stretch((RectTransform)bg.transform);
-            var bgImg = bg.GetComponent<Image>();
-            bgImg.sprite = BattleSkin.Load("Battle/bg-forest");
-            bgImg.color = bgImg.sprite == null ? new Color(0f, 0.08f, 0.13f, 0.92f) : Color.white;
-            bgImg.type = Image.Type.Simple;
-            bgImg.raycastTarget = false;
+            BuildBackdrop();
 
             _topBar = BattleTopBar.Create(transform, font, _start.Kind, playerStats);
             _topBar.BackClicked += OnBackClicked;
@@ -160,6 +156,7 @@ namespace Gopet.Runtime.World
             _skillPopup = BattleSkillPopup.Create(transform, _start.LocalPet.Skills, font,
                 _cooldowns, skillBtnRect);
             _skillPopup.SkillUsed += OnSkillUsed;
+            BuildSceneControls(font);
 
             _actionBar = BattleActionBar.Create(transform, font, _start.IsParticipant);
             _actionBar.AttackClicked += OnAttack;

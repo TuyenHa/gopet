@@ -114,11 +114,12 @@ Các file `migration-*.sql` KHÔNG tự chạy. Chạy theo thứ tự ngày, **
 | `migration-260919-mob-atk-def.sql` | Có |
 | `migration-260921-remove-santa-npc.sql` | Có |
 | `migration-260922-seed-social-data-gopettest.sql` | **Không** — dữ liệu thử giao diện cho tài khoản test |
+| `migration-260924-battle-background.sql` | Có — **bắt buộc trước khi deploy** bản có khung cảnh màn đấu: thiếu 2 cột `BattleBg*` thì mọi lần lưu người chơi lỗi `Unknown column` |
 
 ```bash
 cd /opt/gopet/SRCGOPETGOC/MariaDB_SQL
 PASS=$(grep ^MARIADB_ROOT_PASSWORD= /opt/gopet/docker/.env | cut -d= -f2)
-for f in migration-260919-mob-atk-def.sql migration-260921-remove-santa-npc.sql; do
+for f in migration-260919-mob-atk-def.sql migration-260921-remove-santa-npc.sql \n         migration-260924-battle-background.sql; do
   echo ">> $f"
   docker exec -i gopet-mariadb mysql -uroot -p"$PASS" --default-character-set=utf8mb4 gopettae_tae2 < "$f"
 done

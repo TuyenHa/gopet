@@ -18,7 +18,12 @@ public class GopetPlace : Place
     public CopyOnWriteArrayList<Mob> mobs = new();
     public CopyOnWriteArrayList<PetBattle> petBattles = new();
     public ConcurrentHashMap<MobLocation, long> newMob = new();
-    public const long TIME_NEW_MOB = 25000;
+    /// <summary>
+    /// Quái bị hạ (hoặc hết máu mà không còn trận) thì hồi lại ở đúng vị trí cũ sau khoảng này.
+    /// 3s khớp lúc người chơi về lại map: băng kết quả trận sống ~2.85s rồi tự đóng.
+    /// Gốc là 25s. Map vượt ải (12) không có dòng gopet_map_moblvl nên không bị ảnh hưởng.
+    /// </summary>
+    public const long TIME_NEW_MOB = 3000;
     public int[] numMobDie;
     public int[] numMobDieNeed
     {

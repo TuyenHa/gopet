@@ -1,0 +1,2 @@
+# Script chạy trên máy chủ Linux: CRLF làm bash báo lỗi "\r: command not found"
+*.sh text eol=lf

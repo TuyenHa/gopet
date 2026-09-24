@@ -256,7 +256,58 @@ docker save gopet-gserver:latest | gzip | ssh user@server 'gunzip | docker load'
 cd /opt/gopet/docker && docker compose --profile server up -d --no-build gserver
 ```
 
-### 4.6 Email xác thực (tuỳ chọn)
+### 4.6 CI/CD tự động bằng GitHub Actions
+
+`.github/workflows/gserver-ci-cd.yml`: mỗi lần merge/push vào `master` có đổi phần server
+(`SRCGOPETGOC/GServer/`, `tests/GServer.Performance.Tests/`, `docker/`) thì:
+
+1. **test** — chạy `tests/GServer.Performance.Tests` trên Ubuntu. Có test FAIL thì dừng, không deploy.
+2. **deploy** — SSH vào máy chủ → `git merge --ff-only` mã mới → `docker/deploy-gserver.sh`:
+   gắn tag `prev` cho image cũ, build image mới (build lỗi thì server cũ vẫn chạy), thay container
+   (có lưu dữ liệu), chờ `healthy` tối đa 5 phút; không healthy thì **tự rollback** về `prev`.
+
+Chạy tay: tab **Actions → GServer CI/CD → Run workflow**, hoặc trên máy chủ `bash docker/deploy-gserver.sh`.
+
+**Cài đặt một lần:**
+
+```bash
+# Trên máy chủ, user deploy (nằm trong nhóm docker, sở hữu /opt/gopet):
+# a) Cho máy chủ kéo được repo private: tạo deploy key CHỈ ĐỌC
+ssh-keygen -t ed25519 -N '' -f ~/.ssh/github_gopet
+cat >> ~/.ssh/config <<'EOF'
+Host github.com
+  IdentityFile ~/.ssh/github_gopet
+EOF
+cat ~/.ssh/github_gopet.pub     # → GitHub repo Settings → Deploy keys → Add (không tick write)
+git clone git@github.com:TuyenHa/gopet.git /opt/gopet   # nếu chưa clone (rồi làm mục 3)
+
+# b) Khoá để GitHub Actions SSH vào máy chủ
+ssh-keygen -t ed25519 -N '' -f ~/gh-actions-deploy
+cat ~/gh-actions-deploy.pub >> ~/.ssh/authorized_keys
+cat ~/gh-actions-deploy          # → secret DEPLOY_SSH_KEY, rồi XOÁ file này
+```
+
+GitHub repo → **Settings → Environments → New environment `production`**, thêm secrets:
+
+| Secret | Giá trị |
+|---|---|
+| `DEPLOY_HOST` | IP / tên miền máy chủ |
+| `DEPLOY_USER` | user SSH ở trên |
+| `DEPLOY_SSH_KEY` | nội dung private key `~/gh-actions-deploy` |
+| `DEPLOY_KNOWN_HOSTS` | kết quả `ssh-keyscan -p <port> <host>` (chạy từ máy tin cậy) |
+| `DEPLOY_PORT` | tuỳ chọn, mặc định `22` |
+
+Variable tuỳ chọn `DEPLOY_PATH` (mặc định `/opt/gopet`). Trong environment `production` có thể
+bật **Required reviewers** nếu muốn duyệt tay trước mỗi lần deploy.
+
+Lưu ý:
+- Workflow **không** chạy migration SQL (mục 3.3) — bản có migration thì chạy tay trước khi merge,
+  hoặc ngay sau khi deploy.
+- Sửa file đang được git theo dõi ngay trên máy chủ (vd. `docker/gserver/server.json`) mà trùng chỗ
+  với commit mới thì `git merge --ff-only` báo lỗi và deploy dừng, server cũ vẫn chạy. Nên sửa
+  cấu hình qua commit thay vì sửa tay trên máy chủ.
+
+### 4.7 Email xác thực (tuỳ chọn)
 
 Cấu hình SMTP nằm ở `appSettings/email-serivce-config` trong `App.config` (trong image là
 `/app/Gopet.dll.config`). Không sửa file trong repo; chép ra, điền thông tin, rồi mount đè

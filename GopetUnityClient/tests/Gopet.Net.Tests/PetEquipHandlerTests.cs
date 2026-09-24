@@ -169,6 +169,31 @@ namespace Gopet.Net.Tests
             Assert.Equal(91, received.ItemId);
         }
 
+        /// <summary>
+        /// resendPetEquipInfo (mặc/tháo đồ) ghi writeItemEquip(isReSend: true): KHÔNG có ngọc
+        /// vẫn kèm long -1 + int -1. Đọc thiếu thì ném "còn thừa 12 byte".
+        /// </summary>
+        [Fact]
+        public void ItemRefreshed_KhongGem_DocLuonLongIntDemCuaServer()
+        {
+            var router = new MessageRouter();
+            var handler = new PetEquipHandler();
+            handler.RegisterOn(router);
+            PetEquipItem received = null;
+            handler.EquipItemRefreshed += value => received = value;
+
+            var shield = new PetEquipItem { ItemId = 13, FrameImagePath = "items/shield.png",
+                DisplayName = "Khiên", Type = 2, PetEquipId = 100, Level = 1, HasGem = false };
+            using var message = Message.Create(GopetCmd.PET_SERVICE).PutSByte(GopetCmd.ON_UNQUIP_GEM);
+            WriteItem(message, shield);
+            message.PutLong(-1).PutInt(-1);
+            router.Dispatch(Message.FromWire(message.ToWire(), false));
+
+            Assert.Equal(13, received.ItemId);
+            Assert.False(received.HasGem);
+            Assert.Equal(100, received.PetEquipId);
+        }
+
         [Fact]
         public void EnchantMaterial_DocRouteDongQuaHelperCmd()
         {

@@ -48,7 +48,7 @@ namespace Gopet.Runtime.World
         private void BeginTravel(Vector3? fromWorld, RectTransform target)
         {
             if (fromWorld == null || target == null) return;
-            _travelDelta = target.position - fromWorld.Value;
+            _travelDelta = transform.parent.InverseTransformVector(target.position - fromWorld.Value);
             _travelStart = Time.unscaledTime;
             _travelSeconds = 0.5f;
             transform.position = fromWorld.Value;

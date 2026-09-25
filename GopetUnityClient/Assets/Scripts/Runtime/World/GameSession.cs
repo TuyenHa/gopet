@@ -183,8 +183,13 @@ namespace Gopet.Runtime.World
             // Xin khung cảnh đã chọn ngay khi vào game để trận đầu tiên đã đúng nền.
             s._battleScenes = new BattleSceneSettings(guider);
             s._battleScenes.Refresh();
+            var spectators = SpectatorBattleLayer.Create(s._scene.transform, id =>
+            {
+                var pet = s._petLayer != null ? s._petLayer.PetOf(id) : null;
+                return pet != null ? pet.transform : s._scene.TryGetAvatarTransform(id);
+            });
             s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
-                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes);
+                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes, spectators);
             s._mapHandler.MapUpdated += _ => s._battle?.OnPlaceChanged();
             s.RestoreAutoRecoveryOnLogin();
             s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");

@@ -118,7 +118,11 @@ public partial class MenuController
                 break;
             case MENU_SELECT_TYPE_PAYMENT_TO_ARENA_JOURNALISM:
                 {
-
+                    if (!ArenaEvent.IsEligible(player))
+                    {
+                        player.redDialog("Hãy đến Đấu trường và mang theo pet còn sống, không đang chiến đấu để báo danh.");
+                        return;
+                    }
                     if (ArenaEvent.Instance.IdPlayerJoin.Contains(player.playerData.user_id))
                     {
                         player.okDialog(player.Language.YouAreHaveJournalism);

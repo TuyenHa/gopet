@@ -27,16 +27,18 @@ namespace Gopet.Runtime.World
         private readonly Action<string> _toast;
         private readonly PlayerStatsHandler _playerStats;
         private readonly BattleSceneSettings _scenes;
+        private readonly SpectatorBattleLayer _spectators;
         private BattleView _view;
         private float _lastPacketAt;
         private float _timeoutSeconds;
 
         public BattleCoordinator(Transform parent, RemoteAssetCache assets, BattleHandler handler,
             Action<bool> setBattleMode, Action<string> toast = null, PlayerStatsHandler playerStats = null,
-            BattleSceneSettings scenes = null)
+            BattleSceneSettings scenes = null, SpectatorBattleLayer spectators = null)
         {
             _parent = parent; _assets = assets; _setBattleMode = setBattleMode;
             _toast = toast; _playerStats = playerStats; _scenes = scenes;
+            _spectators = spectators;
             // Thanh tiền trong trận trước đây chỉ đọc snapshot lúc mở trận; mua khung cảnh
             // giữa trận phải thấy vàng giảm ngay.
             if (_playerStats != null) _playerStats.StatsUpdated += stats => _view?.ApplyPlayerStats(stats);
@@ -52,6 +54,7 @@ namespace Gopet.Runtime.World
         /// giữ đến OK; map vẫn cập nhật bên dưới lớp chiến đấu.</summary>
         public void OnPlaceChanged()
         {
+            if (_spectators != null) _spectators.Clear();
             if (_view != null) Close();
         }
 
@@ -59,7 +62,12 @@ namespace Gopet.Runtime.World
         {
             // Server broadcast mọi trận trong zone. JAR vẽ trận người khác ngay trong world;
             // overlay toàn màn hình chỉ dành cho trận có người chơi hiện tại tham gia.
-            if (!start.IsParticipant) return;
+            if (!start.IsParticipant)
+            {
+                if (_spectators != null) _spectators.StartBattle(start);
+                return;
+            }
+            if (_spectators != null) _spectators.Remove(start.BattleId);
             // Không thay thế popup hoặc trả điều khiển map khi chưa xác nhận OK.
             if (_view != null && _view.AwaitingVictoryConfirmation) return;
             Close();
@@ -72,6 +80,7 @@ namespace Gopet.Runtime.World
 
         private void OnTurn(BattleTurn turn)
         {
+            if (_spectators != null) _spectators.Apply(turn);
             if (_view == null || _view.BattleId != turn.BattleId) return;
             _view.Apply(turn);
             RefreshTimeout(turn.TurnDurationMs);
@@ -79,11 +88,13 @@ namespace Gopet.Runtime.World
 
         private void OnEnded(BattleResult result)
         {
+            if (_spectators != null) _spectators.End(result);
             if (_view != null && _view.BattleId == result.BattleId) _view.ShowResult(result);
         }
 
         private void OnRemoved(int battleId)
         {
+            if (_spectators != null) _spectators.Remove(battleId);
             if (_view == null) return;
             // Khi THẮNG, server gửi PET_BATTLE_STATE rồi sendFastRemove() ngay sau đó
             // (PetBattle.cs:951-955) vì quái đã chết. Đóng ngay ở đây sẽ giết panel kết quả

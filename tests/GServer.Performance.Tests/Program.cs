@@ -4,6 +4,9 @@ using Gopet.IO;
 
 Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 var tests = new (string, Action)[] {
+    ("arena retains slot and sends countdown", ArenaTests.SlotAndTimer),
+    ("arena registration pairing and two rounds", ArenaTests.RegistrationPairingAndTwoRounds),
+    ("arena rejects ineligible registration without charge", ArenaTests.RegistrationRejectsInvalidPetAndClosedWindow),
     ("block writes preserve signed payload and header", BlockWrites),
     ("truncated payload stops at EOF", TruncatedPayload),
     ("fragmented payload is read completely", FragmentedPayload),

@@ -44,7 +44,7 @@ namespace Gopet.Data.Event
         {
             get
             {
-                return timeWaitPlayerJournalism > 0;
+                return IsRunning && !IsFighting && timeWaitPlayerJournalism > 0;
             }
         }
 
@@ -63,6 +63,12 @@ namespace Gopet.Data.Event
         {
             return !IsFighting;
         }
+
+        public static bool IsEligible(Player player) =>
+            player != null && player.session.isConnected() &&
+            player.getPlace()?.map.mapID == MapManager.ID_MAP_OUTSIDE_ARENA &&
+            player.getPet() != null && player.getPet().hp > 0 &&
+            player.controller.getPetBattle() == null;
 
         public override void Update()
         {
@@ -117,7 +123,7 @@ namespace Gopet.Data.Event
             {
                 Player player = PlayerManager.get(id);
 
-                if (player == null)
+                if (!IsEligible(player))
                 {
                     IdPlayerJoin.remove(id);
                     continue;

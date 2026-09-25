@@ -45,9 +45,9 @@ namespace Gopet.Runtime.World
             rect.sizeDelta = new Vector2(height * aspect, height);
             // Ngọn trước pet hạ thấp xuống (gần người xem hơn), ngọn sau thì nhích lên.
             var depth = inFront ? Random.Range(-0.40f, -0.18f) : Random.Range(0.04f, 0.22f);
-            var to = new Vector3(
-                target.position.x + (spread * SpreadRatio + Random.Range(-0.05f, 0.05f)) * canvasHeight,
-                target.position.y + depth * petH, target.position.z);
+            var to = target.position + rect.parent.TransformVector(new Vector3(
+                (spread * SpreadRatio + Random.Range(-0.05f, 0.05f)) * canvasHeight,
+                depth * petH, 0f));
             rect.position = to;
             rect.localScale = Vector3.zero;
 
@@ -61,7 +61,7 @@ namespace Gopet.Runtime.World
                 // Nghiêng đúng bằng góc của đường bay, KHÔNG phải một số chọn tay: lệch nhau
                 // thì thân lửa không nằm trên quỹ đạo và trông như trượt ngang.
                 Tilt = -Mathf.Atan(lean) * Mathf.Rad2Deg,
-                From = to + new Vector3(lean * fall, fall, 0f),
+                From = to + rect.parent.TransformVector(new Vector3(lean * fall, fall, 0f)),
                 To = to,
             };
         }

@@ -24,6 +24,7 @@ namespace Gopet.Data.Event
             get
             {
                 if (IsRunning || IsFighting) return true;
+                if (TestWaitMillis > 0) return true;
                 return
                     (
                     DateTime.Now.Hour == 6 ||
@@ -56,6 +57,13 @@ namespace Gopet.Data.Event
         private uint showBanner = 0;
         public const long TIME_WAIT_COST = 60000 * 30;
         public const long TIME_WAIT_TURN_COST = 60000 * 3;
+
+        /// <summary>
+        /// Chế độ test: set env GOPET_ARENA_TEST_WAIT_SECONDS=N để lôi đài mở liên tục
+        /// (bỏ qua khung giờ) và chỉ chờ báo danh N giây. Không set → hành vi gốc.
+        /// </summary>
+        private static readonly long TestWaitMillis =
+            long.TryParse(Environment.GetEnvironmentVariable("GOPET_ARENA_TEST_WAIT_SECONDS"), out var s) && s > 0 ? s * 1000 : 0;
         public CopyOnWriteArrayList<int> IdPlayerJoin = new CopyOnWriteArrayList<int>();
 
 
@@ -77,7 +85,7 @@ namespace Gopet.Data.Event
                 if (!IsRunning)
                 {
                     IsRunning = true;
-                    timeWaitPlayerJournalism = TIME_WAIT_COST;
+                    timeWaitPlayerJournalism = TestWaitMillis > 0 ? TestWaitMillis : TIME_WAIT_COST;
                     lastTimeWait = Utilities.CurrentTimeMillis;
                 }
 

@@ -121,6 +121,7 @@ namespace Gopet.Runtime
             var hud = ShopServiceEventHud.Create(canvas.transform, font);
             hud.gameObject.SetActive(false);
             hud.ShopClicked += () => _ui.OpenShopPopup();
+            hud.MarketClicked += () => _ui.OpenMarketPopup();
             hud.ServiceClicked += () => _ui.OpenAtmPopup(() => _client.Send(BankPackets.OpenBankMenu()));
             hud.EventClicked += () => _ui.OpenDailyCheckin();
             // Hộp thư mở theo đường của server y như mục "Hộp thư" trong menu nhân vật: gửi
@@ -136,6 +137,11 @@ namespace Gopet.Runtime
                 _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
                 _session.UnreadMailCountChanged += hud.SetMailCount;
                 _ui.MenuInterceptor = _session.TryConsumeHudMenu;
+                // Chợ trời: MarketHandler được GameSession tạo SAU login (cần client.Send),
+                // nên nối vào popup ở đây — cùng khuôn dòng MenuInterceptor ngay trên. Ngọc
+                // hiện có cũng nối theo để popup chặn nút Mua khi rõ ràng không đủ (UX).
+                _ui.BindMarket(_session.Market);
+                _session.Stats.StatsUpdated += stats => _ui.SetPlayerCoin(stats.Coin);
                 _session.LogoutRequested += LogoutToLogin;
                 // Bật HUD 3 nút góc-phải NGAY sau khi vào map — trước đó ẩn để không
                 // đè lên splash / màn đăng nhập.

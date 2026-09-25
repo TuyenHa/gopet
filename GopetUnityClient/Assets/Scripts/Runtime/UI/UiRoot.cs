@@ -418,6 +418,8 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _guildNpcTabs)) _guildNpcTabs = null;
             if (ReferenceEquals(screen, _blacksmithNpcTabs)) _blacksmithNpcTabs = null;
             if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
+            if (ReferenceEquals(screen, _marketPopup)) _marketPopup = null;
+            if (ReferenceEquals(screen, _marketSellPopup)) _marketSellPopup = null;
         }
 
         private void DestroyView(object screen)

@@ -105,6 +105,7 @@ namespace Gopet.Runtime.World
         private WingHandler _wingHandler;
         private KioskHandler _kioskHandler;
         private KioskListingView _kioskDialog;
+        private Gopet.Net.Market.MarketHandler _marketHandler;
         private WarpFadeOverlay _warpFade;
         /// <summary>User bấm menu "Trang bị pet" mở lần này → tự spawn view khi EQUIP_INFO tới.
         /// Nếu không có cờ, EQUIP_INFO đến do server tự bơm (sau equip/unequip) → chỉ update view
@@ -119,6 +120,14 @@ namespace Gopet.Runtime.World
         }
 
         public MapScene Scene => _scene;
+
+        /// <summary>Đăng ký sẵn trên router — <c>GopetBootstrap</c> nối vào popup của
+        /// <c>UiRoot</c> qua <c>UiRoot.BindMarket</c> sau khi phiên bắt đầu.</summary>
+        public Gopet.Net.Market.MarketHandler Market => _marketHandler;
+
+        /// <summary>Đọc để nối ngọc hiện có vào popup Chợ trời (chặn Mua khi thiếu ngọc ở
+        /// client) — xem <c>UiRoot.SetPlayerCoin</c>.</summary>
+        public PlayerStatsHandler Stats => _statsHandler;
 
         /// <summary>Server từ chối warp bằng dialog nên sẽ không có MapLoaded để tự mở fade.</summary>
         public void CancelWarpTransition() => _warpFade?.FadeIn();
@@ -336,6 +345,13 @@ namespace Gopet.Runtime.World
             s._kioskHandler = new KioskHandler();
             s._kioskHandler.RegisterOn(client.Router);
             s._kioskHandler.ListingReceived += s.OnKioskListingReceived;
+
+            // Popup "Chợ trời" toàn map (COMMAND_GUIDER sub 47..57) — xem
+            // plans/260925-2253-cho-troi-market-popup/phase-04. UiRoot không tự tạo
+            // handler này (nó chỉ đăng ký handler đã có sẵn qua BindMarket) vì Market cần
+            // client.Send, giống hệt lý do WingHandler được truyền vào thay vì UiRoot tự new.
+            s._marketHandler = new Gopet.Net.Market.MarketHandler(client.Send);
+            s._marketHandler.RegisterOn(client.Router);
 
             // Đổi map → camera phải recenter theo map MỚI. Không thì nó đứng chỗ cũ và
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.

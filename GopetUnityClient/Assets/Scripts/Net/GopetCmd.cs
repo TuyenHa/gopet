@@ -117,11 +117,21 @@ namespace Gopet.Net
         public const sbyte TYPE_DAILY_CHECKIN_STATE = 40;
         public const sbyte TYPE_DAILY_CHECKIN_OPEN = 41;
         public const sbyte TYPE_DAILY_CHECKIN_DO = 42;
-        // Khung cảnh màn đấu (sub của COMMAND_GUIDER), khớp GopetCMD.cs server.
         public const sbyte TYPE_BATTLE_BG_STATE = 43;
         public const sbyte TYPE_BATTLE_BG_OPEN = 44;
         public const sbyte TYPE_BATTLE_BG_BUY = 45;
         public const sbyte TYPE_BATTLE_BG_SELECT = 46;
+        public const sbyte TYPE_MARKET_LIST = 47;
+        public const sbyte TYPE_MARKET_LIST_STATE = 48;
+        public const sbyte TYPE_MARKET_BUY = 49;
+        public const sbyte TYPE_MARKET_MINE = 50;
+        public const sbyte TYPE_MARKET_MINE_STATE = 51;
+        public const sbyte TYPE_MARKET_CANCEL = 52;
+        public const sbyte TYPE_MARKET_SELLABLE = 53;
+        public const sbyte TYPE_MARKET_SELLABLE_STATE = 54;
+        public const sbyte TYPE_MARKET_SELL = 55;
+        public const sbyte TYPE_MARKET_RESULT = 56;
+        public const sbyte TYPE_MARKET_ASSIGN = 57;
         public const sbyte REMOVE_SELL_ITEM = 87;
         public const sbyte PLAYER_CHALLENGE = 12;
         public const sbyte PLAYER_PK = 96;

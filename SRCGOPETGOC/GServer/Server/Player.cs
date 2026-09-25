@@ -3,6 +3,7 @@
 using Dapper;
 using Gopet.Data.Collections;
 using Gopet.Data.GopetItem;
+using Gopet.Data.Map;
 using Gopet.Data.User;
 using Gopet.IO;
 using Gopet.Util;
@@ -506,27 +507,8 @@ Thread.Sleep(1000);
                     playerData.TrashItemBackup.Remove(item.Key);
                 }
             }
-            var kioskList = gameconn.Query("SELECT * FROM `kiosk_recovery` where user_id = @user_id", new { user_id = this.user.user_id });
-            if (kioskList.Any())
-            {
-                foreach (var item in kioskList)
-                {
-                    SellItem sellItem = JsonConvert.DeserializeObject<SellItem>(item.item);
-                    if (sellItem.pet == null)
-                    {
-                        addItemToInventory(sellItem.ItemSell);
-                    }
-                    else
-                    {
-                        playerData.addPet(sellItem.pet, this);
-                    }
-                    if (sellItem.sumVal > 0)
-                    {
-                        addCoin(sellItem.sumVal);
-                    }
-                }
-            }
-            gameconn.Execute("DELETE FROM `kiosk_recovery` where user_id = @user_id", new { user_id = this.user.user_id });
+            // Đồ/tiền ki ốt hết hạn trong lúc offline (hoặc chưa kịp nhận khi online).
+            KioskRecovery.Deliver(this, gameconn);
             loginOK();
             controller.LoadMap();
             controller.updateAvatar();

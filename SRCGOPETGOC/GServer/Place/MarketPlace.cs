@@ -34,16 +34,9 @@ public class MarketPlace : GopetPlace
         maxPlayer = 50;
     }
 
-
-    public override void update()
-    {
-        base.update(); 
-        for (int i = 0; i < kiosks.Length; i++)
-        {
-            Kiosk kiosk = kiosks[i];
-            kiosk.update();
-        }
-    }
+    // Expire ki ốt chạy ở MarketExpiryTicker (1 lần/tick RuntimeServer), không còn ở đây.
+    // Map 22 tạo 10 MarketPlace (xem MarketMap.createZoneDefault) nên trước đây expire chạy
+    // trùng 10 lần/tick và chỉ chạy khi có người online cập nhật map 22.
 
     public static Kiosk getKiosk(sbyte type)
     {

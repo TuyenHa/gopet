@@ -5,6 +5,7 @@ using Gopet.Data.Collections;
 using Gopet.Data.Event;
 using Gopet.Data.GopetClan;
 using Gopet.Data.GopetItem;
+using Gopet.Data.Map;
 using Gopet.Manager;
 using Gopet.Runtime;
 using Gopet.Server;
@@ -66,6 +67,7 @@ namespace Gopet.App
             RuntimeServer.instance.runtimes.add(new AutoSave());
             RuntimeServer.instance.runtimes.add(new DBBackup());
             RuntimeServer.instance.runtimes.add(Maintenance.gI());
+            RuntimeServer.instance.runtimes.add(new MarketExpiryTicker());
         }
 
 

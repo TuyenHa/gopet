@@ -753,28 +753,33 @@ public partial class MenuController
                     }
                     break;
                 case INPUT_ASSIGNED_CHANGE_NAME_KIOSK:
+                    {
+                        // Rỗng = bỏ chỉ định (miễn phí) — khác INPUT_ASSIGNED_NAME_KIOSK (treo mới) vốn bắt buộc nhập tên.
+                        string assignedName = reader.readString(0).Trim();
+                        if (!player.controller.objectPerformed.ContainsKey(OBJKEY_ITEM_KIOSK_CANCEL))
+                        {
+                            player.redDialog(player.Language.ItemWasSell);
+                            return;
+                        }
+                        int itemId = player.controller.objectPerformed[OBJKEY_ITEM_KIOSK_CANCEL];
+                        sbyte typeKiosk = player.controller.objectPerformed.get(MenuController.OBJKEY_TYPE_SHOW_KIOSK);
+                        Kiosk kiosk = MarketPlace.getKiosk(typeKiosk);
+                        if (kiosk == null)
+                        {
+                            player.redDialog(player.Language.ItemWasSell);
+                            return;
+                        }
+                        KioskResult result = kiosk.TrySetAssignedName(player, itemId, assignedName);
+                        if (result.Ok) player.okDialog(result.Message);
+                        else player.redDialog(result.Message);
+                    }
+                    return;
                 case INPUT_ASSIGNED_NAME_KIOSK:
                     {
                         string assignedName = reader.readString(0).Trim();
                         if (string.IsNullOrEmpty(assignedName))
                         {
                             player.redDialog("Tên người chỉ định rỗng");
-                            return;
-                        }
-                        if (dialogInputId == INPUT_ASSIGNED_CHANGE_NAME_KIOSK)
-                        {
-                            sbyte typeKiosk = player.controller.objectPerformed.get(MenuController.OBJKEY_TYPE_SHOW_KIOSK);
-                            Kiosk kiosk = MarketPlace.getKiosk(typeKiosk);
-                            SellItem sellItem = kiosk.getItemByUserId(player.user.user_id);
-                            if (sellItem != null && sellItem.AssignedName != null)
-                            {
-                                sellItem.AssignedName = assignedName;
-                                player.okDialog("Thay đổi tên người chỉ định thành công");
-                            }
-                            else
-                            {
-                                player.redDialog("Trước đó bạn không có chỉnh định người nào");
-                            }
                             return;
                         }
                         if (player.controller.objectPerformed.ContainsKey(OBJKEY_PRICE_KIOSK_ITEM))

@@ -2,6 +2,7 @@
 using Gopet.App;
 using Gopet.Data.Event.DailyCheckin;
 using Gopet.Data.BattleBackground;
+using Gopet.Data.Market;
 using Gopet.Battle;
 using Gopet.Data.GopetClan;
 using Gopet.Data.Collections;
@@ -210,6 +211,8 @@ public class GameController
 
     public void onMessage(Message message)
     {
+        // Trả đồ ki ốt vừa hết hạn cho người bán đang online, trên đúng thread của player.
+        KioskRecovery.DeliverIfPending(player);
 
         switch (message.id)
         {
@@ -846,6 +849,28 @@ public class GameController
                 break;
             case GopetCMD.TYPE_BATTLE_BG_SELECT when player.playerData != null:
                 BattleBackgroundService.Select(player, message.reader().readsbyte());
+                break;
+            // Popup Chợ trời toàn cục, chưa tạo nhân vật thì bỏ qua như battle background ở trên.
+            case GopetCMD.TYPE_MARKET_LIST when player.playerData != null:
+                MarketService.HandleList(player, message.reader().readsbyte(), message.reader().readsbyte(), message.reader().readShort());
+                break;
+            case GopetCMD.TYPE_MARKET_BUY when player.playerData != null:
+                MarketService.HandleBuy(player, message.reader().readsbyte(), message.reader().readInt());
+                break;
+            case GopetCMD.TYPE_MARKET_MINE when player.playerData != null:
+                MarketService.HandleMine(player);
+                break;
+            case GopetCMD.TYPE_MARKET_CANCEL when player.playerData != null:
+                MarketService.HandleCancel(player, message.reader().readsbyte(), message.reader().readInt());
+                break;
+            case GopetCMD.TYPE_MARKET_SELLABLE when player.playerData != null:
+                MarketService.HandleSellable(player);
+                break;
+            case GopetCMD.TYPE_MARKET_SELL when player.playerData != null:
+                MarketService.HandleSell(player, message.reader().readsbyte(), message.reader().readInt(), message.reader().readInt(), message.reader().readInt());
+                break;
+            case GopetCMD.TYPE_MARKET_ASSIGN when player.playerData != null:
+                MarketService.HandleAssign(player, message.reader().readsbyte(), message.reader().readInt(), message.readUTF());
                 break;
         }
     }
@@ -2895,7 +2920,6 @@ public class GameController
     public void showKiosk(sbyte typeKiosk)
     {
         objectPerformed.put(MenuController.OBJKEY_TYPE_SHOW_KIOSK, typeKiosk);
-        MarketPlace marketPlace = (MarketPlace)player.getPlace();
         Kiosk kiosk = MarketPlace.getKiosk(typeKiosk);
         SellItem sellItem = kiosk.getItemByUserId(player.user.user_id);
         Message m = messagePetService(GopetCMD.KIOSK);
@@ -2923,49 +2947,37 @@ public class GameController
         player.session.sendMessage(m);
     }
 
+    /// <summary>
+    /// Gỡ listing của chính mình. itemId đến trực tiếp từ client (GopetCMD.REMOVE_SELL_ITEM) nên
+    /// không tin owner — <see cref="Kiosk.TryCancel"/> tự kiểm tra chủ + lock theo
+    /// <c>SellItem.Sync</c> để loại trừ với buy/expire đang chạy song song.
+    /// </summary>
     public void removeSellItem(int itemId)
     {
-        sbyte typeKiosk = (sbyte)objectPerformed.get(MenuController.OBJKEY_TYPE_SHOW_KIOSK);
-        MarketPlace marketPlace = (MarketPlace)player.getPlace();
-        Kiosk kiosk = MarketPlace.getKiosk(typeKiosk);
-        SellItem sellItem = kiosk.searchItem(itemId);
-        if (sellItem != null)
+        // OBJKEY_TYPE_SHOW_KIOSK chỉ được set lúc mở màn kiosk (showKiosk) — gói REMOVE_SELL_ITEM
+        // gửi trước đó (client bug/gói cũ) sẽ thiếu key này, cast null -> sbyte ném NRE.
+        if (!objectPerformed.ContainsKey(MenuController.OBJKEY_TYPE_SHOW_KIOSK))
         {
-            lock (sellItem)
-            {
-                if (sellItem.hasSell)
-                {
-                    player.redDialog(player.Language.ItemWasSell);
-                }
-                else if (sellItem.hasRemoved)
-                {
-                    kiosk.kioskItems.remove(sellItem);
-                }
-                else
-                {
-                    kiosk.kioskItems.remove(sellItem);
-                    if (sellItem.pet != null)
-                    {
-                        player.playerData.pets.Add(sellItem.pet);
-                    }
-                    else
-                    {
-                        player.addItemToInventory(sellItem.ItemSell);
-                    }
-                    if (sellItem.sumVal > 0)
-                    {
-                        player.addCoin(Utilities.round(Utilities.GetValueFromPercent(sellItem.sumVal, 100f - GopetManager.KIOSK_PER_SELL)));
-                    }
-                    player.okDialog(player.Language.CancelItemKiosk);
-                    HistoryManager.addHistory(new History(player).setLog(Utilities.Format("Gỡ vật phẩm về túi thành công", sellItem.getName(player))).setObj(sellItem));
-                    sellItem.hasRemoved = true;
-                    showKiosk(typeKiosk);
-                }
-            }
+            player.redDialog(player.Language.ItemWasSell);
+            return;
+        }
+        sbyte typeKiosk = (sbyte)objectPerformed.get(MenuController.OBJKEY_TYPE_SHOW_KIOSK);
+        Kiosk kiosk = MarketPlace.getKiosk(typeKiosk);
+        if (kiosk == null)
+        {
+            player.redDialog(player.Language.ItemWasSell);
+            return;
+        }
+
+        KioskResult result = kiosk.TryCancel(player, itemId);
+        if (result.Ok)
+        {
+            player.okDialog(result.Message);
+            showKiosk(typeKiosk);
         }
         else
         {
-            player.redDialog(player.Language.ItemWasSell);
+            player.redDialog(result.Message);
         }
     }
 

@@ -791,7 +791,6 @@ public partial class MenuController
             case MENU_KIOSK_WEAPON:
             case MENU_KIOSK_HAT:
                 {
-                    MarketPlace marketPlace = (MarketPlace)player.getPlace();
                     Kiosk kiosk = null;
                     switch (menuId)
                     {

@@ -1464,8 +1464,14 @@ public class GopetManager
     {
         return string.Concat(GetClassDisplay(nClass, player), " ", GetElementDisplay(typeE, player));
     }
+    /// <summary>Giữ lại bao nhiêu bản lưu market gần nhất — tránh bảng `market` phình vô hạn
+    /// (mỗi lần saveMarket() INSERT nguyên JSON toàn bộ kiosk, trước đây không xoá bản cũ).</summary>
+    private const int MarketSaveKeepRows = 20;
+
     /// <summary>
-    /// Lưu dữ liệu chợ
+    /// Lưu dữ liệu chợ, rồi xoá bớt các bản cũ chỉ giữ <see cref="MarketSaveKeepRows"/> bản mới
+    /// nhất — mỗi lần gọi INSERT 1 dòng JSON đầy đủ nên bảng `market` phình rất nhanh nếu không
+    /// prune.
     /// </summary>
     public static void saveMarket()
     {
@@ -1475,7 +1481,57 @@ public class GopetManager
             {
                 Data = JsonConvert.SerializeObject(MarketPlace.kiosks)
             });
+            // Subquery bọc trong alias `keep` vì MySQL/MariaDB không cho DELETE tham chiếu
+            // thẳng bảng đang xoá trong mệnh đề FROM con.
+            conn.Execute(@"DELETE FROM `market` WHERE `Id` NOT IN (
+                SELECT `Id` FROM (SELECT `Id` FROM `market` ORDER BY `Id` DESC LIMIT @Keep) AS keep)",
+                new { Keep = MarketSaveKeepRows });
         }
+    }
+
+    private static volatile bool _marketDirty = false;
+
+    /// <summary>
+    /// Đánh dấu market vừa có thay đổi (list/buy/cancel/expire/chỉ định). Mọi thao tác mutation
+    /// nên gọi <see cref="SaveMarketNow"/> (lưu ngay) thay vì chỉ set cờ này — cờ + Flush vẫn giữ
+    /// lại làm lưới an toàn cho AutoSave tick định kỳ (10s) nếu có chỗ nào lỡ quên gọi SaveMarketNow.
+    /// </summary>
+    public static void RequestMarketSave()
+    {
+        _marketDirty = true;
+    }
+
+    /// <summary>
+    /// Lưu market nếu có thay đổi kể từ lần lưu trước, chỉ hạ cờ dirty SAU KHI lưu thành công —
+    /// trước đây hạ cờ trước rồi mới lưu nên 1 lần lưu lỗi (mất kết nối DB...) bị lặng lẽ bỏ qua,
+    /// listing mới nhất không được ghi lại cho tới mutation kế tiếp. Gọi định kỳ bởi AutoSave.
+    /// </summary>
+    public static void FlushMarketSaveIfDirty()
+    {
+        if (!_marketDirty) return;
+        try
+        {
+            saveMarket();
+            _marketDirty = false;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            // Giữ nguyên _marketDirty = true để lần Flush sau (AutoSave tick 10s hoặc mutation
+            // kế tiếp gọi SaveMarketNow) thử lưu lại thay vì mất trắng thay đổi.
+        }
+    }
+
+    /// <summary>
+    /// Lưu market NGAY (đồng bộ) — gọi sau mọi mutation kiosk (list/buy/cancel/expire/chỉ định)
+    /// thay vì chờ AutoSave debounce 10s, để listing vừa đổi không bị mất nếu server crash giữa
+    /// 2 lần lưu định kỳ. Nuốt lỗi DB bên trong <see cref="FlushMarketSaveIfDirty"/> (giữ cờ dirty)
+    /// để 1 lần lưu thất bại không làm hỏng luồng xử lý gói tin của người chơi đang mutate.
+    /// </summary>
+    public static void SaveMarketNow()
+    {
+        RequestMarketSave();
+        FlushMarketSaveIfDirty();
     }
 
 

@@ -63,7 +63,7 @@ namespace Gopet.Runtime.UI
         }
 
         private void BuildCloseButton(Font font) =>
-            CreateCloseButton(transform, font, () => Closed?.Invoke());
+            _close = (RectTransform)CreateCloseButton(transform, font, () => Closed?.Invoke()).transform;
 
         /// <summary>
         /// Nút X đỏ sát góc trên-phải của <paramref name="popup"/>. Công khai để popup không

@@ -13,8 +13,11 @@ namespace Gopet.Runtime.UI
     {
         /// <summary>Khớp <c>GopetManager.KIOSK_PET</c> phía server — dùng để chọn đúng dòng phí.</summary>
         private const sbyte KioskPet = 4;
-        private const float FooterHeight = 30f;
+        private const float FooterHeight = 26f;
+        private const float SellButtonWidth = 96f;
         private const float FooterGap = 6f;
+        private const float MineActionWidth = 120f;
+        private const float MineButtonHeight = 24f;
 
         private RectTransform _minePanel;
         private PopupItemList _mineList;
@@ -53,24 +56,17 @@ namespace Gopet.Runtime.UI
             go.transform.SetParent(parent, false);
 
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.sizeDelta = new Vector2(0f, FooterHeight);
+            // Nút nhỏ neo góc phải dưới, không kéo hết bề ngang.
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, 0f);
+            rect.sizeDelta = new Vector2(SellButtonWidth, FooterHeight);
             rect.anchoredPosition = Vector2.zero;
 
             var image = go.GetComponent<Image>();
-            var text = UiBuilder.MakeText(go.transform, _font, "Label", 13, true);
-            if (GameButtonSkin.Apply(image, FooterHeight))
-            {
-                GameButtonSkin.StyleLabel(text);
-            }
-            else
-            {
-                image.color = PopupPalette.ButtonBlue;
-                text.alignment = TextAnchor.MiddleCenter;
-                text.color = Color.white;
-            }
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", 12, true);
+            RoundedUiSprite.Apply(image);
+            image.color = PopupPalette.ButtonBlue;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
             text.text = "Đăng bán";
 
             go.GetComponent<Button>().onClick.AddListener(() => SellRequested?.Invoke());
@@ -102,8 +98,11 @@ namespace Gopet.Runtime.UI
                     new Vector2(0f, -i * MarketListingRowView.Height);
 
                 var captured = listing;
-                view.AddButton("Chỉ định", 2f, 20f, () => OpenAssign(captured));
-                view.AddButton("Gỡ", 24f, 20f, () => ConfirmCancel(captured));
+                // 2 nút cùng một hàng, giữa dòng: Chỉ định | Gỡ.
+                view.SetActionWidth(MineActionWidth);
+                const float top = (MarketListingRowView.Height - MineButtonHeight) / 2f;
+                view.AddButton("Chỉ định", top, MineButtonHeight, () => OpenAssign(captured), 0f, 0.58f);
+                view.AddButton("Gỡ", top, MineButtonHeight, () => ConfirmCancel(captured), 0.58f, 1f);
 
                 _mineRows.Add(view);
             }
@@ -142,7 +141,7 @@ namespace Gopet.Runtime.UI
             {
                 ConfirmRequested(new MenuSelection.ConfirmPrompt
                 {
-                    Text = $"Gỡ {row.Name} khỏi Chợ trời?",
+                    Text = $"Gỡ {JarIconTokens.Strip(row.Name)} khỏi Chợ trời?",
                     ConfirmLabel = "Gỡ",
                     CancelLabel = "Huỷ",
                 }, Send);

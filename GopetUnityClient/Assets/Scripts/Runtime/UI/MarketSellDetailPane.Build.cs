@@ -7,8 +7,8 @@ namespace Gopet.Runtime.UI
     /// Phần dựng hình của <see cref="MarketSellDetailPane"/>. Tách khỏi file chính để mỗi
     /// file dưới 200 dòng — cùng khuôn <c>MarketListingRowView.Build.cs</c>.
     ///
-    /// <para>Toạ độ tính từ TRÊN pane (333 ref-unit cao, xem <c>GamePopupFrame.Content</c>
-    /// không băng chân: 360 − 18 − 9). Vùng dưới icon/tên chừa cố định cho 2 ô nhập + dòng
+    /// <para>Toạ độ tính từ TRÊN pane (283 ref-unit cao, xem <c>GamePopupFrame.Content</c>
+    /// không băng chân: 310 − 18 − 9). Vùng dưới icon/tên chừa cố định cho 2 ô nhập + dòng
     /// thực nhận + dòng lỗi + nút — kể cả khi ô số lượng ẩn, để đổi món không phải tính
     /// lại vị trí từng phần tử.</para>
     /// </summary>
@@ -19,11 +19,11 @@ namespace Gopet.Runtime.UI
         private const float TextLeft = IconSize + 14f;
         private const float DescTop = 64f;
         private const float DescBottom = 154f;
-        private const float PriceTop = 187f;
-        private const float QtyTop = 219f;
-        private const float NetTop = 251f;
-        private const float ErrorTop = 273f;
-        private const float ButtonTop = 293f;
+        private const float PriceTop = 137f;
+        private const float QtyTop = 169f;
+        private const float NetTop = 201f;
+        private const float ErrorTop = 223f;
+        private const float ButtonTop = 243f;
         private const float FieldHeight = 24f;
         private const float ButtonHeight = 32f;
 
@@ -32,7 +32,7 @@ namespace Gopet.Runtime.UI
             RoundedBorder.Apply(gameObject, RoundedUiSprite.DefaultRadius, PopupPalette.ListBg,
                 PopupPalette.Hairline);
 
-            _placeholder = UiBuilder.MakeText(transform, font, "Placeholder", 12, true);
+            _placeholder = UiBuilder.MakeText(transform, font, "Placeholder", 11, true);
             _placeholder.alignment = TextAnchor.MiddleCenter;
             _placeholder.color = PopupPalette.TextMuted;
             _placeholder.text = "Chọn một món bên trái để đăng bán.";
@@ -66,13 +66,13 @@ namespace Gopet.Runtime.UI
             _icon = iconGo.GetComponent<RawImage>();
             _icon.raycastTarget = false;
 
-            _nameText = UiBuilder.MakeText(_content.transform, font, "Name", 14, false);
-            _nameText.color = PopupPalette.TextDark;
-            UiBuilder.SetFontStyle(_nameText, FontStyle.Bold);
-            _nameText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            _nameText.verticalOverflow = VerticalWrapMode.Truncate;
-            _nameText.raycastTarget = false;
-            var nameRect = _nameText.rectTransform;
+            _name = StarNameLabel.Create(_content.transform, font, 12, 11f);
+            var nameText = _name.Label;
+            nameText.color = PopupPalette.TextDark;
+            UiBuilder.SetFontStyle(nameText, FontStyle.Bold);
+            nameText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            nameText.verticalOverflow = VerticalWrapMode.Truncate;
+            var nameRect = _name.Rect;
             nameRect.anchorMin = new Vector2(0f, 1f);
             nameRect.anchorMax = new Vector2(1f, 1f);
             nameRect.pivot = new Vector2(0f, 1f);
@@ -92,7 +92,7 @@ namespace Gopet.Runtime.UI
             rect.offsetMax = new Vector2(-Padding, -DescTop);
             viewport.GetComponent<Image>().color = Color.clear;
 
-            _descText = UiBuilder.MakeText(viewport.transform, font, "Text", 11, false);
+            _descText = UiBuilder.MakeText(viewport.transform, font, "Text", 10, false);
             _descText.alignment = TextAnchor.UpperLeft;
             _descText.color = PopupPalette.TextMuted;
             _descText.supportRichText = false;
@@ -134,16 +134,29 @@ namespace Gopet.Runtime.UI
             // Ẩn/hiện cả DÒNG (nhãn + ô), không chỉ InputField — nhãn "Số lượng:" đứng
             // riêng, ẩn mỗi ô nhập vẫn để lại nhãn trơ trọi.
             _qtyRow = _qtyInput.transform.parent.gameObject;
+
+            ShrinkField(_priceInput);
+            ShrinkField(_qtyInput);
+        }
+
+        /// <summary>Chữ nhãn + chữ nhập nhỏ hơn cỡ 13 mặc định của <see cref="PopupField"/>
+        /// cho vừa popup nhỏ — chỉnh tại chỗ để không ảnh hưởng popup khác.</summary>
+        private static void ShrinkField(InputField input)
+        {
+            const int size = 11;
+            input.textComponent.fontSize = size;
+            var caption = input.transform.parent.Find("Label")?.GetComponent<Text>();
+            if (caption != null) caption.fontSize = size;
         }
 
         private void BuildNetAndError(Font font)
         {
-            _netText = UiBuilder.MakeText(_content.transform, font, "Net", 12, false);
+            _netText = UiBuilder.MakeText(_content.transform, font, "Net", 11, false);
             _netText.color = PopupPalette.TextDark;
             _netText.raycastTarget = false;
             UiBuilder.PlaceRow(_netText.rectTransform, NetTop, 18f, 16f);
 
-            _errorText = UiBuilder.MakeText(_content.transform, font, "Error", 11, false);
+            _errorText = UiBuilder.MakeText(_content.transform, font, "Error", 10, false);
             _errorText.color = new Color(0.82f, 0.2f, 0.2f, 1f);
             _errorText.horizontalOverflow = HorizontalWrapMode.Wrap;
             _errorText.verticalOverflow = VerticalWrapMode.Truncate;
@@ -158,17 +171,11 @@ namespace Gopet.Runtime.UI
             UiBuilder.PlaceRow((RectTransform)go.transform, ButtonTop, ButtonHeight, 16f);
 
             var image = go.GetComponent<Image>();
-            var label = UiBuilder.MakeText(go.transform, font, "Label", 14, true);
-            if (GameButtonSkin.Apply(image, ButtonHeight))
-            {
-                GameButtonSkin.StyleLabel(label);
-            }
-            else
-            {
-                image.color = PopupPalette.ButtonBlue;
-                label.alignment = TextAnchor.MiddleCenter;
-                label.color = Color.white;
-            }
+            var label = UiBuilder.MakeText(go.transform, font, "Label", 12, true);
+            RoundedUiSprite.Apply(image);
+            image.color = PopupPalette.ButtonBlue;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
             label.text = "Đăng bán";
 
             _sellButton = go.GetComponent<Button>();

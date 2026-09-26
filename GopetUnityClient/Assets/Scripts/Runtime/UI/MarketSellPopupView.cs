@@ -19,8 +19,8 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed partial class MarketSellPopupView : MonoBehaviour
     {
-        private const float Width = 520f;
-        private const float Height = 360f;
+        private const float Width = 460f;
+        private const float Height = 310f;
 
         /// <summary>Phần bề ngang vùng nội dung dành cho danh sách, cùng tỉ lệ MailboxView.</summary>
         private const float ListWidthFraction = 0.44f;

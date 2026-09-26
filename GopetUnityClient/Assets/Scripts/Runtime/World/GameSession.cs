@@ -168,6 +168,7 @@ namespace Gopet.Runtime.World
             // Chạm thẳng vào quái đi CHUNG một đường với nút đánh (vệt chém + chặn pet kiệt
             // sức), thay vì nối tắt vào SendAttackMob.
             s._scene.SubscribeWorld(s._worldHandler, assets, guider.TalkToNpc, s.AttackMob);
+            s._battleHandler.MobKilled += s._scene.RemoveMob;
 
             var mainCamera = EnsureMainCamera();
             if (mainCamera.GetComponent<Physics2DRaycaster>() == null)
@@ -210,6 +211,9 @@ namespace Gopet.Runtime.World
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
             s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
+            s._hud.TaskTracker.HeightChanged += s._expBuffIndicator.FollowTaskTracker;
+            s._expBuffIndicator.FollowTaskTracker(s._hud.TaskTracker.CurrentHeight);
+            s._battleHandler.BattleEnded += s.OnBattleEndedRefreshTasks;
 
             s._petButton = PetActionButton.Create(s._hudParent);
             s._petButton.Clicked += s.OpenPetRadial;

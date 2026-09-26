@@ -70,6 +70,32 @@ namespace Gopet.UiLogic
             new[] { "(mp)", "(MP)" }, new[] { "(vang)", "vàng" }, new[] { "(ngoc)", "ngọc" },
         };
 
+        /// <summary>Vị trí icon sao vàng / sao xám trong atlas <c>pet/icons.png</c> (= index trong bảng token).</summary>
+        public const int FilledStarIndex = 18;
+        public const int EmptyStarIndex = 25;
+
+        /// <summary>
+        /// Đếm tag sao trong tên pet (server ghép "(sao)"×số sao + "(saoden)" cho đủ 5, xem
+        /// <c>Pet.getNameWithStar</c>). Trả tên đã <see cref="Strip"/> để caller vẽ chữ và
+        /// icon sao riêng — UGUI Text không chèn ảnh vào giữa chữ được.
+        /// </summary>
+        public static string SplitStars(string text, out int filled, out int empty)
+        {
+            filled = CountOf(text, "(sao)");
+            empty = CountOf(text, "(saoden)");
+            return Strip(text);
+        }
+
+        private static int CountOf(string text, string token)
+        {
+            if (string.IsNullOrEmpty(text)) return 0;
+            var count = 0;
+            for (var i = text.IndexOf(token, StringComparison.Ordinal); i >= 0;
+                 i = text.IndexOf(token, i + token.Length, StringComparison.Ordinal))
+                count++;
+            return count;
+        }
+
         private static bool TryMatchToken(string text, int start, out int length)
         {
             foreach (var tok in KnownTokens)

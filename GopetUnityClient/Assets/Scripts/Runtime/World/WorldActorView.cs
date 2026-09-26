@@ -28,6 +28,12 @@ namespace Gopet.Runtime.World
         private string _baseLabelText;
         private int _labelOrder;
         private NpcTalkPrompt _talkPrompt;
+        /// <summary>Chiều cao tới đỉnh đầu nếu khác chiều cao ảnh (xem <c>HeadHeightOverrides</c>).</summary>
+        private float? _headHeight;
+
+        /// <summary>Mốc đặt tên/bong bóng: đỉnh đầu nếu biết, không thì đỉnh sprite.</summary>
+        private float HeadHeight => _headHeight ??
+            (_renderer != null && _renderer.sprite != null ? _renderer.sprite.rect.height : 48f);
 
         public int? BossHp { get; private set; }
 
@@ -36,11 +42,9 @@ namespace Gopet.Runtime.World
         {
             get
             {
-                var height = _renderer != null && _renderer.sprite != null
-                    ? _renderer.sprite.rect.height : 48f;
-                // Nhãn tên nằm ở đỉnh sprite + 4px. Chừa thêm một khoảng nhỏ để
+                // Nhãn tên nằm ở đỉnh đầu + 4px. Chừa thêm một khoảng nhỏ để
                 // bong bóng sát đầu NPC nhưng không đè lên nhãn tên.
-                return height + 16f;
+                return HeadHeight + 16f;
             }
         }
 
@@ -62,7 +66,7 @@ namespace Gopet.Runtime.World
             {
                 if (!value) return;
                 var hasSprite = _renderer != null && _renderer.sprite != null;
-                var spriteHeight = hasSprite ? _renderer.sprite.rect.height : 48f;
+                var spriteHeight = HeadHeight;
                 var spriteWidth = hasSprite ? _renderer.sprite.rect.width : 48f;
                 var offsetX = -(PromptHalfWidth + spriteWidth * 0.5f + PromptGap);
                 var offset = new Vector2(offsetX, spriteHeight * PromptChestFactor);
@@ -109,9 +113,7 @@ namespace Gopet.Runtime.World
         private void PlaceLabel()
         {
             if (_label == null) return;
-            var height = _renderer != null && _renderer.sprite != null
-                ? _renderer.sprite.rect.height : 48f;
-            _label.transform.localPosition = new Vector3(0f, height + 4f, 0f); // đáy tên trên đỉnh sprite
+            _label.transform.localPosition = new Vector3(0f, HeadHeight + 4f, 0f); // đáy tên trên đỉnh đầu
         }
 
         private void ConfigureCollider(int[] bounds)

@@ -57,7 +57,7 @@ namespace Gopet.Runtime.UI
         private void Build(Font font)
         {
             var title = UiBuilder.MakeText(transform, font, "Title", 12, false);
-            title.text = "Nhập tên người mua (để trống để bỏ chỉ định)";
+            title.text = "Chỉ bán cho người chơi";
             title.alignment = TextAnchor.MiddleCenter;
             title.color = PopupPalette.TextDark;
             UiBuilder.SetFontStyle(title, FontStyle.Bold);
@@ -66,6 +66,8 @@ namespace Gopet.Runtime.UI
 
             _input = PopupField.Create(transform, font, "Tên:", 48f, 28f, 24);
             _input.lineType = InputField.LineType.SingleLine;
+            // Trống = bỏ chỉ định; nói ở gợi ý trong ô để tiêu đề ngắn gọn.
+            PopupField.SetPlaceholder(_input, font, "Để trống: ai cũng mua được");
 
             _fee = UiBuilder.MakeText(transform, font, "Fee", 10, false);
             _fee.alignment = TextAnchor.MiddleCenter;

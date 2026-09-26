@@ -23,6 +23,8 @@ namespace Gopet.Runtime.UI
             public string Title, Action, Footer, Empty;
             /// <summary>Tên dòng là tên ngọc thô ("ngọc lửa up: 0 Tăng 5% (hp)…") — tách như Kho ngọc.</summary>
             public bool GemNames;
+            /// <summary>Cỡ khung; mặc định như mọi <see cref="GamePopupFrame"/>.</summary>
+            public float Width = GamePopupFrame.DefaultWidth, Height = GamePopupFrame.DefaultHeight;
         }
 
         private static readonly Spec Material = new Spec
@@ -57,7 +59,7 @@ namespace Gopet.Runtime.UI
             // MENU_DELETE_TIEM_NANG
             { 800, new Spec
                 {
-                    Title = "Tẩy gym", Action = "Tẩy",
+                    Title = "Tẩy gym", Action = "Tẩy", Width = 340f, Height = 250f,
                     Footer = "Tẩy 1 điểm chỉ số để nhận lại 1 điểm tiềm năng.",
                     Empty = "Pet chưa có điểm gym nào để tẩy."
                 }
@@ -90,8 +92,10 @@ namespace Gopet.Runtime.UI
         {
             if (!Handles(screen)) throw new ArgumentException("Menu không thuộc popup chọn dòng.", nameof(screen));
             var spec = Specs[screen.ListId];
-            var frame = GamePopupFrame.Create(parent, font, spec.Title, footer: string.Empty);
+            var frame = GamePopupFrame.Create(parent, font, spec.Title, spec.Width, spec.Height,
+                footer: string.Empty);
             frame.gameObject.name = "ItemSelectPopup";
+            if (spec.Width < GamePopupFrame.DefaultWidth) frame.UseCompactChrome();
 
             var view = frame.gameObject.AddComponent<ItemSelectPopupView>();
             view._frame = frame;
@@ -105,13 +109,31 @@ namespace Gopet.Runtime.UI
             return view;
         }
 
+        /// <summary>Bản nhúng (tab Pet của Hành lý): chỉ danh sách, không khung/băng chân.
+        /// Gọi <see cref="Bind"/> ngay sau đó như bản popup.</summary>
+        public static ItemSelectPopupView CreateEmbedded(Transform host, Font font, MenuScreen screen,
+            GuiderHandler guider, RemoteAssetCache assets)
+        {
+            if (!Handles(screen)) throw new ArgumentException("Menu không thuộc popup chọn dòng.", nameof(screen));
+            var go = new GameObject("ItemSelectEmbedded", typeof(RectTransform));
+            go.transform.SetParent(host, false);
+            UiBuilder.Stretch((RectTransform)go.transform);
+            var view = go.AddComponent<ItemSelectPopupView>();
+            view._spec = Specs[screen.ListId];
+            view._guider = guider;
+            view._assets = assets;
+            view._list = PopupItemList.Create(go.transform, font);
+            view._list.Activated += view.OnRowClicked;
+            return view;
+        }
+
         public void Bind(MenuScreen screen)
         {
             _screen = screen ?? throw new ArgumentNullException(nameof(screen));
             _list.Bind(Readable(screen, _spec.GemNames), _assets, _spec.Action);
             var empty = screen.Items == null || screen.Items.Length == 0;
             if (empty) _list.ShowPlaceholder(_spec.Empty);
-            _frame.SetFooter(_spec.Footer);
+            if (_frame != null) _frame.SetFooter(_spec.Footer);
         }
 
         /// <summary>Công khai để test gọi thẳng, khỏi phải mò <c>Button</c> trong cây GameObject.</summary>

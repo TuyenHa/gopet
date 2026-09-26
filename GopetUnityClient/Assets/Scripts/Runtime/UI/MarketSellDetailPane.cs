@@ -28,7 +28,7 @@ namespace Gopet.Runtime.UI
         private GameObject _content;
         private RawImage _icon;
         private string _iconPath;
-        private Text _nameText;
+        private StarNameLabel _name;
         private Text _descText;
         private ScrollRect _descScroll;
         private InputField _priceInput;
@@ -69,7 +69,7 @@ namespace Gopet.Runtime.UI
             if (!has) return;
 
             LoadIcon(item.IconPath);
-            _nameText.text = item.Name ?? string.Empty;
+            _name.SetName(item.Name);
             _descText.text = item.Desc ?? string.Empty;
             _descScroll.verticalNormalizedPosition = 1f;
 

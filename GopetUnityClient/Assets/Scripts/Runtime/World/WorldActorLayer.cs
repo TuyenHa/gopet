@@ -125,6 +125,8 @@ namespace Gopet.Runtime.World
             }
         }
 
+        public void RemoveMob(int id) => OnMobRemoved(id);
+
         private void OnMobRemoved(int id)
         {
             if (!_mobs.TryGetValue(id, out var view)) return;

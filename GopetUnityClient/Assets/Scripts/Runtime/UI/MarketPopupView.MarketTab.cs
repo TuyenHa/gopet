@@ -140,7 +140,7 @@ namespace Gopet.Runtime.UI
             {
                 ConfirmRequested(new MenuSelection.ConfirmPrompt
                 {
-                    Text = $"Mua {row.Name} với giá {FormatCoin(row.Price)} ngọc?",
+                    Text = $"Mua {JarIconTokens.Strip(row.Name)} với giá {FormatCoin(row.Price)} ngọc?",
                     ConfirmLabel = "Mua",
                     CancelLabel = "Huỷ",
                 }, Send);

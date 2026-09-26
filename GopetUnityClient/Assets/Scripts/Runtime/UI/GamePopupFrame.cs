@@ -40,7 +40,12 @@ namespace Gopet.Runtime.UI
         private const float FooterIconGap = 5f;
         private const float FooterBottom = 9f;
 
+        /// <summary>Nút X và cỡ chữ chân của popup nhỏ (<see cref="UseCompactChrome"/>).</summary>
+        private const float CompactCloseSize = 26f;
+        private const int CompactFooterFontSize = 10;
+
         private Text _footer;
+        private RectTransform _close;
 
         public event Action Closed;
 
@@ -73,6 +78,16 @@ namespace Gopet.Runtime.UI
             frame.BuildHeader(font, title);
             frame.BuildCloseButton(font);
             return frame;
+        }
+
+        /// <summary>
+        /// Chrome gọn cho popup nhỏ hơn cỡ mặc định: nút X nhỏ lại và chữ băng chân cỡ 10
+        /// để câu chân không tràn ra ngoài viền khi popup hẹp.
+        /// </summary>
+        public void UseCompactChrome()
+        {
+            if (_close != null) _close.sizeDelta = new Vector2(CompactCloseSize, CompactCloseSize);
+            if (_footer != null) _footer.fontSize = CompactFooterFontSize;
         }
 
         /// <summary>Đổi chữ băng chân. Không bật băng chân lúc tạo thì gọi vào đây là vô hiệu.</summary>

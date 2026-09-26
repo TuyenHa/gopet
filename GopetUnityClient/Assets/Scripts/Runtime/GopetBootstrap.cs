@@ -137,6 +137,8 @@ namespace Gopet.Runtime
                 _session = GameSession.Start(_client, _flow.Success, assets, guider, transform, wings);
                 _session.UnreadMailCountChanged += hud.SetMailCount;
                 _ui.MenuInterceptor = _session.TryConsumeHudMenu;
+                _ui.TaskPopupClosed += _session.RefreshTaskTracker;
+                _ui.GemInventoryHost = _session.GemInventoryHost;
                 // Chợ trời: MarketHandler được GameSession tạo SAU login (cần client.Send),
                 // nên nối vào popup ở đây — cùng khuôn dòng MenuInterceptor ngay trên. Ngọc
                 // hiện có cũng nối theo để popup chặn nút Mua khi rõ ràng không đủ (UX).

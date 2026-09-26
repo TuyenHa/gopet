@@ -25,8 +25,9 @@ namespace Gopet.Runtime.UI
     /// </summary>
     public sealed partial class MarketPopupView : MonoBehaviour
     {
-        private const float PopupWidth = 520f;
-        private const float PopupHeight = 380f;
+        // Canvas tham chiếu 960x540 — cao hơn ~310 là popup che gần hết màn hình.
+        private const float PopupWidth = 460f;
+        private const float PopupHeight = 310f;
 
         private GamePopupFrame _frame;
         private PopupTabRail _rail;

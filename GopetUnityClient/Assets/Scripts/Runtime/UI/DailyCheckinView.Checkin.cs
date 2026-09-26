@@ -79,13 +79,12 @@ namespace Gopet.Runtime.UI
             brect.pivot = new Vector2(0.5f, 0f);
             brect.sizeDelta = new Vector2(120f, 26f);
             brect.anchoredPosition = new Vector2(0f, 2f);
-            // Kiểu nút chung (khung vàng, mặt xanh) như nút "Kích ẩn". Thiếu ảnh thì về nút bo góc cũ.
             var bimg = btnGo.GetComponent<Image>();
-            _mainButtonSkinned = GameButtonSkin.Apply(bimg, brect.sizeDelta.y);
-            if (!_mainButtonSkinned) RoundedUiSprite.Apply(bimg);
+            RoundedUiSprite.Apply(bimg);
             _mainButtonLabel = UiBuilder.MakeText(btnGo.transform, _font, "Label", 11, true);
             _mainButtonLabel.text = "Đã điểm danh";
-            GameButtonSkin.StyleLabel(_mainButtonLabel);
+            _mainButtonLabel.alignment = TextAnchor.MiddleCenter;
+            _mainButtonLabel.color = Color.white;
             _mainButton = btnGo.GetComponent<Button>();
             SetMainButtonState(false);
             _mainButton.onClick.AddListener(() => _guider?.DoDailyCheckin());

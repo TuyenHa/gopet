@@ -115,13 +115,13 @@ namespace Gopet.Runtime.UI
 
         private void BuildTitle(Transform parent, MarketSellableItem item)
         {
-            var title = UiBuilder.MakeText(parent, _font, "Title", 11, false);
-            title.text = item.Count > 1 ? $"{item.Name} x{item.Count}" : item.Name;
+            var name = StarNameLabel.Create(parent, _font, 10, 9f);
+            name.SetName(item.Name, item.Count > 1 ? $" x{item.Count}" : null);
+            var title = name.Label;
             title.color = PopupPalette.TextDark;
             title.horizontalOverflow = HorizontalWrapMode.Wrap;
             title.verticalOverflow = VerticalWrapMode.Truncate;
-            title.raycastTarget = false;
-            var rect = title.rectTransform;
+            var rect = name.Rect;
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
             rect.offsetMin = new Vector2(RowTextLeft, 2f);
@@ -142,7 +142,7 @@ namespace Gopet.Runtime.UI
             image.color = LockBadge;
             image.raycastTarget = false;
 
-            var label = UiBuilder.MakeText(badge.transform, _font, "Label", 9, true);
+            var label = UiBuilder.MakeText(badge.transform, _font, "Label", 8, true);
             label.text = "Khóa";
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;

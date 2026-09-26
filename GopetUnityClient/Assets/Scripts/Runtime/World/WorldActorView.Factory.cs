@@ -47,6 +47,17 @@ namespace Gopet.Runtime.World
                 () => clicked?.Invoke(mob.Id), null);
         }
 
+        /// <summary>
+        /// Ảnh NPC có khoảng trống phía trên đầu (vd búa giơ cao) — chiều cao tính từ chân tới
+        /// ĐỈNH ĐẦU, để tên và bong bóng nằm sát đầu thay vì trên đỉnh cả ảnh.
+        /// </summary>
+        private static readonly System.Collections.Generic.Dictionary<string, float> HeadHeightOverrides =
+            new System.Collections.Generic.Dictionary<string, float>
+            {
+                // Strip Thợ Rèn 86 cao, frame nện búa đỉnh khăn ở ~62 (gen-blacksmith-npc-hammer.py).
+                { "npcs/Tho_Ren.png", 62f },
+            };
+
         private static WorldActorView Create(Transform parent, string objectName, string imagePath,
             string labelText, int jarX, int jarY, int mapHeight, int frameCount,
             RemoteAssetCache assets, Action clicked, int[] bounds)
@@ -59,6 +70,8 @@ namespace Gopet.Runtime.World
             var (x, y) = MapPlacement.JarToWorld(jarX, jarY, mapHeight);
             go.transform.localPosition = new Vector3(x, y, 0f);
             var view = go.AddComponent<WorldActorView>();
+            if (HeadHeightOverrides.TryGetValue(imagePath ?? string.Empty, out var headHeight))
+                view._headHeight = headHeight;
             // Sprite ở node con để idle-bob (ép scale.y) chỉ ảnh hưởng ảnh, không méo nhãn tên.
             var spriteGo = new GameObject("Sprite", typeof(SpriteRenderer));
             spriteGo.transform.SetParent(go.transform, false);

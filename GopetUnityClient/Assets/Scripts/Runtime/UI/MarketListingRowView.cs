@@ -30,7 +30,7 @@ namespace Gopet.Runtime.UI
         internal const float ActionRight = 4f;
 
         private RawImage _icon;
-        private Text _title;
+        private StarNameLabel _titleName;
         private Text _price;
         private Text _sellerOrTime;
         private RectTransform _actionSlot;
@@ -62,7 +62,7 @@ namespace Gopet.Runtime.UI
         {
             if (row == null) throw new ArgumentNullException(nameof(row));
 
-            _title.text = row.Count > 1 ? $"{row.Name} x{row.Count}" : row.Name;
+            _titleName.SetName(row.Name, row.Count > 1 ? $" x{row.Count}" : null);
             _price.text = FormatPrice(row.Price);
             _sellerOrTime.text = sellerOrTimeText ?? string.Empty;
             LoadIcon(row.IconPath, assets);
@@ -75,38 +75,32 @@ namespace Gopet.Runtime.UI
         }
 
         /// <summary>
-        /// Gắn một nút GameButtonSkin vào <see cref="ActionSlot"/>. <paramref name="top"/>/
+        /// Gắn một nút xanh vào <see cref="ActionSlot"/>. <paramref name="top"/>/
         /// <paramref name="height"/> tính từ mép trên slot — cho phép 1 nút cao giữa hàng
-        /// (Mua) hoặc 2 nút nhỏ xếp chồng (Chỉ định/Gỡ).
+        /// (Mua). <paramref name="xMin"/>/<paramref name="xMax"/> là phần bề ngang slot (0..1) —
+        /// chia đôi để đặt 2 nút cạnh nhau (Chỉ định | Gỡ).
         /// </summary>
-        public Button AddButton(string label, float top, float height, Action onClick)
+        public Button AddButton(string label, float top, float height, Action onClick,
+            float xMin = 0f, float xMax = 1f)
         {
             var go = new GameObject($"Button_{label}", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(_actionSlot, false);
 
             var rect = (RectTransform)go.transform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
+            rect.anchorMin = new Vector2(xMin, 1f);
+            rect.anchorMax = new Vector2(xMax, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.offsetMin = new Vector2(2f, -(top + height));
             rect.offsetMax = new Vector2(-2f, -top);
 
             var image = go.GetComponent<Image>();
             var button = go.GetComponent<Button>();
-            if (GameButtonSkin.Apply(image, height))
-            {
-                var text = UiBuilder.MakeText(go.transform, _font, "Label", 10, true);
-                GameButtonSkin.StyleLabel(text);
-                text.text = label;
-            }
-            else
-            {
-                image.color = PopupPalette.ButtonBlue;
-                var text = UiBuilder.MakeText(go.transform, _font, "Label", 10, true);
-                text.text = label;
-                text.alignment = TextAnchor.MiddleCenter;
-                text.color = Color.white;
-            }
+            RoundedUiSprite.Apply(image);
+            image.color = PopupPalette.ButtonBlue;
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", 10, true);
+            text.text = label;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
             button.onClick.AddListener(() => onClick?.Invoke());
             return button;
         }

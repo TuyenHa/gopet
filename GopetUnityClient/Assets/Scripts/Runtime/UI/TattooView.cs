@@ -49,6 +49,19 @@ namespace Gopet.Runtime.UI
             return view;
         }
 
+        /// <summary>Bản nhúng (tab Pet của Hành lý): danh sách ô xăm + nút tạo, không khung/nền mờ.</summary>
+        public static TattooView CreateEmbedded(Transform host, TattooScreen screen)
+        {
+            var root = new GameObject("TattooEmbedded", typeof(RectTransform));
+            root.transform.SetParent(host, false);
+            UiBuilder.Stretch((RectTransform)root.transform);
+            var view = root.AddComponent<TattooView>();
+            view._font = UiBuilder.DefaultFont();
+            view.BuildList(root.transform, screen?.Slots ?? Array.Empty<TattooSlot>());
+            view.BuildGenerateButton(root.transform);
+            return view;
+        }
+
         private void BuildList(Transform content, TattooSlot[] slots)
         {
             var area = new GameObject("ListArea", typeof(RectTransform));

@@ -44,15 +44,16 @@ namespace Gopet.Runtime.UI
 
         private void BuildTexts(Transform parent)
         {
-            _title = UiBuilder.MakeText(parent, _font, "Title", 11, false);
-            UiBuilder.SetFontStyle(_title, FontStyle.Bold);
-            _title.color = PopupPalette.TextDark;
-            _title.horizontalOverflow = HorizontalWrapMode.Overflow;
-            _title.verticalOverflow = VerticalWrapMode.Truncate;
-            _title.resizeTextForBestFit = true;
-            _title.resizeTextMinSize = 8;
-            _title.resizeTextMaxSize = 11;
-            Place(_title.rectTransform, 2f, 15f);
+            _titleName = StarNameLabel.Create(parent, _font, 11, 10f);
+            var title = _titleName.Label;
+            UiBuilder.SetFontStyle(title, FontStyle.Bold);
+            title.color = PopupPalette.TextDark;
+            title.horizontalOverflow = HorizontalWrapMode.Wrap; // Overflow sẽ đè lên icon sao
+            title.verticalOverflow = VerticalWrapMode.Truncate;
+            title.resizeTextForBestFit = true;
+            title.resizeTextMinSize = 8;
+            title.resizeTextMaxSize = 11;
+            Place(_titleName.Rect, 2f, 15f);
 
             BuildPriceRow(parent);
 
@@ -105,6 +106,19 @@ namespace Gopet.Runtime.UI
             rect.pivot = new Vector2(0f, 1f);
             rect.offsetMin = new Vector2(TextLeft, -(top + height));
             rect.offsetMax = new Vector2(-(ActionWidth + ActionRight), -top);
+        }
+
+        /// <summary>
+        /// Nới/thu <see cref="ActionSlot"/> (mặc định <see cref="ActionWidth"/>) — vd 2 nút
+        /// đặt cạnh nhau cần rộng hơn 1 nút. 3 dòng chữ co mép phải theo để không đè nút.
+        /// </summary>
+        public void SetActionWidth(float width)
+        {
+            _actionSlot.sizeDelta = new Vector2(width, Height);
+            var right = -(width + ActionRight);
+            foreach (var rect in new[] { _titleName.Rect, (RectTransform)_price.transform.parent,
+                         _sellerOrTime.rectTransform })
+                rect.offsetMax = new Vector2(right, rect.offsetMax.y);
         }
 
         private void BuildActionSlot(Transform parent)

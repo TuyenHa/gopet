@@ -56,6 +56,14 @@ namespace Gopet.Runtime.UI
             _leftMenu = _rightMenu = null;
             _inventoryGrid = null;
             _embeddedEquip = null;
+            _petRail = null;
+            _petListTab = 0;
+            _petGridScroll = null;
+            _petInventoryScreen = null;
+            _petSplitPanes = null;
+            _petFullPane = null;
+            _petFullHost = null;
+            _petGymView = null;
         }
 
     }

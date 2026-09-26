@@ -90,6 +90,54 @@ namespace Gopet.Runtime.UI
             _unreadDot.SetActive(false);
         }
 
+        /// <summary>Dải tiêu đề cố định khi dòng phụ nhiều hàng.</summary>
+        private const float TitleBand = 22f;
+        /// <summary>Chiều cao một hàng chữ cỡ 11 của dòng phụ.</summary>
+        private const float SubtitleLineHeight = 14f;
+
+        /// <summary>Chiều cao dòng khi dòng phụ có <paramref name="lines"/> hàng (tối thiểu
+        /// bằng <see cref="Height"/>).</summary>
+        public static float HeightFor(int lines) =>
+            Mathf.Max(Height, TitleBand + Mathf.Max(1, lines) * SubtitleLineHeight + TextGap + 3f);
+
+        /// <summary>
+        /// Cho dòng phụ nhiều hàng (tiến độ nhiệm vụ: mỗi yêu cầu một hàng) và nới dòng
+        /// cho vừa. Chuyển tiêu đề sang dải cố định ở đỉnh thay vì nửa trên dòng — nửa
+        /// trên của một dòng cao sẽ đẩy tiêu đề trôi xuống giữa. Gọi SAU <c>Bind</c>.
+        /// Trả về chiều cao mới để danh sách xếp dòng kế tiếp.
+        /// </summary>
+        public float FitMultilineSubtitle()
+        {
+            var left = _title.rectTransform.offsetMin.x;
+            var right = _title.rectTransform.offsetMax.x;
+            Place(_title.rectTransform, left, 1f, 1f, -TitleBand, 0f);
+            _title.rectTransform.offsetMax = new Vector2(right, 0f);
+            var subtitleTop = -TitleBand - TextGap * 0.5f;
+            Place(_subtitle.rectTransform, left, 0f, 1f, 3f, subtitleTop);
+            _subtitle.rectTransform.offsetMax = new Vector2(right, subtitleTop);
+
+            var height = HeightFor(CountSubtitleLines());
+            var rect = (RectTransform)transform;
+            rect.offsetMin = new Vector2(rect.offsetMin.x, -height);
+            rect.sizeDelta = new Vector2(rect.sizeDelta.x, height);
+            return height;
+        }
+
+        /// <summary>Số hàng thật của dòng phụ: đếm '\n', rồi đo theo bề ngang (một yêu cầu
+        /// có nhiều map có thể tự xuống hàng). Chưa có bề ngang thì chỉ đếm '\n'.</summary>
+        private int CountSubtitleLines()
+        {
+            var text = _subtitle.text;
+            if (string.IsNullOrEmpty(text)) return 1;
+            var lines = text.Split('\n').Length;
+            var width = _subtitle.rectTransform.rect.width;
+            if (width <= 0f) return lines;
+            var settings = _subtitle.GetGenerationSettings(new Vector2(width, 0f));
+            var measured = _subtitle.cachedTextGeneratorForLayout.GetPreferredHeight(text, settings)
+                / _subtitle.pixelsPerUnit;
+            return Mathf.Max(lines, Mathf.CeilToInt(measured / SubtitleLineHeight - 0.2f));
+        }
+
         /// <summary>Vạch ngăn dưới chân dòng. Dòng CUỐI phải tắt, không thì thừa một nét sát viền.</summary>
         public void SetSeparatorVisible(bool visible) => _separator.SetActive(visible);
 

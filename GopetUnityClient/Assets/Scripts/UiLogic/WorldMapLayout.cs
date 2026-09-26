@@ -104,6 +104,13 @@ namespace Gopet.UiLogic
             return SlotNode(OtherRegion, CountSmaller(unknownMapIds, mapId));
         }
 
+        /// <summary>Map TẠM ĐÓNG: ẩn khỏi bản đồ thế giới và ẩn cổng dẫn tới nó
+        /// (<c>MapRenderer.BuildMapEntities</c>). 22 = Chợ trời (2026-09-26). Server chặn
+        /// thật ở <c>MapUnlockRules.Closed</c> — mở lại thì bỏ id ở CẢ hai nơi.</summary>
+        private static readonly int[] HiddenMaps = { 22 };
+
+        public static bool IsHidden(int mapId) => Array.IndexOf(HiddenMaps, mapId) >= 0;
+
         /// <summary>Map này có chỗ cố định trong bảng không (false = sẽ rơi vào cụm "Khác").</summary>
         public static bool IsKnown(int mapId)
         {

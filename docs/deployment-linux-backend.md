@@ -24,6 +24,7 @@ Có hai cách chạy GServer, database thì cách nào cũng chạy trong Docker
 | Game server | .NET 8 + ASP.NET Core runtime | TCP `19180` | **Có** — client nối vào đây |
 | API quản trị | ASP.NET Core (cùng tiến trình) | HTTP `8082` | **Không** — có lệnh `shutdown`, mở SQL, tạo vật phẩm |
 | Database | MariaDB **10.4** trong Docker | `3306` | **Không** |
+| Trang quản trị webadmin | Next.js (Docker) | `443` qua Caddy | **Có** — chỉ IP trong allowlist, xem [mục 11](#11-trang-quản-trị-webadmin-nextjs--caddy) |
 
 3 database (tên phải khớp `App.config`): `gopettae_tae2` (game), `gopettae_gopet_web`
 (tài khoản), `gp_log` (lịch sử). Chi tiết: [`docker/README.md`](../docker/README.md).
@@ -59,27 +60,38 @@ Chỉ đi theo Cách B mới cần cài thêm .NET và font — xem mục 5.1.
 
 ### 2.1 Đưa mã nguồn lên máy
 
-Cần 3 thư mục, **giữ đúng cấu trúc** (compose tham chiếu `../SRCGOPETGOC/...`):
+Image `gserver` và `webadmin` được GitHub Actions build sẵn trên GHCR (mục 4.6), nên với
+Cách A máy chủ **không cần mã nguồn** — chỉ cần 2 thư mục, **giữ đúng cấu trúc** (compose
+tham chiếu `../SRCGOPETGOC/MariaDB_SQL`):
 
 ```
 /opt/gopet/
-├── docker/                       # docker-compose.yml, initdb/, gserver/server.json, .env
+├── docker/                       # docker-compose.yml, initdb/, gserver/server.json, caddy/, .env
 └── SRCGOPETGOC/
-    ├── MariaDB_SQL/              # dump + migration
-    └── GServer/                  # mã nguồn server (Cách A build image từ đây)
+    └── MariaDB_SQL/              # dump + migration
 ```
 
-Cách gọn nhất là `git clone` repo vào `/opt/gopet` (repo có cả client Unity — nặng nhưng
-tiện cập nhật bằng `git pull`). Hoặc chép từ máy Windows (Git Bash), bỏ build output:
+Repo chứa cả client Unity, webadmin, tài liệu… Dùng **partial clone + sparse-checkout**
+để máy chủ chỉ tải và chỉ hiện đúng 2 thư mục trên — thư mục Unity không xuất hiện, và nội
+dung file của nó cũng không bao giờ được tải về:
 
 ```bash
-rsync -av --exclude bin --exclude obj --exclude publish --exclude log --exclude '*.log' \
-  docker SRCGOPETGOC/MariaDB_SQL SRCGOPETGOC/GServer \
-  user@server:/opt/gopet/staging/
-# rồi trên máy chủ sắp lại đúng cây thư mục ở trên:
-#   mv /opt/gopet/staging/docker /opt/gopet/
-#   mkdir -p /opt/gopet/SRCGOPETGOC && mv /opt/gopet/staging/{MariaDB_SQL,GServer} /opt/gopet/SRCGOPETGOC/
+git clone --filter=blob:none --sparse git@github.com:TuyenHa/gopet.git /opt/gopet
+cd /opt/gopet
+git sparse-checkout set docker SRCGOPETGOC/MariaDB_SQL
 ```
+
+- `--filter=blob:none`: chỉ tải lịch sử commit; nội dung file chỉ tải khi cần đưa ra đĩa.
+- `sparse-checkout set`: chỉ các thư mục liệt kê (và file ở gốc repo) có trên đĩa.
+- `git fetch` + `git merge --ff-only` của CI (mục 4.6) chạy bình thường; commit chỉ đổi
+  Unity/webadmin không làm máy chủ tải thêm gì.
+- Cần thêm thư mục (vd. Cách B build GServer ngay trên máy): `git sparse-checkout add
+  SRCGOPETGOC/GServer`. Xem đang lấy gì: `git sparse-checkout list`.
+
+Máy chủ đã clone **đầy đủ** từ trước: chạy `git sparse-checkout set docker
+SRCGOPETGOC/MariaDB_SQL` là thư mục thừa biến mất khỏi đĩa, nhưng dữ liệu cũ vẫn nằm trong
+`.git`. Muốn lấy lại dung lượng thì clone lại như trên (nhớ chép `docker/.env` và
+`docker/gserver/Gopet.dll.config` ra ngoài trước).
 
 ## 3. Database (MariaDB 10.4 trong Docker)
 
@@ -172,6 +184,11 @@ Các file liên quan:
 | `SRCGOPETGOC/GServer/.dockerignore` | loại `bin/ obj/ log/ backup_sql/` khỏi build context |
 | `docker/docker-compose.yml` → service `gserver` | profile `server`, chỉ publish cổng 19180, `stop_grace_period: 60s`, healthcheck TCP |
 | `docker/gserver/server.json` | cấu hình dùng trong container (mount đè `config/server.json`) |
+| `docker/deploy-service.sh` | pull image từ GHCR, chạy migration, thay container, rollback nếu không healthy |
+
+Image chạy là `ghcr.io/<GHCR_OWNER>/gopet-gserver:<GSERVER_TAG>` — build bởi GitHub Actions
+(mục 4.6). Máy chủ **không build** .NET; `build:` trong compose chỉ để máy dev thử container
+(`docker compose --profile server build gserver`).
 
 ### 4.1 Cấu hình
 
@@ -192,12 +209,16 @@ Biến môi trường (trong `docker/.env`, compose tự đọc):
 | `GOPET_DB_USER` | `root` | nên đặt `gopet` (mục 3.4) |
 | `GOPET_DB_PASSWORD` | = `MARIADB_ROOT_PASSWORD` | mật khẩu của `GOPET_DB_USER` |
 | `GOPET_GAME_PORT` | `19180` | cổng phía máy chủ mà client nối vào |
+| `GHCR_OWNER` | — | bắt buộc: owner GitHub **viết thường** (vd. `tuyenha`) |
+| `GSERVER_TAG` | `latest` | `deploy-service.sh gserver` tự cập nhật (git sha 12 ký tự) sau mỗi lần deploy thành công |
 
-### 4.2 Build và chạy
+### 4.2 Chạy lần đầu
+
+Đăng nhập GHCR một lần (PAT chỉ `read:packages`, xem mục 11.4), rồi:
 
 ```bash
 cd /opt/gopet/docker
-docker compose --profile server up -d --build     # lần đầu build ~3–5 phút
+bash deploy-service.sh gserver        # pull image, migration, khởi động, chờ healthy
 docker compose logs -f gserver
 ```
 
@@ -238,51 +259,85 @@ Gọi API quản trị (chỉ nghe trong container):
 
 ### 4.4 Cập nhật phiên bản mới
 
+CI tự làm sau mỗi lần merge (mục 4.6). Chạy tay trên máy chủ:
+
 ```bash
 cd /opt/gopet
-git pull                      # hoặc rsync lại SRCGOPETGOC/GServer như mục 2.1
-bash docker/deploy-gserver.sh
+git pull                                        # lấy migration + cấu hình docker mới
+bash docker/deploy-service.sh gserver <git-sha> # bỏ tham số = dùng lại GSERVER_TAG trong .env
 ```
 
-Script làm giống CI/CD (mục 4.6): gắn tag `prev` cho image cũ, build image mới, chạy migration
-(mục 3.3, có backup trước), thay container (container cũ được dừng an toàn, có lưu dữ liệu), chờ
-healthy; không healthy thì tự rollback image.
+Script: pull `gopet-gserver:<tag>` (pull lỗi thì dừng, server cũ vẫn chạy) → migration (mục
+3.3, có backup trước) → thay container (container cũ được dừng an toàn, có lưu dữ liệu) → chờ
+healthy; không healthy thì tự chạy lại tag cũ. Thành công mới ghi `GSERVER_TAG` vào `.env`
+và lưu tag cũ vào `docker/.gserver-prev-tag`.
 
 Nếu bản mới thêm khoá vào `SRCGOPETGOC/GServer/config/server.json`, thêm khoá đó vào `docker/gserver/server.json`.
 
-**Rollback:**
+**Rollback tay:**
 
 ```bash
 cd /opt/gopet/docker
-docker compose --profile server stop gserver
-docker tag gopet-gserver:prev gopet-gserver:latest
-docker compose --profile server up -d --no-build gserver
+bash deploy-service.sh gserver "$(cat .gserver-prev-tag)"
 ```
 
 (nếu migration đã đổi DB thì khôi phục thêm bản backup).
 
-### 4.5 Build trên máy khác (máy chủ yếu / không có mạng tốt)
+### 4.5 Không dùng GitHub Actions
+
+Build ở máy có Docker rồi đẩy lên GHCR bằng PAT quyền `write:packages`, sau đó deploy như 4.4:
 
 ```bash
-# trên máy build
-cd SRCGOPETGOC/GServer && docker build -t gopet-gserver:latest .
-docker save gopet-gserver:latest | gzip | ssh user@server 'gunzip | docker load'
+cd SRCGOPETGOC/GServer
+docker build -t ghcr.io/<owner>/gopet-gserver:manual-1 .
+docker push ghcr.io/<owner>/gopet-gserver:manual-1
 # trên máy chủ
-cd /opt/gopet/docker && docker compose --profile server up -d --no-build gserver
+bash /opt/gopet/docker/deploy-service.sh gserver manual-1
 ```
+
+### 4.5b Chuyển máy chủ đang build tại chỗ sang GHCR (làm một lần)
+
+Máy chủ cài theo bản cũ của tài liệu này (clone đầy đủ, `docker compose up -d --build`):
+
+1. Thêm vào `docker/.env`:
+   ```
+   GHCR_OWNER=<owner-github-viết-thường>
+   GSERVER_TAG=latest
+   ```
+2. Đăng nhập GHCR bằng PAT chỉ `read:packages` (mục 11.4): `docker login ghcr.io`.
+3. Bỏ thư mục thừa khỏi đĩa (mục 2.1): `cd /opt/gopet && git sparse-checkout set docker
+   SRCGOPETGOC/MariaDB_SQL`. Muốn giải phóng dung lượng `.git` thì clone lại theo 2.1 —
+   chép `docker/.env` và `docker/gserver/Gopet.dll.config` ra ngoài trước.
+4. Đợi CI chạy xong job `build-push` ít nhất một lần (image `gopet-gserver` đã có trên
+   GHCR), rồi `bash docker/deploy-service.sh gserver`. Chạy trước khi có image thì script
+   báo pull lỗi và giữ nguyên server cũ.
+5. Image `gopet-gserver:latest` / `:prev` build tại chỗ lúc trước không còn dùng:
+   `docker image rm gopet-gserver:latest gopet-gserver:prev`.
 
 ### 4.6 CI/CD tự động bằng GitHub Actions
 
-`.github/workflows/gserver-ci-cd.yml`: mỗi lần merge/push vào `master` có đổi phần server
-(`SRCGOPETGOC/GServer/`, `tests/GServer.Performance.Tests/`, `docker/`) thì:
+`.github/workflows/gserver-ci-cd.yml` — **một** workflow dùng chung cho gserver **và**
+webadmin (mục 11), một concurrency group `gopet-deploy` (hai lần deploy không chồng nhau).
+Job `changes` (dorny/paths-filter) quyết định lần push này đổi gserver và/hoặc webadmin,
+các job sau chỉ chạy cho phần thực sự đổi:
 
-1. **test** — chạy `tests/GServer.Performance.Tests` trên Ubuntu. Có test FAIL thì dừng, không deploy.
-2. **deploy** — SSH vào máy chủ → `git merge --ff-only` mã mới → `docker/deploy-gserver.sh`:
-   gắn tag `prev` cho image cũ, build image mới (build lỗi thì server cũ vẫn chạy), chạy migration
-   (mục 3.3; lỗi thì dừng, server cũ vẫn chạy), thay container
-   (có lưu dữ liệu), chờ `healthy` tối đa 5 phút; không healthy thì **tự rollback** về `prev`.
+1. **test-gserver** — chạy `tests/GServer.Performance.Tests` trên Ubuntu (chỉ khi đổi
+   `SRCGOPETGOC/GServer/**` hoặc file docker liên quan gserver). Test FAIL thì dừng, không deploy.
+2. **test-webadmin** — `npm ci && npm run lint && npx tsc --noEmit && npm test && npm run
+   build` trong `webadmin/` (chỉ khi đổi `webadmin/**`).
+3. **build-push** (matrix gserver/webadmin) — build `SRCGOPETGOC/GServer/Dockerfile` và/hoặc
+   `webadmin/Dockerfile` cho service đã đổi, push `ghcr.io/<owner>/gopet-<service>:<sha12>` +
+   `:latest` (có cache layer giữa các lần chạy). Test lỗi thì không build.
+4. **deploy** — SSH vào máy chủ → `git merge --ff-only` (chỉ `docker/` + migration, mục 2.1)
+   → gọi `docker/deploy-service.sh <gserver|webadmin> <sha12>` cho ĐÚNG service đã đổi (có
+   thể cả hai). Máy chủ **chỉ pull**, không build: pull lỗi thì dừng, container cũ vẫn chạy;
+   sau đó migration (mục 3.3, có khoá `flock`), thay ĐÚNG container của service đó (không
+   đụng service kia), chờ `healthy` tối đa 5 phút; không healthy thì **tự rollback** về tag
+   đang chạy trước đó (lưu trong `docker/.<service>-prev-tag`).
 
-Chạy tay: tab **Actions → GServer CI/CD → Run workflow**, hoặc trên máy chủ `bash docker/deploy-gserver.sh`.
+Chạy tay: tab **Actions → GServer + webadmin CI/CD → Run workflow** (deploy cả hai service),
+hoặc trên máy chủ `bash docker/deploy-service.sh <gserver|webadmin> [tag]`
+(`docker/deploy-gserver.sh` cũ vẫn chạy được — chỉ là wrapper 1 dòng).
 
 **Cài đặt một lần:**
 
@@ -295,7 +350,7 @@ Host github.com
   IdentityFile ~/.ssh/github_gopet
 EOF
 cat ~/.ssh/github_gopet.pub     # → GitHub repo Settings → Deploy keys → Add (không tick write)
-git clone git@github.com:TuyenHa/gopet.git /opt/gopet   # nếu chưa clone (rồi làm mục 3)
+# nếu chưa clone: clone sparse như mục 2.1 (rồi làm mục 3)
 
 # b) Khoá để GitHub Actions SSH vào máy chủ
 ssh-keygen -t ed25519 -N '' -f ~/gh-actions-deploy
@@ -446,13 +501,16 @@ Muốn gõ lệnh console của server (`help`, `shutdown`…): dừng service r
 ```bash
 sudo ufw allow OpenSSH
 sudo ufw allow 19180/tcp
+sudo ufw allow 80/tcp        # chỉ cần nếu chạy webadmin (mục 11) — Caddy xin chứng chỉ qua đây
+sudo ufw allow 443/tcp       # webadmin qua HTTPS (mục 11)
 sudo ufw enable
 ```
 
 - **Không** mở 8082 và 3306.
 - Lưu ý: cổng Docker **publish** đi thẳng qua iptables, **không** bị `ufw` chặn. Vì vậy
   không bao giờ đổi compose thành `3306:3306` hay publish 8082 — chỉ `127.0.0.1:3306` và `19180` như hiện tại.
-- Máy chủ cloud (AWS/GCP/Vultr…): mở thêm TCP 19180 trong Security Group / firewall của nhà cung cấp.
+  Service `webadmin` (mục 11) cũng **không publish cổng** — chỉ `caddy` (`80`/`443`) và `gserver` (`19180`) publish ra host.
+- Máy chủ cloud (AWS/GCP/Vultr…): mở thêm TCP 19180 (và 80/443 nếu có webadmin) trong Security Group / firewall của nhà cung cấp.
 
 API quản trị từ máy mình (Cách B): `ssh -L 8082:127.0.0.1:8082 user@server` rồi mở `http://127.0.0.1:8082`.
 
@@ -509,3 +567,148 @@ Khôi phục:
 - [ ] Đã thử `stop` một lần và thấy log `Đã lưu xong, thoát tiến trình.`
 - [ ] **Dump `web_db.sql` chứa dữ liệu người dùng thật** (email, hash mật khẩu, IP). Máy chủ cho người chơi mới thì cân nhắc xoá dữ liệu người dùng cũ trước khi mở
 - [ ] Backup tự động đã chạy (mục 8) và đã thử khôi phục một lần
+
+## 11. Trang quản trị webadmin (Next.js + Caddy)
+
+Chạy trong cùng compose stack (profile `server`), **3 container**: `mariadb` (mục 3),
+`gserver` (mục 4), `webadmin` (Next.js quản trị) + `caddy` (reverse proxy công khai duy
+nhất). Không nhét Next.js và .NET vào một container — khác runtime, không
+restart/rollback độc lập được, healthcheck lẫn nhau.
+
+```
+Internet ──443──▶ caddy (Let's Encrypt tự động, chặn IP ngoài allowlist)
+                    └──▶ webadmin:3000 (mạng compose — KHÔNG publish ra host)
+```
+
+File liên quan: `webadmin/Dockerfile` (multi-stage, non-root, `output: "standalone"` nên
+image nhỏ), `docker/caddy/Caddyfile`, service `webadmin` + `caddy` trong
+`docker/docker-compose.yml`.
+
+### 11.1 DNS + firewall
+
+1. Trỏ một domain con (vd. `admin.gopet.example.com`) về IP máy chủ (bản ghi A).
+2. Mở TCP `80` và `443` (mục 6) — Caddy cần `80` để xin chứng chỉ Let's Encrypt (ACME
+   HTTP-01) và `443` cho HTTPS. **Không** publish thẳng cổng `3000` của webadmin ra host.
+3. `WEBADMIN_ALLOWED_IPS` trong `docker/.env`: danh sách IP/CIDR cách nhau khoảng trắng
+   được phép truy cập (vd. IP tĩnh văn phòng, VPN). IP ngoài danh sách nhận `403` ngay ở
+   Caddy, không tới được Next.js. Đổi danh sách xong: `docker compose --profile server
+   restart caddy` (không ảnh hưởng gserver/webadmin).
+
+Test không có domain thật: đặt `WEBADMIN_DOMAIN=localhost` — Caddy tự dùng chứng chỉ nội
+bộ (self-signed) thay vì xin Let's Encrypt (xem comment trong `docker/caddy/Caddyfile`).
+
+### 11.2 Tạo user DB `gopet_admin`
+
+Quyền tối thiểu, tách biệt với user `gopet`/`root` của gserver (mục 3.4) — theo bảng,
+không theo toàn bộ database:
+
+```bash
+cd /opt/gopet
+PASS=$(grep '^MARIADB_ROOT_PASSWORD=' docker/.env | cut -d= -f2-)
+WEBADMIN_PASS=$(openssl rand -hex 24)
+docker exec -i -e MYSQL_PWD="$PASS" gopet-mariadb mysql -uroot -e \
+  "CREATE USER IF NOT EXISTS 'gopet_admin'@'%' IDENTIFIED BY '$WEBADMIN_PASS';"
+
+# Chạy migration TRƯỚC (bảng admin_audit_log phải tồn tại — grants có INSERT vào bảng này)
+bash docker/migrate-db.sh
+
+docker exec -i -e MYSQL_PWD="$PASS" gopet-mariadb mysql -uroot < docker/webadmin-grants.sql
+printf 'WEBADMIN_DB_PASSWORD=%s\n' "$WEBADMIN_PASS" >> docker/.env
+```
+
+`docker/webadmin-grants.sql` chạy lại nhiều lần an toàn (GRANT cộng dồn) — chạy lại sau
+khi thêm bảng mới vào registry (phase 7) và thêm dòng GRANT tương ứng.
+
+### 11.3 Biến môi trường (`docker/.env`)
+
+| Biến | Bắt buộc | Ghi chú |
+|---|---|---|
+| `WEBADMIN_DB_USER` | không (mặc định `gopet_admin`) | user tạo ở mục 11.2 |
+| `WEBADMIN_DB_PASSWORD` | **có** | mật khẩu user ở mục 11.2 |
+| `WEBADMIN_SESSION_SECRET` | **có** | `openssl rand -base64 48`, ≥ 32 ký tự |
+| `WEBADMIN_SUPERADMIN_USER_IDS` | không (mặc định `1`) | `user_id` được quyền super-admin, cách nhau dấu phẩy — tài khoản admin gốc là `1` |
+| `WEBADMIN_DOMAIN` | **có** | domain đã trỏ DNS (mục 11.1), hoặc `localhost` để test |
+| `WEBADMIN_ALLOWED_IPS` | **có** | IP/CIDR cách nhau khoảng trắng (mục 11.1) |
+| `GHCR_OWNER` | **có** | owner GitHub, **viết thường** (vd. `tuyenha`) — ghcr.io không nhận hoa |
+| `WEBADMIN_TAG` | không (mặc định `latest`) | `deploy-service.sh webadmin` tự cập nhật (git sha) mỗi lần deploy qua CI |
+
+### 11.4 Đăng nhập GHCR trên máy chủ (một lần)
+
+Image `gopet-gserver` và `gopet-webadmin` build + push trên GitHub Actions (job
+`build-push`, `.github/workflows/gserver-ci-cd.yml`, dùng `GITHUB_TOKEN` sẵn có, quyền
+`packages: write`). Máy chủ **chỉ pull, không build** — cần đăng nhập GHCR bằng Personal
+Access Token (PAT) quyền `read:packages` (KHÔNG dùng token `write`/`admin` trên máy chủ).
+Để package ở chế độ **private** (mặc định với repo private) — image chứa mã server:
+
+```bash
+# GitHub → Settings → Developer settings → Personal access tokens (classic hoặc fine-grained)
+# → scope "read:packages" — chỉ đọc, không thể push đè image
+docker login ghcr.io -u <github-username>
+# Password: dán PAT (không phải mật khẩu GitHub)
+```
+
+Đăng nhập một lần là đủ (Docker lưu credential ở `~/.docker/config.json`);
+`deploy-service.sh` chỉ gọi `docker compose pull <service>`, không cần đăng nhập lại.
+
+### 11.5 Deploy + rollback
+
+```bash
+cd /opt/gopet
+docker compose --profile server up -d          # lần đầu: dựng đủ mariadb + gserver + webadmin + caddy
+docker compose --profile server ps             # cả 4 container đều "healthy"
+```
+
+Deploy bản mới (CI tự làm sau khi build-push xong; chạy tay cũng được):
+
+```bash
+bash docker/deploy-service.sh webadmin <git-sha-hoặc-tag>   # bỏ tham số = dùng lại WEBADMIN_TAG hiện có trong .env
+```
+
+Script: chạy `migrate-db.sh` (có khoá `flock`, mục 3.3) → `compose pull webadmin` →
+`compose up -d --no-build webadmin` → chờ healthy tối đa 5 phút → **không** healthy thì tự
+đổi `WEBADMIN_TAG` về tag đang chạy trước đó (lưu sẵn trong `docker/.webadmin-prev-tag`,
+đọc trực tiếp từ container chứ không phải từ `.env`) và tái tạo container. Deploy webadmin
+**không rebuild/restart gserver** — người chơi đang online không bị ảnh hưởng (và ngược
+lại, deploy gserver không đụng tới webadmin).
+
+Rollback tay (khi tự động thất bại):
+
+```bash
+cd /opt/gopet/docker
+cat .webadmin-prev-tag                      # tag lần deploy thành công gần nhất
+sed -i "s/^WEBADMIN_TAG=.*/WEBADMIN_TAG=$(cat .webadmin-prev-tag)/" .env
+docker compose --profile server up -d --no-build --force-recreate webadmin
+```
+
+### 11.6 Múi giờ (TZ) — quyết định
+
+`docker-compose.yml` đặt `TZ=Asia/Ho_Chi_Minh` cho **cả 3** container (`mariadb`,
+`gserver`, `webadmin`) và MariaDB chạy thêm `--default-time-zone=+07:00`.
+
+Trước khi bật, đã kiểm tra (phase 11):
+
+- **GServer đã chạy giờ VN từ trước** (`SRCGOPETGOC/GServer/Dockerfile` có sẵn `ENV
+  TZ=Asia/Ho_Chi_Minh`) — mọi mốc tính bằng `DateTime.Now` của .NET (bảo trì định kỳ
+  `AutoMaintenance.cs`/`hourMaintenance` trong `server.json`, sự kiện theo ngày, quà hằng
+  ngày...) **không đổi hành vi**, vì container gserver vốn đã ở múi giờ VN. Đặt lại `TZ`
+  trong compose chỉ để hiển thị nhất quán, không đổi giá trị.
+- **MariaDB trước phase 11 không đặt time zone** (mặc định `SYSTEM`, tương đương UTC của
+  base image) — đây là thay đổi thật: `NOW()`/`CURRENT_TIMESTAMP()` phía DB từ giờ tính
+  theo giờ VN.
+- Rà toàn bộ schema (`SRCGOPETGOC/MariaDB_SQL/*.sql`): hầu hết cột thời gian là
+  **`datetime`** (lưu giá trị đúng như app truyền vào, KHÔNG tự quy đổi khi đổi time zone
+  của server — vd. `gift_code.expire`, `letter.time`, `player.loginDate`). Chỉ có **2 cột
+  kiểu `timestamp` thật** (MariaDB lưu nội bộ theo UTC rồi quy đổi hiển thị theo time zone
+  phiên): `payment.time_create` và `user.update_date` — đọc lại các dòng **đã có sẵn** ở
+  2 cột này sau khi đổi time zone sẽ hiển thị lệch múi giờ so với trước (giá trị tuyệt đối
+  không đổi, chỉ hiển thị khác).
+- Các cột `datetime` dùng `DEFAULT current_timestamp()` mà code không truyền giá trị rõ
+  ràng: dòng tạo **trước** khi đổi cấu hình mang giờ UTC, dòng tạo **sau** mang giờ VN —
+  lệch một lần, không tự khớp lại (bản chất `datetime` không quy đổi).
+
+**Quyết định:** chấp nhận lệch 7h một lần cho dữ liệu hiện có (môi trường vẫn là dữ liệu
+thử/test theo `docker/README.md`), **không viết migration `+7h`** cho các cột trên — chi
+phí một migration dữ liệu không tương xứng với dữ liệu test. Nếu triển khai với dữ liệu
+thật về sau, cân nhắc migrate 2 cột `timestamp` (`payment.time_create`, `user.update_date`)
+và mọi cột `datetime` được ghi bằng `DEFAULT current_timestamp()` phía DB trước thời điểm
+đổi cấu hình.

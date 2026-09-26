@@ -18,6 +18,9 @@ namespace Gopet.Runtime.UI
     public sealed class GemInventoryView : MonoBehaviour
     {
         private const string Title = "Kho ngọc";
+        /// <summary>Nhỏ hơn khung mặc định 400×300 — danh sách ngọc ít cột, không cần rộng.</summary>
+        private const float Width = 340f;
+        private const float Height = 250f;
         private const string ActionLabel = "Chọn";
 
         private readonly List<GemItemInfo> _items = new List<GemItemInfo>();
@@ -32,21 +35,39 @@ namespace Gopet.Runtime.UI
         public static GemInventoryView Create(Transform parent, Font font, RemoteAssetCache assets = null)
         {
             font = font ?? UiBuilder.DefaultFont();
-            var frame = GamePopupFrame.Create(parent, font, Title, footer: string.Empty);
+            var frame = GamePopupFrame.Create(parent, font, Title, Width, Height, footer: string.Empty);
             frame.gameObject.name = "GemInventoryView";
+            frame.UseCompactChrome();
 
             var view = frame.gameObject.AddComponent<GemInventoryView>();
             view._frame = frame;
             view._assets = assets;
             frame.Closed += () => view.CloseRequested?.Invoke();
 
-            view._list = PopupItemList.Create(frame.Content, font);
-            view._list.Activated += index =>
-            {
-                if (index >= 0 && index < view._items.Count) view.GemSelected?.Invoke(view._items[index]);
-            };
-            view.Refresh();
+            view.BuildList(frame.Content, font);
             return view;
+        }
+
+        /// <summary>Bản nhúng (tab Pet của Hành lý): chỉ danh sách, không khung/băng chân.</summary>
+        public static GemInventoryView CreateEmbedded(Transform host, Font font, RemoteAssetCache assets = null)
+        {
+            var go = new GameObject("GemInventoryEmbedded", typeof(RectTransform));
+            go.transform.SetParent(host, false);
+            UiBuilder.Stretch((RectTransform)go.transform);
+            var view = go.AddComponent<GemInventoryView>();
+            view._assets = assets;
+            view.BuildList(go.transform, font ?? UiBuilder.DefaultFont());
+            return view;
+        }
+
+        private void BuildList(Transform parent, Font font)
+        {
+            _list = PopupItemList.Create(parent, font);
+            _list.Activated += index =>
+            {
+                if (index >= 0 && index < _items.Count) GemSelected?.Invoke(_items[index]);
+            };
+            Refresh();
         }
 
         public void ApplyInventory(GemInventory inventory)
@@ -78,9 +99,9 @@ namespace Gopet.Runtime.UI
             for (var i = 0; i < rows.Length; i++) rows[i] = ToRow(_items[i]);
             _list.Bind(new MenuScreen { Title = Title, Items = rows }, _assets, ActionLabel);
             if (rows.Length == 0) _list.ShowPlaceholder("Bạn chưa có ngọc.");
-            _frame.SetFooter(rows.Length == 0
+            if (_frame != null) _frame.SetFooter(rows.Length == 0
                 ? "Kho ngọc đang trống."
-                : $"Có {rows.Length} viên ngọc · chạm \"{ActionLabel}\" để cường hoá, tiến hoá.");
+                : $"Có {rows.Length} viên ngọc · chạm \"{ActionLabel}\" để cường hoá.");
         }
 
         private static MenuItemInfo ToRow(GemItemInfo gem)

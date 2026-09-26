@@ -276,6 +276,9 @@ public partial class MenuController
                     player.controller.sendListOption(menuId, titleStr, titleStr, list);
                 }
                 break;
+            case MENU_SHOW_NEXT_TASK_GUIDE:
+                player.controller.showMenuItem(menuId, TYPE_MENU_SELECT_ELEMENT, player.Language.YourTask, TaskGuide.BuildNextTaskItems(player));
+                break;
             case MENU_SHOW_MY_LIST_TASK:
                 {
                     CopyOnWriteArrayList<TaskData> taskDatas = player.controller.getTaskCalculator().getTaskDatas();
@@ -283,7 +286,14 @@ public partial class MenuController
                     foreach (TaskData taskData in taskDatas)
                     {
                         TaskTemplate taskTemplate = taskData.getTemplate();
-                        MenuItemInfo menuItemInfo = new MenuItemInfo(taskTemplate.getName(player), taskTemplate.getDescription(player), "dialog/1.png", true);
+                        // Client mới: mô tả là tiến độ từng yêu cầu, mỗi dòng một yêu cầu (kèm map
+                        // của quái) để khỏi phải bấm vào mới biết đã đánh bao nhiêu. Jar giữ mô tả
+                        // gốc vì dòng menu của nó chỉ vẽ một hàng chữ.
+                        bool modernClient = player.ApplicationVersion != null && player.ApplicationVersion >= GopetManager.VERSION_150;
+                        string description = modernClient
+                            ? string.Join("\n", TaskCalculator.getTaskLines(taskData.task, taskData.taskInfo, player))
+                            : taskTemplate.getDescription(player);
+                        MenuItemInfo menuItemInfo = new MenuItemInfo(taskTemplate.getName(player), description, "dialog/1.png", true);
                         menuItemInfo.setShowDialog(true);
                         menuItemInfo.setDialogText(TaskCalculator.getTaskText(taskData.task, taskData.taskInfo, taskData.timeTask, player));
                         menuItemInfo.setLeftCmdText(CMD_CENTER_OK);
@@ -791,7 +801,6 @@ public partial class MenuController
             case MENU_KIOSK_WEAPON:
             case MENU_KIOSK_HAT:
                 {
-                    MarketPlace marketPlace = (MarketPlace)player.getPlace();
                     Kiosk kiosk = null;
                     switch (menuId)
                     {

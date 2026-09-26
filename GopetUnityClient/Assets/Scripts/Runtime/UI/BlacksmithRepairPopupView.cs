@@ -10,7 +10,7 @@ namespace Gopet.Runtime.UI
 {
     /// <summary>
     /// Chi tiết một trang bị ở Thợ Rèn: icon, tên, mô tả, thanh độ bền (vd 36/80) và nút
-    /// "Sửa chữa" kiểu <see cref="GameButtonSkin"/> như nút "Kích ẩn". Bấm sửa thì chạy
+    /// "Sửa chữa". Bấm sửa thì chạy
     /// <see cref="GrindstoneRepairEffect"/> xong mới gửi lệnh lên server.
     ///
     /// <para>Khung dựng qua <see cref="GamePopupFrame"/> nên viền ngoài liền một nét và
@@ -224,16 +224,13 @@ namespace Gopet.Runtime.UI
             rect.sizeDelta = new Vector2(ButtonWidth, ButtonHeight);
             rect.anchoredPosition = new Vector2(0f, 2f);
 
-            // Cùng kiểu nút "Kích ẩn" (PetEquipView): khung vàng, mặt xanh, chữ trắng viền.
             var image = go.GetComponent<Image>();
-            if (!GameButtonSkin.Apply(image, ButtonHeight))
-            {
-                RoundedUiSprite.Apply(image);
-                image.color = UiBuilder.ButtonFace;
-            }
+            RoundedUiSprite.Apply(image);
+            image.color = UiBuilder.ButtonFace;
             var label = UiBuilder.MakeText(go.transform, font, "Label", 15, true);
             label.text = text;
-            GameButtonSkin.StyleLabel(label);
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
 
             var button = go.GetComponent<Button>();
             button.interactable = enabled;

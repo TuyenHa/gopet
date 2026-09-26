@@ -118,7 +118,11 @@ public partial class MenuController
                 break;
             case MENU_SELECT_TYPE_PAYMENT_TO_ARENA_JOURNALISM:
                 {
-
+                    if (!ArenaEvent.IsEligible(player))
+                    {
+                        player.redDialog("Hãy đến Đấu trường và mang theo pet còn sống, không đang chiến đấu để báo danh.");
+                        return;
+                    }
                     if (ArenaEvent.Instance.IdPlayerJoin.Contains(player.playerData.user_id))
                     {
                         player.okDialog(player.Language.YouAreHaveJournalism);
@@ -226,9 +230,13 @@ public partial class MenuController
                         {
                             TaskTemplate taskTemplate = taskTemplates.get(index);
                             player.playerData.tasking.Add(taskTemplate.getTaskId());
-                            player.playerData.task.Add(new TaskData(taskTemplate));
+                            TaskData newTask = new TaskData(taskTemplate);
+                            player.playerData.task.Add(newTask);
                             player.controller.getTaskCalculator().update();
                             player.okDialog(player.Language.CongratulateGetNewTask);
+                            // Tính ngay những gì đã đạt sẵn (cấp pet, kỹ năng đã học…) — trước đây
+                            // phải chờ lần lên cấp kế tiếp mới cộng. Đủ hết thì tự hoàn thành.
+                            player.controller.getTaskCalculator().onUpdateTask(newTask);
                         }
                         else
                         {
@@ -1472,7 +1480,6 @@ public partial class MenuController
             case MENU_KIOSK_AMOUR:
             case MENU_KIOSK_OHTER:
             case MENU_KIOSK_PET:
-                MarketPlace marketPlace = (MarketPlace)player.getPlace();
                 Kiosk kiosk = null;
                 switch (menuId)
                 {
@@ -2810,9 +2817,15 @@ public partial class MenuController
                                     int itemId = player.controller.objectPerformed[OBJKEY_ITEM_KIOSK_CANCEL];
                                     sbyte typeKiosk = (sbyte)player.controller.objectPerformed.get(MenuController.OBJKEY_TYPE_SHOW_KIOSK);
                                     Kiosk kiosk_ = MarketPlace.getKiosk(typeKiosk);
-                                    SellItem sellItem = kiosk_.searchItem(itemId);
+                                    SellItem sellItem = kiosk_?.searchItem(itemId);
                                     if (sellItem != null)
                                     {
+                                        // Client gửi itemId trực tiếp (GopetCMD.REMOVE_SELL_ITEM), không tin owner.
+                                        if (sellItem.user_id != player.user.user_id)
+                                        {
+                                            player.redDialog(player.Language.KioskNotOwner);
+                                            return;
+                                        }
                                         if (sellItem.pet != null)
                                         {
                                             player.redDialog("Thú cưng bán theo kí à! @@");
@@ -2828,14 +2841,21 @@ public partial class MenuController
                                             player.redDialog("ít nhất giá tổng phải lớn hơn {0} (ngoc)", Utilities.FormatNumber(sellItem.TotalCount * 10));
                                             return;
                                         }
-                                        if (sellItem.sumVal > 0)
+                                        lock (sellItem.Sync)
                                         {
-                                            player.redDialog("Không thể hủy vì đã có người mua lẻ vài món");
-                                        }
-                                        else
-                                        {
-                                            sellItem.IsRetail = !sellItem.IsRetail;
-                                            player.okDialog("Thay đổi thành công. Hiện tại {0}", sellItem.IsRetail ? "cho phép bán lẻ" : "không cho phép bán lẻ");
+                                            if (sellItem.hasSell || sellItem.hasRemoved)
+                                            {
+                                                player.redDialog(player.Language.ItemWasSell);
+                                            }
+                                            else if (sellItem.sumVal > 0)
+                                            {
+                                                player.redDialog("Không thể hủy vì đã có người mua lẻ vài món");
+                                            }
+                                            else
+                                            {
+                                                sellItem.IsRetail = !sellItem.IsRetail;
+                                                player.okDialog("Thay đổi thành công. Hiện tại {0}", sellItem.IsRetail ? "cho phép bán lẻ" : "không cho phép bán lẻ");
+                                            }
                                         }
                                     }
                                 }

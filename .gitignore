@@ -9,6 +9,7 @@ tools/freej2me/
 SRCGOPETGOC/GServer/bin*
 SRCGOPETGOC/GServer/obj*
 .tmp-build-attackboss-star*
+.tmp-build-market*
 SRCGOPETGOC/GServer/*.log
 
 # Dump DB va log runtime cua GServer: sinh moi lan chay, ten co timestamp nen

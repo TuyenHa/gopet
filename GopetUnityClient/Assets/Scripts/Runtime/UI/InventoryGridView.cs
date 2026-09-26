@@ -160,8 +160,10 @@ namespace Gopet.Runtime.UI
             rect.anchorMin = new Vector2(0f, 0f);
             rect.anchorMax = new Vector2(1f, 0f);
             rect.pivot = new Vector2(0.5f, 0f);
-            rect.offsetMin = new Vector2(4f, 3f);
-            rect.offsetMax = new Vector2(-4f, 3f + BarHeight);
+            // Sát đáy: y = 1 là ngay trên viền 1px của ô. Thụt ngang 6 = bán kính góc bo,
+            // để vạch không lòi ra ngoài đường cong ở 2 góc dưới.
+            rect.offsetMin = new Vector2(6f, 1f);
+            rect.offsetMax = new Vector2(-6f, 1f + BarHeight);
             var trackImage = track.GetComponent<Image>();
             trackImage.color = new Color(0.16f, 0.2f, 0.28f, 0.35f);
             trackImage.raycastTarget = false;

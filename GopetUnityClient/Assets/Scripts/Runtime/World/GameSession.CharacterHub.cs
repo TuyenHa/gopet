@@ -28,8 +28,6 @@ namespace Gopet.Runtime.World
             _characterHub.PetEquipActionChosen += OnPetEquipAction;
             _characterHub.PetHiddenStatsRequested += () =>
                 _client.Send(PetEquipPackets.RequestHiddenStats());
-            _characterHub.EmptyPetSlotTapped += _ =>
-                _client.Send(PetEquipPackets.RequestNormalInventory());
             _characterHub.Closed += CloseCharacterHub;
             _characterHub.OpenInitial();
         }
@@ -41,6 +39,11 @@ namespace Gopet.Runtime.World
             _characterHub = null;
             _hubPetEquipRequestPending = false;
         }
+
+        /// <summary>Chỗ nhúng Kho ngọc trong tab Pet của Hành lý — nối vào
+        /// <c>UiRoot.GemInventoryHost</c>; null khi Hành lý không mở trang Kho ngọc.</summary>
+        public Transform GemInventoryHost() =>
+            _characterHub != null ? _characterHub.PetContentHost(CharacterMenuAction.GemInventory) : null;
 
         public bool TryConsumeCharacterHubMenu(MenuScreen screen) =>
             _characterHub != null && _characterHub.TryConsumeMenu(screen);
@@ -61,6 +64,11 @@ namespace Gopet.Runtime.World
                     break;
                 case CharacterMenuAction.PetPotential:
                     _client.Send(PetProfilePackets.RequestGym());
+                    break;
+                case CharacterMenuAction.PetLearnSkill:
+                    // Server đáp menu 799 (danh sách kỹ năng), chọn xong mới trừ điểm kỹ năng
+                    // + 20.000 ngọc; thiếu điều kiện thì server báo lý do.
+                    _client.Send(PetProfilePackets.LearnSkill(PetProfilePackets.LearnNewSlot));
                     break;
                 case CharacterMenuAction.PetTattoo:
                     _client.Send(TattooPackets.RequestScreen());

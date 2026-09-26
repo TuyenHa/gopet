@@ -2055,7 +2055,7 @@ INSERT INTO `iteminfo` (`ID`, `name`, `isPercent`) VALUES
 CREATE TABLE `kiosk_recovery` (
   `kioskType` tinyint(8) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `item` varchar(10000) NOT NULL
+  `item` mediumtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4881,7 +4881,6 @@ ALTER TABLE `iteminfo`
 -- Indexes for table `kiosk_recovery`
 --
 ALTER TABLE `kiosk_recovery`
-  ADD UNIQUE KEY `item_2` (`item`) USING HASH,
   ADD KEY `item` (`item`(768));
 
 --

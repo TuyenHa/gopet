@@ -18,6 +18,8 @@ namespace Gopet.PlayModeTests
             Assert.IsTrue(ItemSelectPopupView.Handles(new MenuScreen { ListId = 800 }));
             Assert.IsTrue(ItemSelectPopupView.Handles(new MenuScreen { ListId = 1023 }));
             Assert.IsTrue(ItemSelectPopupView.Handles(new MenuScreen { ListId = 81004 }));
+            // Học kỹ năng: nhúng vào tab Pet của Hành lý — thiếu dòng này là CreateEmbedded ném.
+            Assert.IsTrue(ItemSelectPopupView.Handles(new MenuScreen { ListId = 799 }));
             Assert.IsFalse(ItemSelectPopupView.Handles(new MenuScreen { ListId = 1033 }));
         }
 

@@ -34,12 +34,18 @@ services:
       # để đổi image không phải sửa lại chỗ này.
       MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Thiếu MARIADB_ROOT_PASSWORD - sao chép .env.example thành .env}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      # Đồng bộ giờ VN với gserver/webadmin (mục "Múi giờ" docs/deployment-linux-backend.md).
+      # Chỉ đổi NOW()/CURRENT_TIMESTAMP() của MariaDB (cột timestamp thật, và cột datetime
+      # dùng DEFAULT current_timestamp() khi app không truyền giá trị) — cột datetime đã lưu
+      # sẵn KHÔNG bị viết lại, chỉ có khác biệt một lần giữa dữ liệu cũ (giờ UTC) và mới (giờ VN).
+      TZ: Asia/Ho_Chi_Minh
 
     command: >
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
       --max-allowed-packet=64M
       --innodb-buffer-pool-size=512M
+      --default-time-zone=+07:00
 
     ports:
       # CHỈ bind vào loopback. Không để 0.0.0.0 — database này chứa dữ liệu
@@ -63,16 +69,18 @@ services:
       start_period: 180s
 
   # Máy chủ game. Nằm sau profile "server" để `docker compose up -d` trên máy dev
-  # vẫn chỉ bật database như trước (dev chạy Gopet.exe native). Trên máy chủ:
+  # vẫn chỉ bật database như trước (dev chạy Gopet.exe native).
   #
-  #   docker compose --profile server up -d --build
+  # Máy chủ KHÔNG build: GitHub Actions (job build-push) đẩy image lên GHCR, máy chủ
+  # pull qua docker/deploy-service.sh gserver. `build:` chỉ để máy dev thử container:
+  #   docker compose --profile server build gserver
   #
   # Hướng dẫn đầy đủ: docs/deployment-linux-backend.md
   gserver:
     profiles: ["server"]
     build:
       context: ../SRCGOPETGOC/GServer
-    image: gopet-gserver:latest
+    image: ghcr.io/${GHCR_OWNER:-unset}/gopet-gserver:${GSERVER_TAG:-latest}
     container_name: gopet-gserver
     restart: unless-stopped
 
@@ -87,6 +95,9 @@ services:
       # Mặc định dùng root; production nên tạo user riêng rồi đặt 2 biến này trong .env.
       GOPET_DB_USER: ${GOPET_DB_USER:-root}
       GOPET_DB_PASSWORD: ${GOPET_DB_PASSWORD:-${MARIADB_ROOT_PASSWORD}}
+      # Dockerfile đã ENV TZ=Asia/Ho_Chi_Minh (ảnh hưởng DateTime.Now — giờ bảo trì, sự
+      # kiện...); đặt lại ở đây cho hiển thị rõ + khớp mariadb/webadmin, không đổi hành vi.
+      TZ: Asia/Ho_Chi_Minh
 
     ports:
       # CHỈ cổng game. HTTP 8082 là API quản trị (shutdown, mở SQL...) — không publish.
@@ -116,6 +127,70 @@ services:
       # Nạp template item/pet/map lúc khởi động mất một lúc.
       start_period: 120s
 
+  # Trang quản trị Next.js. Image build + push GHCR bằng GitHub Actions (job
+  # build-push-webadmin, .github/workflows/gserver-ci-cd.yml) — máy chủ chỉ pull, không
+  # build Node tại chỗ. Không publish cổng: chỉ service `caddy` gọi vào qua mạng compose.
+  webadmin:
+    profiles: ["server"]
+    image: ghcr.io/${GHCR_OWNER:-unset}/gopet-webadmin:${WEBADMIN_TAG:-latest}
+    container_name: gopet-webadmin
+    restart: unless-stopped
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: "3306"
+      DB_USER: ${WEBADMIN_DB_USER:-gopet_admin}
+      DB_PASSWORD: ${WEBADMIN_DB_PASSWORD:-}
+      DB_GAME: gopettae_tae2
+      DB_WEB: gopettae_gopet_web
+      DB_LOG: gp_log
+      SESSION_SECRET: ${WEBADMIN_SESSION_SECRET:-}
+      NODE_ENV: production
+      TZ: Asia/Ho_Chi_Minh
+      # Chỉ Caddy đứng trước webadmin (không publish cổng ra host) nên tin XFF do Caddy đặt.
+      TRUSTED_PROXY: "true"
+      SUPERADMIN_USER_IDS: ${WEBADMIN_SUPERADMIN_USER_IDS:-1}
+
+    # Không có "ports": chỉ caddy truy cập được qua mạng nội bộ compose (webadmin:3000).
+    mem_limit: 384m
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Reverse proxy công khai duy nhất: HTTPS tự động (Let's Encrypt) + chặn IP ngoài
+  # allowlist. Cấu hình: docker/caddy/Caddyfile.
+  caddy:
+    profiles: ["server"]
+    image: caddy:2-alpine
+    container_name: gopet-caddy
+    restart: unless-stopped
+
+    depends_on:
+      webadmin:
+        condition: service_healthy
+
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+      WEBADMIN_DOMAIN: ${WEBADMIN_DOMAIN:-localhost}
+      WEBADMIN_ALLOWED_IPS: ${WEBADMIN_ALLOWED_IPS:-127.0.0.1/32}
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
 volumes:
   gopet-db-data:
     name: gopet-db-data
@@ -123,3 +198,7 @@ volumes:
     name: gopet-gserver-log
   gopet-gserver-backup:
     name: gopet-gserver-backup
+  caddy_data:
+    name: gopet-caddy-data
+  caddy_config:
+    name: gopet-caddy-config

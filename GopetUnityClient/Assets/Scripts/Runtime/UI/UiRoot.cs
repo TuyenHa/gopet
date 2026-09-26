@@ -39,6 +39,9 @@ namespace Gopet.Runtime.UI
         private const int BacSiNpcId = -7;
         private const int GuildNpcId = -15;
         public Func<MenuScreen, bool> MenuInterceptor { get; set; }
+
+        /// <summary>Popup nhiệm vụ vừa đóng — HUD xin lại danh sách để dòng nhiệm vụ đúng.</summary>
+        public event Action TaskPopupClosed;
         public DialogStack Stack => _stack;
         /// <summary>Màn hình đang hiện, hoặc <c>null</c> khi không còn gì.</summary>
         public object Current => _stack.Top;
@@ -410,7 +413,11 @@ namespace Gopet.Runtime.UI
             // vẫn cố gọi TryConsumeMenu trên view đã Destroy.
             if (ReferenceEquals(screen, _shopPopup)) _shopPopup = null;
             if (ReferenceEquals(screen, _atmPopup)) _atmPopup = null;
-            if (ReferenceEquals(screen, _taskPopup)) _taskPopup = null;
+            if (ReferenceEquals(screen, _taskPopup))
+            {
+                _taskPopup = null;
+                TaskPopupClosed?.Invoke();
+            }
             if (ReferenceEquals(screen, _itemSelectPopup)) _itemSelectPopup = null;
             if (ReferenceEquals(screen, _tranChanTabs)) _tranChanTabs = null;
             if (ReferenceEquals(screen, _heavenNpcTabs)) _heavenNpcTabs = null;
@@ -418,6 +425,8 @@ namespace Gopet.Runtime.UI
             if (ReferenceEquals(screen, _guildNpcTabs)) _guildNpcTabs = null;
             if (ReferenceEquals(screen, _blacksmithNpcTabs)) _blacksmithNpcTabs = null;
             if (ReferenceEquals(screen, _dailyCheckin)) _dailyCheckin = null;
+            if (ReferenceEquals(screen, _marketPopup)) _marketPopup = null;
+            if (ReferenceEquals(screen, _marketSellPopup)) _marketSellPopup = null;
         }
 
         private void DestroyView(object screen)

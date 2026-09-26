@@ -188,11 +188,44 @@ public class PlayerData
         }
     }
     /// <summary>
-    /// Lưu thông tin người chơi
+    /// Đã qua lần save cuối lúc disconnect — mọi <see cref="save"/> sau đó là no-op.
+    /// Chặn race <see cref="Gopet.Data.Map.KioskPayout.PaySeller"/>: task nền có thể vẫn cầm
+    /// tham chiếu <see cref="Player.playerData"/> CŨ (lấy qua <see cref="PlayerManager.get(int)"/>
+    /// trước khi bị remove) và gọi save() sau khi người chơi đã đăng xuất/đăng nhập lại —
+    /// nếu không chặn sẽ ghi đè state MỚI (đã load lại) bằng snapshot CŨ trong RAM.
+    /// </summary>
+    public bool disposed = false;
+
+    /// <summary>
+    /// Lưu thông tin người chơi. Khoá trên chính instance này (H2 — code review): đồng bộ với
+    /// nơi set <see cref="disposed"/> (<c>Player.onDisconnected</c>) và với
+    /// <see cref="Gopet.Data.Map.KioskPayout.PaySeller"/> — cả 3 chỗ đều <c>lock(playerData)</c>
+    /// nên không có cửa sổ nào vừa mất tiền (save() lọt qua trước khi disposed=true rồi bị ghi
+    /// đè) vừa trả tiền 2 lần (PaySeller không thấy disposed nên cộng coin vào 1 instance sắp
+    /// bị bỏ, không bao giờ được lưu lại).
     /// </summary>
     public void save()
     {
-        saveStatic(this);
+        lock (this)
+        {
+            if (disposed) return;
+            saveStatic(this);
+        }
+    }
+
+    /// <summary>
+    /// Lưu trên connection có sẵn (AutoSave) — cùng khoá + cờ disposed như save(), để bản
+    /// lưu định kỳ không ghi đè dữ liệu sau khi người chơi đã thoát (web admin có thể đã sửa).
+    /// Trả false nếu đã disposed (bỏ qua).
+    /// </summary>
+    public bool saveIfActive(MySqlConnection conn)
+    {
+        lock (this)
+        {
+            if (disposed) return false;
+            saveStatic(this, conn);
+            return true;
+        }
     }
     /// <summary>
     /// Lưu thông tin người chơi

@@ -37,6 +37,9 @@ namespace Gopet.Runtime.UI
         };
         private Image[] _tabBackgrounds;
         private Transform _body;
+        /// <summary>Bề ngang vùng nội dung khung — để tính bề rộng khay tab con tường minh
+        /// (<see cref="PopupTabRail.Create"/> không đọc rect lúc dựng).</summary>
+        private float _contentWidth;
         private Transform _leftListHost;
         private Transform _rightListHost;
         private Transform _friendsEmptyState;
@@ -60,7 +63,6 @@ namespace Gopet.Runtime.UI
         public event Action<bool> AutoAttackChanged;
         public event Action<PetEquipItem, PetSlotActionsView.Action> PetEquipActionChosen;
         public event Action PetHiddenStatsRequested;
-        public event Action<EquipSlot> EmptyPetSlotTapped;
 
         public CharacterHubTab ActiveTab => _activeTab;
 
@@ -77,6 +79,7 @@ namespace Gopet.Runtime.UI
             view._sound = sound;
             view._autoAttack = autoAttack;
             view._wings = wings;
+            view._contentWidth = frame.ContentWidth;
             frame.Closed += () => view.Closed?.Invoke();
             view.BuildTabs(frame.Content, frame.ContentWidth);
             view.BuildBody(frame.Content);
@@ -118,8 +121,16 @@ namespace Gopet.Runtime.UI
                 }
                 else if (screen.ListId == 803 || screen.ListId == 81040) host = _leftListHost;
             }
-            else if (_activeTab == CharacterHubTab.Pet && screen.ListId == 5)
-                host = _leftListHost;
+            else if (_activeTab == CharacterHubTab.Pet)
+            {
+                if (TryBindPetGym(screen)) return true;
+                if (screen.ListId == 81004 && PetEquipMode)
+                {
+                    BindPetInventory(screen);
+                    return true;
+                }
+                if (screen.ListId == 5 && !PetEquipMode) host = _leftListHost;
+            }
             else if (_activeTab == CharacterHubTab.Friends && screen.ListId >= 1060 && screen.ListId <= 1065)
             {
                 host = screen.ListId == 1060 ? _leftListHost : _rightListHost;

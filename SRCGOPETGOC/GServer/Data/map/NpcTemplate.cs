@@ -102,6 +102,22 @@ namespace Gopet.Data.Map
             return imgPath;
         }
 
+        /// <summary>
+        /// Ảnh NPC là strip nhiều frame xếp ngang (client xẻ width/frameCount, đổi frame mỗi
+        /// 0.16s). Mặc định 1 — ảnh NPC gốc là 1-pose; chỉ ảnh vẽ riêng mới là strip.
+        /// </summary>
+        private static readonly Dictionary<string, int> AnimatedImageFrames = new()
+        {
+            // Thợ Rèn gõ búa: [giơ, giơ, giơ, vung, nện, nện] — tools/image-gen/gen-blacksmith-npc-hammer.py
+            { "npcs/Tho_Ren.png", 6 },
+        };
+
+        public int getFrameCount()
+        {
+            var path = (imgPath ?? string.Empty).Replace('\\', '/');
+            return AnimatedImageFrames.TryGetValue(path, out var frames) ? frames : 1;
+        }
+
         public int getX()
         {
             return x;

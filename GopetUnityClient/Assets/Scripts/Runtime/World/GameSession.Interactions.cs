@@ -104,6 +104,10 @@ namespace Gopet.Runtime.World
             // Đang diễn vệt chém thì nuốt cú bấm: bấm chồng sẽ bắn hai gói ATTACK_MOB,
             // server mở trận cho gói đầu rồi từ chối gói sau.
             if (_slashPlaying) return;
+            // Màn đánh còn mở (kể cả bảng thắng đang chờ OK) thì không mở trận mới: server
+            // sẽ mở trận thật trong khi client chưa dựng được màn — trận "ẩn" giữ chân người
+            // chơi ~30s, mọi cú đánh quái khác bị server nuốt im lặng.
+            if (IsBattleOpen) return;
             // Pet kiệt sức (vừa thua quái) thì server từ chối bằng Popup "không đủ máu"
             // (GopetPlace.startFightMob:456). Chặn ngay tại client để khỏi diễn xong cả nhát
             // chém rồi mới ăn lời từ chối — nhìn như pet chém vào không khí.
@@ -129,9 +133,13 @@ namespace Gopet.Runtime.World
             WorldSlashEffect.Play(_scene.transform, pet.transform.localPosition, to.localPosition, () =>
             {
                 _slashPlaying = false;
+                // Vệt chém ~0.6s: trong lúc đó trận có thể đã mở (bấm sát lúc thắng) — xét lại.
+                if (IsBattleOpen) return;
                 _battleHandler.SendAttackMob(mobId);
             });
         }
+
+        private bool IsBattleOpen => _battle?.View != null;
 
         private void ShowToast(string text)
         {

@@ -112,9 +112,15 @@ namespace Gopet.Runtime.UI
         /// <summary>Khớp MenuController.PET_EQUIP_WORN_BY_ACTIVE (server).</summary>
         private const string WornByActivePetMark = "(Pet đang theo mặc)";
 
-        /// <summary>Trang bị pet đang mặc trên pet đang theo: "Dùng" của server là tháo ra.</summary>
-        private static string UseLabel(MenuItemInfo item) =>
-            item.Description != null && item.Description.Contains(WornByActivePetMark) ? "Tháo" : "Dùng";
+        /// <summary>Trang bị pet đang mặc trên pet đang theo: "Dùng" của server là tháo ra;
+        /// trang bị pet chưa mặc (mô tả có "Độ bền") thì "Dùng" = mặc cho pet đang theo.</summary>
+        private static string UseLabel(MenuItemInfo item)
+        {
+            if (item.Description != null && item.Description.Contains(WornByActivePetMark)) return "Tháo";
+            return BlacksmithRepairPopupView.TryParseDurability(item.Description, out _, out _, out _)
+                ? "Trang bị"
+                : "Dùng";
+        }
 
         private void BuildButtons(Transform parent, string useLabel, bool canUse, Action use)
         {

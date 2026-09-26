@@ -120,6 +120,30 @@ public class TaskCalculator
 
     public static String getTaskText(int[] task, int[][] taskInfo, long timeTask, Player player)
     {
+        return "\n  ---- " + player.Language.Request + " ----\n" + String.Join("\n", getTaskLines(task, taskInfo, player));
+    }
+
+    /// <summary>Tên các map có sinh quái <paramref name="petTemplateId"/> (theo
+    /// <c>gopet_map_moblvl</c>). Nhiệm vụ diệt quái chỉ lưu template quái, không lưu map, nên
+    /// phải suy ngược để người chơi biết đi đâu đánh. Rỗng nếu không map nào sinh quái đó.</summary>
+    public static string getMobMapNames(int petTemplateId, Player player)
+    {
+        List<string> names = new();
+        foreach (var entry in GopetManager.MOBLVL_MAP)
+        {
+            if (entry.Value == null || !entry.Value.Any(m => m.getPetId() == petTemplateId)) continue;
+            string name = player.Language.MapLanguage.TryGetValue(entry.Key, out var localized)
+                ? localized
+                : GopetManager.mapTemplate.get(entry.Key)?.name;
+            if (!string.IsNullOrEmpty(name) && !names.Contains(name)) names.Add(name);
+        }
+        return String.Join(", ", names);
+    }
+
+    /// <summary>Mỗi yêu cầu một dòng kèm tiến độ "đã làm / cần". Dùng cho hộp thoại chi tiết
+    /// và cho dòng mô tả trong danh sách nhiệm vụ của client mới.</summary>
+    public static List<String> getTaskLines(int[] task, int[][] taskInfo, Player player)
+    {
         if (task == null)
         {
             task = new int[taskInfo.Length];
@@ -132,7 +156,11 @@ public class TaskCalculator
             switch (taskI[0])
             {
                 case REQUEST_KILL_MOB:
-                    taskText.Add(Utilities.Format(player.Language.TASK_REQUEST_KILL_MOB, GopetManager.PETTEMPLATE_HASH_MAP.get(taskI[2]).getName(player), task[i], taskI[1]));
+                    {
+                        string line = Utilities.Format(player.Language.TASK_REQUEST_KILL_MOB, GopetManager.PETTEMPLATE_HASH_MAP.get(taskI[2]).getName(player), task[i], taskI[1]);
+                        string maps = getMobMapNames(taskI[2], player);
+                        taskText.Add(string.IsNullOrEmpty(maps) ? line : Utilities.Format(player.Language.TASK_MOB_AT_MAP, line, maps));
+                    }
                     break;
                 case REQUEST_PET_LVL:
                     taskText.Add(Utilities.Format(player.Language.TASK_REQUEST_PET_LVL, task[i], taskI[1]));
@@ -200,11 +228,46 @@ public class TaskCalculator
                     break;
             }
         }
-        return "\n  ---- " + player.Language.Request + " ----\n" + String.Join("\n", taskText);
+        return taskText;
     }
 
-    public void onTaskUpdate(TaskData taskData, int taskRequestType, params object[] dObjects)
+    /// <summary>Khoá chốt nhiệm vụ: tiến độ được cộng từ nhiều luồng (trận đấu, mạng) —
+    /// không khoá thì hai luồng cùng thấy "đủ" và trao thưởng hai lần.</summary>
+    private readonly object completeLock = new();
+
+    /// <summary>
+    /// Đủ mọi yêu cầu là tự hoàn thành: trao thưởng (ngọc cộng thẳng, vật phẩm vào rương đồ —
+    /// <see cref="onTaskSucces"/>) và báo người chơi, khỏi phải mở popup bấm "hoàn thành".
+    /// Chỉ chốt nhiệm vụ còn nằm trong danh sách đang làm, nên gọi lặp (onUpdateTask gọi
+    /// onTaskUpdate nhiều lần cho cùng một nhiệm vụ) không trao thưởng lần hai.
+    /// </summary>
+    private void tryAutoComplete(TaskData taskData)
     {
+        lock (completeLock)
+        {
+            if (!getTaskDatas().Contains(taskData) || !taskSuccess(taskData)) return;
+            onTaskSucces(taskData);
+            update();
+        }
+        pushTaskTracker();
+    }
+
+    /// <summary>
+    /// Đẩy lại danh sách nhiệm vụ đang làm (menu 1034) cho client &gt;= 1.5.0 để dòng nhiệm vụ
+    /// trên HUD cập nhật ngay khi tiến độ đổi — học kỹ năng, lên cấp, cường hoá… không chỉ
+    /// sau trận đánh. Client Unity nuốt 1034 không do người chơi mở (<c>TryConsumeHudMenu</c>)
+    /// nên không bật popup. Jar thì sẽ bật menu lạ, nên không gửi.
+    /// </summary>
+    private void pushTaskTracker()
+    {
+        if (player.ApplicationVersion == null || player.ApplicationVersion < GopetManager.VERSION_150) return;
+        MenuController.sendMenu(MenuController.MENU_SHOW_MY_LIST_TASK, player);
+    }
+
+    /// <returns>true nếu tiến độ của nhiệm vụ này thay đổi.</returns>
+    public bool onTaskUpdate(TaskData taskData, int taskRequestType, params object[] dObjects)
+    {
+        int before = taskData.task.Sum();
         for (int i = 0; i < taskData.taskInfo.Length; i++)
         {
             if (taskData.task[i] < taskData.taskInfo[i][1] && taskData.taskInfo[i][0] == taskRequestType)
@@ -350,14 +413,18 @@ public class TaskCalculator
                 }
             }
         }
+        tryAutoComplete(taskData);
+        return taskData.task.Sum() != before;
     }
 
     public void onAllTaskUpdate(int taskRequestType, params object[] dObjects)
     {
+        bool changed = false;
         foreach (TaskData taskData in getTaskDatas())
         {
-            this.onTaskUpdate(taskData, taskRequestType, dObjects);
+            changed |= this.onTaskUpdate(taskData, taskRequestType, dObjects);
         }
+        if (changed) pushTaskTracker();
     }
 
     public bool TryCheckPetSacrifice(Pet pet) => getTaskDatas().Any(m => m.taskInfo.Any(t => t[0] == REQUEST_HIẾN_TẾ_THÚ_CƯNG && t[2] <= pet.lvl));
@@ -502,7 +569,7 @@ public class TaskCalculator
         {
             txtInfo.add(petBattleText.getText());
         }
-        player.okDialog(string.Format(player.Language.OnTaskSuccess, taskData.getTemplate().getName(player), String.Join(",", txtInfo)));
+        player.okDialog(string.Format(player.Language.OnTaskSuccess, taskData.getTemplate().getName(player), String.Join(", ", txtInfo)));
         this.onAllTaskUpdate(REQUEST_NEED_TASK, taskData.taskTemplateId);
     }
 
@@ -564,6 +631,8 @@ public class TaskCalculator
                 this.onAllTaskUpdate(REQUEST_ENCHANT_ITEM, item.lvl);
             }
         }
+        // Gọi lúc nhận nhiệm vụ / bấm "cập nhật": dòng HUD phải hiện nhiệm vụ vừa nhận.
+        pushTaskTracker();
     }
 
     public bool taskSuccess(TaskData taskData)

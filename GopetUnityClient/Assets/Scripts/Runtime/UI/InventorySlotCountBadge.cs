@@ -48,11 +48,11 @@ namespace Gopet.Runtime.UI
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
             label.verticalOverflow = VerticalWrapMode.Overflow;
             UiBuilder.SetFontStyle(label, FontStyle.Bold);
-            // Viền dày hơn một chút và đều: Outline chỉ nhân 4 góc chéo, thêm lớp thứ hai theo
-            // hướng ngang/dọc để cạnh chữ không mỏng. Không dùng Shadow (đổ bóng).
-            AddOutline(label, new Vector2(1.2f, -1.2f));
-            AddOutline(label, new Vector2(1.2f, 0f));
-            AddOutline(label, new Vector2(0f, 1.2f));
+            // Đúng MỘT lớp Outline: mỗi Outline nhân bản cả viền của lớp trước (4 → 16 → 64 bản
+            // sao, lệch cộng dồn) nên chồng 3 lớp thì viền loang thành một khối nền đen.
+            var outline = label.gameObject.AddComponent<Outline>();
+            outline.effectColor = Color.black;
+            outline.effectDistance = new Vector2(1f, -1f);
 
             var rect = label.rectTransform;
             rect.anchorMin = Vector2.zero;
@@ -62,13 +62,6 @@ namespace Gopet.Runtime.UI
             // Đứng sau Icon trong thứ tự con → vẽ đè lên icon.
             label.transform.SetAsLastSibling();
             return label;
-        }
-
-        private static void AddOutline(Text label, Vector2 distance)
-        {
-            var outline = label.gameObject.AddComponent<Outline>();
-            outline.effectColor = Color.black;
-            outline.effectDistance = distance;
         }
     }
 }

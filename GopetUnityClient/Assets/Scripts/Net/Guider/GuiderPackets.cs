@@ -133,6 +133,15 @@ namespace Gopet.Net.Guider
                 .PutInt(dialogId);
         }
 
+        /// <summary>Tab "Nhiệm vụ tiếp theo": PET_SERVICE/SHOW_LIST_TASK kèm byte tab = 1.
+        /// Server đáp menu 1093 (gặp NPC nào, ở map nào). Gói trống (jar) vẫn là menu 1034.</summary>
+        public static Message RequestNextTaskGuide()
+        {
+            return Message.Create(GopetCmd.PET_SERVICE)
+                .PutSByte(GopetCmd.SHOW_LIST_TASK)
+                .PutSByte(1);
+        }
+
         /// <summary>Xin trạng thái lịch điểm danh (mở tab). Server đáp TYPE_DAILY_CHECKIN_STATE.</summary>
         public static Message RequestDailyCheckin()
         {

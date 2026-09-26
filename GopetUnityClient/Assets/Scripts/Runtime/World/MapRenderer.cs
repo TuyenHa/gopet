@@ -27,6 +27,11 @@ namespace Gopet.Runtime.World
         private const int ShopBuildingBaseImageId = 189;
         private const int PineTreeImageId = 158;
         private const int TopPineRowMaxY = 100;
+        /// <summary>Cây ATM (vật hoạt ảnh 72, chân ở ~(440,108)) của Thành Phố Linh Thú — bỏ,
+        /// NPC Thợ Rèn (-42) đứng thế chỗ (migration-260926-blacksmith-replace-atm.sql).</summary>
+        private const int AtmAnimationId = 72;
+        /// <summary>Vùng bấm đi kèm cây ATM (building loại 9 — jar không làm gì khi bấm).</summary>
+        private const int AtmBuildingType = 9;
         private const int CloudImageIdMin = 30;
         private const int CloudImageIdMax = 36;
 
@@ -174,6 +179,7 @@ namespace Gopet.Runtime.World
                 var isCloud = id >= CloudImageIdMin && id <= CloudImageIdMax;
                 if (_mapId == BeastCityMapId &&
                     (id == ShopBuildingAnimationId || id == ShopBuildingBaseImageId || isCloud ||
+                     id == AtmAnimationId ||
                      (id == PineTreeImageId && item.Y <= TopPineRowMaxY)))
                     continue;
                 // Đại Linh Cảnh: hai cụm mây tuyết nằm ngay trên mái nhà. Map đã chuyển
@@ -204,7 +210,8 @@ namespace Gopet.Runtime.World
             {
                 if (entity.Kind == 0)
                 {
-                    if (_mapId == BeastCityMapId && entity.BuildingType >= 27 && entity.BuildingType <= 30)
+                    if (_mapId == BeastCityMapId && ((entity.BuildingType >= 27 && entity.BuildingType <= 30) ||
+                                                     entity.BuildingType == AtmBuildingType))
                         continue;
                     if (_mapId == ArenaMapId && entity.BuildingType == FoodShopBuildingType)
                         continue;
@@ -214,6 +221,8 @@ namespace Gopet.Runtime.World
                     continue;
                 }
                 if (string.IsNullOrEmpty(entity.Name)) continue;
+                // Cổng sang map tạm đóng (vd Chợ trời) — server cũng chặn warp, ẩn luôn cổng.
+                if (WorldMapLayout.IsHidden(entity.ExtraA)) continue;
                 var portal = MapPortalView.Create(transform, entity, map, map.HeightPixels);
                 portal.Selected += e => PortalSelected?.Invoke(e);
                 _portals.Add(portal);

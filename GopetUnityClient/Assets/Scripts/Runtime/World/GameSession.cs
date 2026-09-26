@@ -105,6 +105,7 @@ namespace Gopet.Runtime.World
         private WingHandler _wingHandler;
         private KioskHandler _kioskHandler;
         private KioskListingView _kioskDialog;
+        private Gopet.Net.Market.MarketHandler _marketHandler;
         private WarpFadeOverlay _warpFade;
         /// <summary>User bấm menu "Trang bị pet" mở lần này → tự spawn view khi EQUIP_INFO tới.
         /// Nếu không có cờ, EQUIP_INFO đến do server tự bơm (sau equip/unequip) → chỉ update view
@@ -119,6 +120,14 @@ namespace Gopet.Runtime.World
         }
 
         public MapScene Scene => _scene;
+
+        /// <summary>Đăng ký sẵn trên router — <c>GopetBootstrap</c> nối vào popup của
+        /// <c>UiRoot</c> qua <c>UiRoot.BindMarket</c> sau khi phiên bắt đầu.</summary>
+        public Gopet.Net.Market.MarketHandler Market => _marketHandler;
+
+        /// <summary>Đọc để nối ngọc hiện có vào popup Chợ trời (chặn Mua khi thiếu ngọc ở
+        /// client) — xem <c>UiRoot.SetPlayerCoin</c>.</summary>
+        public PlayerStatsHandler Stats => _statsHandler;
 
         /// <summary>Server từ chối warp bằng dialog nên sẽ không có MapLoaded để tự mở fade.</summary>
         public void CancelWarpTransition() => _warpFade?.FadeIn();
@@ -159,6 +168,7 @@ namespace Gopet.Runtime.World
             // Chạm thẳng vào quái đi CHUNG một đường với nút đánh (vệt chém + chặn pet kiệt
             // sức), thay vì nối tắt vào SendAttackMob.
             s._scene.SubscribeWorld(s._worldHandler, assets, guider.TalkToNpc, s.AttackMob);
+            s._battleHandler.MobKilled += s._scene.RemoveMob;
 
             var mainCamera = EnsureMainCamera();
             if (mainCamera.GetComponent<Physics2DRaycaster>() == null)
@@ -183,11 +193,22 @@ namespace Gopet.Runtime.World
             // Xin khung cảnh đã chọn ngay khi vào game để trận đầu tiên đã đúng nền.
             s._battleScenes = new BattleSceneSettings(guider);
             s._battleScenes.Refresh();
+            var spectators = SpectatorBattleLayer.Create(s._scene.transform, id =>
+            {
+                var pet = s._petLayer != null ? s._petLayer.PetOf(id) : null;
+                return pet != null ? pet.transform : s._scene.TryGetAvatarTransform(id);
+            });
             s._battle = new BattleCoordinator(parent ?? s._scene.transform, assets,
-                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes);
+                s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes, spectators);
             s._mapHandler.MapUpdated += _ => s._battle?.OnPlaceChanged();
             s.RestoreAutoRecoveryOnLogin();
-            s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");
+            s._battleHandler.PetLevelUpdated += level =>
+            {
+                SoundManager.Instance?.PlayEffect("s_pet_level_up");
+                // Lên cấp giữa lúc chơi: huy hiệu + "Tên - LV.x" đổi ngay, khỏi chờ đổi map.
+                if (level > 0) s._hud.Character.SetLevel(level);
+                s.AnnouncePetLevelUp(level);
+            };
             // Canvas overlay riêng cho HUD phụ + popup. ScreenSpaceOverlay + sortOrder 35
             // để ngồi trên GameHud (30) nhưng dưới BattleView (thường 40+). Nếu attach
             // trực tiếp vào world transform sẽ KHÔNG hiện — UI cần Canvas parent.
@@ -196,6 +217,9 @@ namespace Gopet.Runtime.World
             s._statsHandler.StatsUpdated += stats => s._currency.ApplyStats(stats);
             s._expBuffIndicator = ExpBuffIndicator.Create(s._hudParent);
             s._worldStatusHandler.ExpBuffUpdated += status => s._expBuffIndicator.Apply(status, assets);
+            s._hud.TaskTracker.HeightChanged += s._expBuffIndicator.FollowTaskTracker;
+            s._expBuffIndicator.FollowTaskTracker(s._hud.TaskTracker.CurrentHeight);
+            s._battleHandler.BattleEnded += s.OnBattleEndedRefreshTasks;
 
             s._petButton = PetActionButton.Create(s._hudParent);
             s._petButton.Clicked += s.OpenPetRadial;
@@ -332,6 +356,13 @@ namespace Gopet.Runtime.World
             s._kioskHandler.RegisterOn(client.Router);
             s._kioskHandler.ListingReceived += s.OnKioskListingReceived;
 
+            // Popup "Chợ trời" toàn map (COMMAND_GUIDER sub 47..57) — xem
+            // plans/260925-2253-cho-troi-market-popup/phase-04. UiRoot không tự tạo
+            // handler này (nó chỉ đăng ký handler đã có sẵn qua BindMarket) vì Market cần
+            // client.Send, giống hệt lý do WingHandler được truyền vào thay vì UiRoot tự new.
+            s._marketHandler = new Gopet.Net.Market.MarketHandler(client.Send);
+            s._marketHandler.RegisterOn(client.Router);
+
             // Đổi map → camera phải recenter theo map MỚI. Không thì nó đứng chỗ cũ và
             // với map nhỏ hơn sẽ nhìn hoàn toàn ra ngoài.
             s._scene.MapLoaded += () => s._camera?.Recenter();
@@ -396,6 +427,7 @@ namespace Gopet.Runtime.World
         {
             if (_movement != null) _movement.InputEnabled = !active;
             if (_hud != null) _hud.SetBattleMode(active);
+            if (!active) FlushPetLevelUp();
         }
 
         /// <summary>Mở trực tiếp một nhóm menu từ HUD ngoài (Dịch vụ/Sự kiện).</summary>

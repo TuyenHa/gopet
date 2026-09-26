@@ -679,7 +679,7 @@ Hằng số ở `Data/item/EquipDurability.cs`: `Max = 80`, `WearWin = 1`, `Wear
 
 ### 16.3 Sửa chữa (NPC -42 "Thợ Rèn", map 11)
 
-NPC ở vị trí `x=262, y=172` (bên phải, đối diện cột đèn) (Thành phố Linh Thú), ảnh `npcs/Tho_Ren.png` (migration tự thêm).
+NPC ở vị trí `x=440, y=108` — thế chỗ cây ATM đã bỏ (Thành phố Linh Thú), ảnh `npcs/Tho_Ren.png` (strip 6 frame gõ búa). Migration: `migration-260924-equip-durability-repair.sql` (tạo) + `migration-260926-blacksmith-replace-atm.sql` (dời chỗ).
 
 **Menu MENU_REPAIR_EQUIP = 1092** (`Server/MenuController.equipRepair.cs`): liệt kê mọi trang bị pet
 **chưa đầy** độ bền, thấp nhất trước.

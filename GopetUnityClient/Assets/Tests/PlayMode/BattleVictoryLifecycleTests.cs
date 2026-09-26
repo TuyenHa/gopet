@@ -94,10 +94,31 @@ namespace Gopet.PlayModeTests
             Assert.AreSame(view, scene.Coordinator.View);
             Assert.IsTrue(popup.gameObject.activeInHierarchy);
             Assert.AreEqual(modeChanges, scene.BattleModes.Count);
+            // Gói mở trận tới lúc chờ OK là trận MỚI thật (server chỉ gửi khi mở trận) —
+            // hoãn tới OK rồi dựng, không bỏ, không thì thành trận ẩn chặn mọi cú đánh quái.
+            popup.GetComponentInChildren<Button>().onClick.Invoke();
+            Assert.IsNotNull(scene.Coordinator.View);
+            Assert.AreNotSame(view, scene.Coordinator.View);
+            Assert.IsTrue(scene.BattleModes.Last());
+            Assert.IsEmpty(scene.Sent);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator PendingStart_EndedBeforeOk_IsDropped()
+        {
+            using var scene = new BattleVictoryTestScene();
+            scene.Start();
+            var view = scene.Coordinator.View;
+            scene.Result();
+            view.GetComponent<BattleTurnAnimator>().FlushImmediate();
+            var popup = view.GetComponentInChildren<BattleVictoryPopup>();
+            Assert.IsNotNull(popup);
+            scene.Start();   // trận mới mở trong lúc chờ OK → hoãn
+            scene.Remove();  // …và đã kết thúc trước khi bấm OK → bỏ
             popup.GetComponentInChildren<Button>().onClick.Invoke();
             Assert.IsNull(scene.Coordinator.View);
             Assert.IsFalse(scene.BattleModes.Last());
-            Assert.IsEmpty(scene.Sent);
             yield return null;
         }
 

@@ -105,6 +105,35 @@ namespace Gopet.PlayModeTests
             yield return null;
         }
 
+        /// <summary>Mô tả menu 1034 là tiến độ mỗi yêu cầu một hàng: HUD phải hiện thẳng
+        /// ra và giãn cao theo, không bắt người chơi bấm mở popup.</summary>
+        [UnityTest]
+        public IEnumerator TaskTracker_HienTienDoVaGianChieuCao()
+        {
+            var root = new GameObject("Task tracker progress test");
+            var hud = GameHud.Create(root.transform, new ChatHandler(_ => { }));
+            var reported = 0f;
+            hud.TaskTracker.HeightChanged += h => reported = h;
+            hud.TaskTracker.SetFirstTask(new MenuScreen
+            {
+                Items = new[]
+                {
+                    new MenuItemInfo
+                    {
+                        Title = "Nhiệm vụ 1", CanSelect = true,
+                        Description = "Tiêu diệt Khủng long 3 / 10\nTiêu diệt Gà rừng 0 / 10"
+                    }
+                }
+            });
+
+            var texts = hud.TaskTracker.GetComponentsInChildren<Text>();
+            Assert.IsTrue(System.Array.Exists(texts, t => t.text.Contains("Khủng long 3 / 10")));
+            Assert.Greater(hud.TaskTracker.CurrentHeight, Gopet.Runtime.UI.TaskTrackerWidget.Height);
+            Assert.AreEqual(hud.TaskTracker.CurrentHeight, reported);
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator ChatKhuVuc_HienBongBongTrenDauNhanVat()
         {

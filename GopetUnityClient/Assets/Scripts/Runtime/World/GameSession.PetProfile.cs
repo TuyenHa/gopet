@@ -1,6 +1,7 @@
 using Gopet.Net;
 using Gopet.Net.Pet;
 using Gopet.Runtime.UI;
+using Gopet.UiLogic;
 using UnityEngine;
 
 namespace Gopet.Runtime.World
@@ -77,7 +78,9 @@ namespace Gopet.Runtime.World
         private void ShowTattooScreen(TattooScreen value)
         {
             CloseTattoo();
-            _tattooView = TattooView.Create(_hudParent, value);
+            // Tab Pet của Hành lý đang mở trang Hình xăm → hiện ngay trong đó, không mở popup.
+            var host = _characterHub != null ? _characterHub.PetContentHost(CharacterMenuAction.PetTattoo) : null;
+            _tattooView = host != null ? TattooView.CreateEmbedded(host, value) : TattooView.Create(_hudParent, value);
             _tattooView.CloseRequested += CloseTattoo;
             _tattooView.GenerateRequested += () => _client.Send(TattooPackets.SelectGenerationItem());
             _tattooView.RemoveRequested += id => _client.Send(TattooPackets.SelectRemoveItem(id));

@@ -1,0 +1,23 @@
+# Giữ build context nhỏ và không lộ secret vào image (xem Dockerfile).
+node_modules
+.next
+.git
+.gitignore
+npm-debug.log*
+
+# Secret cục bộ — KHÔNG bao giờ bake vào image.
+.env
+.env.*
+!.env.example
+
+# Test và tài liệu, không cần trong image.
+tests
+coverage
+*.md
+AGENTS.md
+CLAUDE.md
+
+# Editor / OS
+.vscode
+.DS_Store
+*.tsbuildinfo

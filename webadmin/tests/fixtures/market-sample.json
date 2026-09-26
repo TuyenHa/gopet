@@ -1,0 +1,48 @@
+[
+  { "kioskItems": [], "kioskType": 0 },
+  { "kioskItems": [], "kioskType": 1 },
+  { "kioskItems": [], "kioskType": 2 },
+  { "kioskItems": [], "kioskType": 3 },
+  {
+    "kioskItems": [
+      {
+        "ItemSell": null,
+        "price": 59999,
+        "sumVal": 0,
+        "hasSell": false,
+        "hasRemoved": false,
+        "pet": {
+          "petIdTemplate": 1,
+          "petDieByPK": false,
+          "petId": 1000000001,
+          "star": 0,
+          "exp": 3354,
+          "name": "Rua Test",
+          "str": 20,
+          "agi": 20,
+          "_int": 25,
+          "skill": [[101, 10], [102, 10], [103, 10]],
+          "tiemnang": [2, 0, 1],
+          "tatto": [],
+          "equip": [],
+          "isUpTier": false,
+          "wasSell": true,
+          "hp": 12664,
+          "mp": 8956,
+          "lvl": 2
+        },
+        "expireTime": 63926103053108,
+        "itemId": 286981950,
+        "user_id": 1458,
+        "IsRetail": false,
+        "AssignedName": null,
+        "SellerName": "kzhd9x",
+        "TotalCount": 1,
+        "RemainingPrice": 59999,
+        "MathPrice": 59999
+      }
+    ],
+    "kioskType": 4
+  },
+  { "kioskItems": [], "kioskType": 5 }
+]

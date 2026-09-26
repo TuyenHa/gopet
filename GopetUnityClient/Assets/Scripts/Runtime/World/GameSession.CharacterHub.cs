@@ -65,6 +65,11 @@ namespace Gopet.Runtime.World
                 case CharacterMenuAction.PetPotential:
                     _client.Send(PetProfilePackets.RequestGym());
                     break;
+                case CharacterMenuAction.PetLearnSkill:
+                    // Server đáp menu 799 (danh sách kỹ năng), chọn xong mới trừ điểm kỹ năng
+                    // + 20.000 ngọc; thiếu điều kiện thì server báo lý do.
+                    _client.Send(PetProfilePackets.LearnSkill(PetProfilePackets.LearnNewSlot));
+                    break;
                 case CharacterMenuAction.PetTattoo:
                     _client.Send(TattooPackets.RequestScreen());
                     break;

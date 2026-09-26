@@ -202,7 +202,13 @@ namespace Gopet.Runtime.World
                 s._battleHandler, s.SetBattleMode, s.ShowToastPublic, s._statsHandler, s._battleScenes, spectators);
             s._mapHandler.MapUpdated += _ => s._battle?.OnPlaceChanged();
             s.RestoreAutoRecoveryOnLogin();
-            s._battleHandler.PetLevelUpdated += _ => SoundManager.Instance?.PlayEffect("s_pet_level_up");
+            s._battleHandler.PetLevelUpdated += level =>
+            {
+                SoundManager.Instance?.PlayEffect("s_pet_level_up");
+                // Lên cấp giữa lúc chơi: huy hiệu + "Tên - LV.x" đổi ngay, khỏi chờ đổi map.
+                if (level > 0) s._hud.Character.SetLevel(level);
+                s.AnnouncePetLevelUp(level);
+            };
             // Canvas overlay riêng cho HUD phụ + popup. ScreenSpaceOverlay + sortOrder 35
             // để ngồi trên GameHud (30) nhưng dưới BattleView (thường 40+). Nếu attach
             // trực tiếp vào world transform sẽ KHÔNG hiện — UI cần Canvas parent.
@@ -421,6 +427,7 @@ namespace Gopet.Runtime.World
         {
             if (_movement != null) _movement.InputEnabled = !active;
             if (_hud != null) _hud.SetBattleMode(active);
+            if (!active) FlushPetLevelUp();
         }
 
         /// <summary>Mở trực tiếp một nhóm menu từ HUD ngoài (Dịch vụ/Sự kiện).</summary>

@@ -26,14 +26,16 @@ namespace Gopet.Runtime.UI
 
         private static readonly string[] PetTabLabels =
         {
-            "Chọn pet", "Trang bị pet", "Kho ngọc", "Cộng tiềm năng", "Hình xăm/Tẩy xăm", "Tẩy gym"
+            "Chọn pet", "Trang bị pet", "Kho ngọc", "Cộng tiềm năng", "Hình/tẩy xăm", "Tẩy gym",
+            "Học kỹ năng"
         };
 
         /// <summary>Hành động của từng tab; hai tab đầu đổi danh sách trái (xem <see cref="ShowPetLeft"/>).</summary>
         private static readonly CharacterMenuAction[] PetTabActions =
         {
             CharacterMenuAction.SelectPet, CharacterMenuAction.Inventory, CharacterMenuAction.GemInventory,
-            CharacterMenuAction.PetPotential, CharacterMenuAction.PetTattoo, CharacterMenuAction.PetGymReset
+            CharacterMenuAction.PetPotential, CharacterMenuAction.PetTattoo, CharacterMenuAction.PetGymReset,
+            CharacterMenuAction.PetLearnSkill
         };
 
         private PopupTabRail _petRail;
@@ -51,9 +53,11 @@ namespace Gopet.Runtime.UI
             UiBuilder.Stretch(railRect);
             railRect.offsetMin = new Vector2(5f, 5f);
             railRect.offsetMax = new Vector2(-5f, -5f);
-            _petRail = PopupTabRail.Create(railRect, UiBuilder.DefaultFont(), _contentWidth - 10f, PetTabLabels);
+            // 7 tab chia bề ngang: mỗi tab ~90px, nhãn dài ("Cộng tiềm năng") có thể phải xuống dòng.
+            _petRail = PopupTabRail.Create(railRect, UiBuilder.DefaultFont(), _contentWidth - 10f, PetTabLabels,
+                twoLines: true);
 
-            var paneTop = 5f + PopupTabRail.Height + PopupTabRail.Gap;
+            var paneTop = 5f + PopupTabRail.TallHeight + PopupTabRail.Gap;
             var left = MakePane("Pet list", 0f, PetLeftFraction, paneTop);
             var right = MakePane("Trang bị pet", PetLeftFraction, 1f, paneTop);
             _petSplitPanes = new[] { left.gameObject, right.gameObject };

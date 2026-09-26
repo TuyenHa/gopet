@@ -10,6 +10,23 @@ namespace Gopet.PlayModeTests
 {
     public sealed class CharacterHudTests
     {
+        /// <summary>Tên pet kèm cấp ngay cạnh: "Rua Test - LV.5"; PlayerName vẫn là tên gốc.</summary>
+        [UnityTest]
+        public IEnumerator Hud_TenKemCapPet()
+        {
+            var root = new GameObject("Character HUD level root");
+            var hud = GameHud.Create(root.transform, new ChatHandler(_ => { }), "Rua Test").Character;
+            var label = hud.transform.Find("Player Name").GetComponent<UnityEngine.UI.Text>();
+            Assert.AreEqual("Rua Test", label.text);
+            hud.SetLevel(5);
+            Assert.AreEqual("Rua Test - LV.5", label.text);
+            hud.SetName("Pet Moi");
+            Assert.AreEqual("Pet Moi - LV.5", label.text);
+            Assert.AreEqual("Pet Moi", hud.PlayerName);
+            Object.DestroyImmediate(root);
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator Hud_DungDungProfileVaCapNhatThanhChiSo()
         {

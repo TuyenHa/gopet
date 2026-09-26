@@ -138,6 +138,14 @@ namespace Gopet.Runtime.UI
             return Mathf.Max(lines, Mathf.CeilToInt(measured / SubtitleLineHeight - 0.2f));
         }
 
+        /// <summary>Dòng phụ là rich text đã được làm sạch (tiến độ nhiệm vụ tô màu —
+        /// <c>TaskProgressText.Colorize</c>). Thư/chữ thường vẫn tắt rich text như cũ.</summary>
+        public void SetRichSubtitle(string richText)
+        {
+            _subtitle.supportRichText = true;
+            _subtitle.text = richText ?? string.Empty;
+        }
+
         /// <summary>Vạch ngăn dưới chân dòng. Dòng CUỐI phải tắt, không thì thừa một nét sát viền.</summary>
         public void SetSeparatorVisible(bool visible) => _separator.SetActive(visible);
 

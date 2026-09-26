@@ -64,6 +64,14 @@ namespace Gopet.Runtime.UI
                     Empty = "Pet chưa có điểm gym nào để tẩy."
                 }
             },
+            // MENU_LEARN_NEW_SKILL — tab "Học kỹ năng" của Hành lý, hoặc nút Học kỹ năng ở hồ sơ pet.
+            { 799, new Spec
+                {
+                    Title = "Học kỹ năng", Action = "Học",
+                    Footer = "Mỗi lần học tốn 1 điểm kỹ năng và 20.000 ngọc.",
+                    Empty = "Chưa có kỹ năng nào để học."
+                }
+            },
         };
 
         private GuiderHandler _guider;

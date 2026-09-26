@@ -138,6 +138,9 @@ namespace Gopet.Runtime.UI
             {
                 var row = PopupTextRow.Create(_list.Rows, _font);
                 row.Bind(items[i]?.Title, items[i]?.Description);
+                // Tiến độ nhiệm vụ đang làm: hàng đã đạt tô xanh lá như dòng HUD.
+                if (screen.ListId == MyTaskMenuId)
+                    row.SetRichSubtitle(TaskProgressText.Colorize(items[i]?.Description));
                 // Server >= 1.5.0 gửi tiến độ mỗi yêu cầu một hàng ("Tiêu diệt Khủng long
                 // 3 / 10 (tại ...)") — dòng phải cao đủ cho hết các hàng, không thì bị cắt.
                 var height = row.FitMultilineSubtitle();

@@ -1,5 +1,6 @@
 using System;
 using Gopet.Net.Guider;
+using Gopet.UiLogic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +21,8 @@ namespace Gopet.Runtime.UI
         /// <summary>Chiều cao khi chỉ có một dòng tên (chưa có nhiệm vụ / không có tiến độ).</summary>
         public const float Height = 34f;
 
-        private const float Width = 260f;
+        /// <summary>Bằng đúng khung HUD nhân vật (avatar + HP/MP) ngay phía trên.</summary>
+        private const float Width = World.CharacterHud.PanelWidth;
         private const float PadLeft = 10f;
         private const float PadRight = 8f;
         private const float PadV = 6f;
@@ -58,8 +60,8 @@ namespace Gopet.Runtime.UI
             view._progress = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Progress", 11, false);
             view._progress.alignment = TextAnchor.UpperLeft;
             view._progress.color = new Color(1f, 0.86f, 0.45f, 1f);
-            // Tên quái/map đến từ dữ liệu server — không cho rich text chen thẻ.
-            view._progress.supportRichText = false;
+            // Rich text chỉ để tô hàng đã đạt; TaskProgressText đã thay '<' '>' của dữ liệu server.
+            view._progress.supportRichText = true;
             view._progress.horizontalOverflow = HorizontalWrapMode.Wrap;
             view._progress.verticalOverflow = VerticalWrapMode.Overflow;
             view._progress.raycastTarget = false;
@@ -94,7 +96,7 @@ namespace Gopet.Runtime.UI
         private void Show(string title, string progress)
         {
             _label.text = title;
-            _progress.text = progress?.Trim() ?? string.Empty;
+            _progress.text = TaskProgressText.Colorize(progress?.Trim());
             var hasProgress = _progress.text.Length > 0;
             _progress.gameObject.SetActive(hasProgress);
 

@@ -80,7 +80,8 @@ namespace Gopet.Runtime.UI
             }
         }
 
-        private static Sprite Star()
+        /// <summary>Sprite sao vàng dùng chung (dòng menu cũng vẽ sao bằng nó).</summary>
+        internal static Sprite Star()
         {
             if (_star != null) return _star;
             var tex = Resources.Load<Texture2D>(StarPath);

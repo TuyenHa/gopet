@@ -6,7 +6,7 @@ namespace Gopet.Runtime.UI
 {
     /// <summary>
     /// Vùng nội dung TOÀN KHỔ của tab Pet (thay 2 block trái-phải) cho Kho ngọc, Hình xăm /
-    /// Tẩy xăm, Tẩy gym — hiện ngay trong Hành lý thay vì mở popup riêng.
+    /// Tẩy xăm, Tẩy gym, Học kỹ năng — hiện ngay trong Hành lý thay vì mở popup riêng.
     ///
     /// <para>Tẩy gym (menu 800) bind thẳng ở <see cref="TryConsumeMenu"/>. Kho ngọc và Hình
     /// xăm không phải MenuScreen (handler riêng dựng view) nên chủ view hỏi
@@ -16,6 +16,8 @@ namespace Gopet.Runtime.UI
     public sealed partial class CharacterHubPopupView
     {
         private const int GymMenuId = 800;
+        /// <summary>Danh sách kỹ năng học được (<c>MENU_LEARN_NEW_SKILL</c>).</summary>
+        private const int LearnSkillMenuId = 799;
 
         private GameObject[] _petSplitPanes;
         private GameObject _petFullPane;
@@ -40,9 +42,14 @@ namespace Gopet.Runtime.UI
             return PetTabActions[_petListTab] == action && _petFullPane.activeSelf ? _petFullHost : null;
         }
 
+        /// <summary>Menu server của các tab toàn khổ dạng danh sách chọn: Tẩy gym (800),
+        /// Học kỹ năng (799). Chỉ nhúng khi tab Pet đang mở đúng trang đó.</summary>
         private bool TryBindPetGym(MenuScreen screen)
         {
-            if (screen.ListId != GymMenuId || PetContentHost(CharacterMenuAction.PetGymReset) == null)
+            var action = screen.ListId == GymMenuId ? CharacterMenuAction.PetGymReset
+                : screen.ListId == LearnSkillMenuId ? CharacterMenuAction.PetLearnSkill
+                : (CharacterMenuAction?)null;
+            if (action == null || PetContentHost(action.Value) == null)
                 return false;
             if (_petGymView == null)
             {

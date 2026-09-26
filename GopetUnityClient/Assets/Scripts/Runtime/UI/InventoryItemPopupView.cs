@@ -32,16 +32,15 @@ namespace Gopet.Runtime.UI
             var cardRect = (RectTransform)card.transform;
             cardRect.anchorMin = cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.sizeDelta = new Vector2(510f, 224f);
-            RoundedUiSprite.Apply(card.GetComponent<Image>());
-            card.GetComponent<Image>().color = new Color(0.97f, 0.985f, 1f, 1f);
-            var outline = card.AddComponent<Outline>();
-            outline.effectColor = new Color(0.28f, 0.6f, 1f, 1f);
-            outline.effectDistance = new Vector2(2f, -2f);
+            // Khung như GamePopupFrame: viền 2 đơn vị liền nét, góc bo không lộ trắng
+            // (Outline nhân mesh chéo nên góc nhoè).
+            RoundedBorder.Apply(card, 14f, PopupPalette.Panel, PopupPalette.Border, 2f);
 
             BuildIcon(card.transform, item, assets);
             BuildText(card.transform, item);
-            BuildClose(card.transform);
-            BuildButtons(card.transform, item.CanSelect, use);
+            // Nút X cùng chỗ, cùng kiểu với popup chung (sát góc trên-phải).
+            GamePopupFrame.CreateCloseButton(card.transform, UiBuilder.DefaultFont(), () => Destroy(gameObject));
+            BuildButtons(card.transform, UseLabel(item), item.CanSelect, use);
         }
 
         private static void BuildIcon(Transform parent, MenuItemInfo item, RemoteAssetCache assets)
@@ -87,7 +86,7 @@ namespace Gopet.Runtime.UI
             line.GetComponent<Image>().color = new Color(0.8f, 0.84f, 0.89f, 1f);
 
             var info = UiBuilder.MakeText(parent, UiBuilder.DefaultFont(), "Info", 15, false);
-            info.text = $"• {item.Description ?? "Chưa có mô tả"}\n• Mã vật phẩm: {item.ItemId}\n• Có thể sử dụng: {(item.CanSelect ? "Có" : "Không")}";
+            info.text = $"{DescriptionLines(item.Description)}\n• Mã vật phẩm: {item.ItemId}\n• Có thể sử dụng: {(item.CanSelect ? "Có" : "Không")}";
             info.color = new Color(0.2f, 0.23f, 0.28f, 1f);
             info.alignment = TextAnchor.UpperLeft;
             info.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -99,33 +98,33 @@ namespace Gopet.Runtime.UI
             infoRect.offsetMax = new Vector2(-22f, -62f);
         }
 
-        private void BuildClose(Transform parent)
+        /// <summary>Tách "Độ bền: X/Max …" của trang bị pet ra một dòng riêng.</summary>
+        private static string DescriptionLines(string description)
         {
-            var close = new GameObject("Close", typeof(RectTransform), typeof(Image), typeof(Button));
-            close.transform.SetParent(parent, false);
-            var rect = (RectTransform)close.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(34f, 34f);
-            rect.anchoredPosition = new Vector2(-20f, -20f);
-            var image = close.GetComponent<Image>();
-            var sprite = HudSkin.Get(HudSkin.Close);
-            if (sprite != null) image.sprite = sprite;
-            else
-            {
-                image.color = new Color(0.86f, 0.28f, 0.28f, 1f);
-                RoundedUiSprite.Apply(image);
-            }
-            var label = UiBuilder.MakeText(close.transform, UiBuilder.DefaultFont(), "Label", 28, true);
-            label.text = "×";
-            label.alignment = TextAnchor.MiddleCenter;
-            label.color = Color.white;
-            close.GetComponent<Button>().onClick.AddListener(() => Destroy(gameObject));
+            if (string.IsNullOrEmpty(description)) return "• Chưa có mô tả";
+            if (!BlacksmithRepairPopupView.TryParseDurability(description, out _, out _, out var at))
+                return "• " + description;
+            var head = description.Substring(0, at).Trim();
+            var durability = description.Substring(at).Trim();
+            return head.Length == 0 ? "• " + durability : $"• {head}\n• {durability}";
         }
 
-        private void BuildButtons(Transform parent, bool canUse, Action use)
+        /// <summary>Khớp MenuController.PET_EQUIP_WORN_BY_ACTIVE (server).</summary>
+        private const string WornByActivePetMark = "(Pet đang theo mặc)";
+
+        /// <summary>Trang bị pet đang mặc trên pet đang theo: "Dùng" của server là tháo ra;
+        /// trang bị pet chưa mặc (mô tả có "Độ bền") thì "Dùng" = mặc cho pet đang theo.</summary>
+        private static string UseLabel(MenuItemInfo item)
         {
-            MakeButton(parent, "Dùng", new Vector2(-78f, 18f), canUse,
+            if (item.Description != null && item.Description.Contains(WornByActivePetMark)) return "Tháo";
+            return BlacksmithRepairPopupView.TryParseDurability(item.Description, out _, out _, out _)
+                ? "Trang bị"
+                : "Dùng";
+        }
+
+        private void BuildButtons(Transform parent, string useLabel, bool canUse, Action use)
+        {
+            MakeButton(parent, useLabel, new Vector2(-78f, 18f), canUse,
                 new Color(0.25f, 0.34f, 0.46f, 1f), () =>
                 {
                     use?.Invoke();

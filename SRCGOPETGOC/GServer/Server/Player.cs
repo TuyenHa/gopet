@@ -3,6 +3,7 @@
 using Dapper;
 using Gopet.Data.Collections;
 using Gopet.Data.GopetItem;
+using Gopet.Data.Map;
 using Gopet.Data.User;
 using Gopet.IO;
 using Gopet.Util;
@@ -43,6 +44,19 @@ public class Player : IHandleMessage
     public bool isPetRecovery = false;
     public int skillId_learn = -1;
     public bool IsLogin2FAOK = false;
+    /// <summary>
+    /// TRUE chỉ khi CHÍNH phiên này gọi <see cref="PlayerOnlineRegistry.MarkOnline"/> thành
+    /// công (trong <see cref="ProcessingUser"/>). Chỉ khi cờ này bật thì <see cref="onDisconnected"/>
+    /// mới được gọi <see cref="PlayerOnlineRegistry.MarkOffline"/> — nếu không, các nhánh trả
+    /// về sớm trước MarkOnline (2FA chờ OTP, ban, ROLE_NON_ACTIVE, login trùng bị từ chối, khoá
+    /// "Máy chủ bận") sẽ vô tình xoá cờ online của MỘT PHIÊN KHÁC đang thật sự online (code
+    /// review C1 — trước đây onDisconnected xoá cờ hễ `user != null`, bất kể phiên này có từng
+    /// đặt cờ hay không).
+    /// </summary>
+    public bool ownsOnlineFlag = false;
+    /// <summary>Mốc <c>since</c> mà MarkOnline của phiên NÀY đã ghi — dùng làm điều kiện WHERE
+    /// khi xoá (xem <see cref="PlayerOnlineRegistry.MarkOffline"/>).</summary>
+    private DateTime onlineFlagSince;
     public bool AntiPK { get; set; } = false;
     /// <summary>
     /// Có bang hội
@@ -469,6 +483,22 @@ Thread.Sleep(1000);
         }
         using (MySqlConnection gameconn = MYSQLManager.create())
         {
+            // Trong vùng khoá login_lock_<username> (giữ bởi login() hoặc nhánh OTP 2FA) —
+            // web admin coi user_id có mặt ở đây là "server đang giữ", trước cả khi biết có
+            // playerData hay không (nhánh createChar vẫn cần đánh dấu online).
+            // H1 (code review): MarkOnline lỗi (mất bảng/quyền/deadlock) trước đây bị nuốt rồi
+            // vẫn cho login tiếp — web thấy heartbeat còn sống + không cờ thì tưởng offline và
+            // cho sửa player trong khi server vẫn đang giữ. Fail-closed: từ chối login.
+            DateTime? onlineSince = PlayerOnlineRegistry.MarkOnline(gameconn, user.user_id);
+            if (onlineSince == null)
+            {
+                redDialog("Máy chủ bận, thử lại");
+                Thread.Sleep(500);
+                this.session.Close();
+                return;
+            }
+            ownsOnlineFlag = true;
+            onlineFlagSince = onlineSince.Value;
             playerData = gameconn.QueryFirstOrDefault<PlayerData>("SELECT * FROM `player` where user_id = " + user.user_id);
             if (playerData != null)
             {
@@ -506,27 +536,8 @@ Thread.Sleep(1000);
                     playerData.TrashItemBackup.Remove(item.Key);
                 }
             }
-            var kioskList = gameconn.Query("SELECT * FROM `kiosk_recovery` where user_id = @user_id", new { user_id = this.user.user_id });
-            if (kioskList.Any())
-            {
-                foreach (var item in kioskList)
-                {
-                    SellItem sellItem = JsonConvert.DeserializeObject<SellItem>(item.item);
-                    if (sellItem.pet == null)
-                    {
-                        addItemToInventory(sellItem.ItemSell);
-                    }
-                    else
-                    {
-                        playerData.addPet(sellItem.pet, this);
-                    }
-                    if (sellItem.sumVal > 0)
-                    {
-                        addCoin(sellItem.sumVal);
-                    }
-                }
-            }
-            gameconn.Execute("DELETE FROM `kiosk_recovery` where user_id = @user_id", new { user_id = this.user.user_id });
+            // Đồ/tiền ki ốt hết hạn trong lúc offline (hoặc chưa kịp nhận khi online).
+            KioskRecovery.Deliver(this, gameconn);
             loginOK();
             controller.LoadMap();
             controller.updateAvatar();
@@ -616,7 +627,11 @@ Thread.Sleep(1000);
         {
             try
             {
-                var LockKey = conn.QueryFirstOrDefault("SELECT GET_LOCK(@username, 20) as hasLock;", new { username = "login_lock_" + username });
+                // QueryFirstOrDefault luôn trả 1 dòng (GET_LOCK trả NULL/0/1, không phải
+                // không có dòng) — trước đây chỉ kiểm LockKey != null nên hết 20s vẫn chạy
+                // tiếp KHÔNG CÓ khoá. Phải kiểm đúng hasLock == 1.
+                var lockResult = conn.QueryFirstOrDefault("SELECT GET_LOCK(@username, 20) as hasLock;", new { username = "login_lock_" + username });
+                bool hasLoginLock = lockResult != null && lockResult.hasLock == 1;
                 UserData userData = conn.QueryFirstOrDefault<UserData>("SELECT * FROM `user` where username = @username",
                 new { username = username});
                 if (userData != null)
@@ -650,7 +665,15 @@ Thread.Sleep(1000);
                     return;
                 }
                 LoginHistory.InsertToDatabase(new LoginHistory(username, iPEndPoint.Address.ToString(), userData != null, false), conn);
-                if (userData != null && LockKey != null)
+                if (userData != null && !hasLoginLock)
+                {
+                    // Khoá bị giữ (web admin đang sửa player, hoặc phiên login khác) —
+                    // từ chối thay vì chạy tiếp không khoá (giống luồng gift code).
+                    redDialog("Máy chủ bận, thử lại");
+                    Thread.Sleep(1000);
+                    this.session.Close();
+                }
+                else if (userData != null)
                 {
                     this.user = userData;
                     this.ProcessingUser(conn);
@@ -701,14 +724,89 @@ Thread.Sleep(1000);
             {
                 place.remove(this);
             }
-            if (playerData != null)
+
+            if (user == null)
             {
-                playerData.save();
+                return;
             }
-            if (user != null && playerData != null)
+
+            // Cùng khoá login_lock_<username> với login() — tránh KioskPayout.PaySeller /
+            // web admin đọc `player` giữa lúc server đang lưu-xoá-cờ dở dang. Best-effort:
+            // vẫn dọn dẹp dù không lấy được khoá (không được để phiên treo mãi lúc mất kết nối).
+            string lockName = "login_lock_" + user.username;
+            MySqlConnection lockConn = null;
+            bool hasLoginLock = false;
+            try
             {
-                PlayerManager.remove(this);
-                HistoryManager.addHistory(new History(this).setLogout());
+                lockConn = MYSQLManager.createWebMySqlConnection();
+                var lockResult = lockConn.QueryFirstOrDefault("SELECT GET_LOCK(@lockName, 20) as hasLock;", new { lockName });
+                hasLoginLock = lockResult != null && lockResult.hasLock == 1;
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            try
+            {
+                bool saveFailed = false;
+                if (playerData != null)
+                {
+                    // H2 (code review): lock(playerData) bọc CẢ save() lẫn việc set disposed
+                    // trong cùng 1 vùng khoá — trước đây 2 việc này tách rời nhau (còn có cả
+                    // PlayerManager.remove + MarkOffline xen giữa), để hở 1 khoảng: 1 lần save()
+                    // khác (KioskPayout.PaySeller đang cầm Player CŨ qua PlayerManager.get trước
+                    // khi bị remove) có thể "lọt" qua kiểm tra `disposed` NGAY TRƯỚC khi dòng dưới
+                    // set disposed=true, rồi hoàn tất SAU khi đã coi là dispose — ghi đè state
+                    // MỚI bằng snapshot CŨ trong RAM (mất tiền/đồ vừa cộng). KioskPayout.PaySeller
+                    // khoá cùng object nên không thể xen vào giữa 2 dòng dưới.
+                    lock (playerData)
+                    {
+                        try
+                        {
+                            playerData.save();
+                        }
+                        catch (Exception e)
+                        {
+                            saveFailed = true;
+                            GopetManager.ServerMonitor.LogWarning(
+                                $"Lưu playerData user_id={user.user_id} lúc disconnect thất bại — giữ cờ player_online (web coi như đang online): {e}");
+                        }
+
+                        // Sau lần save cuối cùng — mọi playerData.save() gọi từ tham chiếu cũ
+                        // từ giờ là no-op, không ghi đè state của phiên login mới.
+                        playerData.disposed = true;
+                    }
+                }
+
+                if (playerData != null)
+                {
+                    PlayerManager.remove(this);
+                    HistoryManager.addHistory(new History(this).setLogout());
+                }
+
+                // C1 (code review): chỉ xoá cờ nếu CHÍNH phiên này từng MarkOnline thành công.
+                // Các nhánh trả sớm trước MarkOnline (2FA chờ OTP bị đóng kết nối, ban, tài khoản
+                // bị khoá, login trùng bị từ chối, "Máy chủ bận") có user != null nhưng
+                // ownsOnlineFlag vẫn false — không được xoá cờ của một phiên KHÁC đang online
+                // thật. Điều kiện `since` trong MarkOffline là lớp phòng thủ thứ hai. Giữ cờ nếu
+                // save lỗi (web coi như đang online, không sửa đè).
+                if (!saveFailed && ownsOnlineFlag)
+                {
+                    using var gameconn = MYSQLManager.create();
+                    PlayerOnlineRegistry.MarkOffline(gameconn, user.user_id, onlineFlagSince);
+                }
+            }
+            finally
+            {
+                if (lockConn != null)
+                {
+                    if (hasLoginLock)
+                    {
+                        lockConn.Execute("DO RELEASE_LOCK(@lockName);", new { lockName });
+                    }
+                    lockConn.Dispose();
+                }
             }
         }
         catch (Exception e)

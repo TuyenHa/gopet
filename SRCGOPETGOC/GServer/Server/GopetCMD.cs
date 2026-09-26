@@ -134,6 +134,30 @@ public class GopetCMD
     public const sbyte TYPE_BATTLE_BG_OPEN = 44;   // client→server: xin STATE
     public const sbyte TYPE_BATTLE_BG_BUY = 45;    // client→server: sbyte id
     public const sbyte TYPE_BATTLE_BG_SELECT = 46; // client→server: sbyte id
+    // Popup Chợ trời toàn cục (sub-command của COMMAND_GUIDER=122). Dùng được ở mọi map, đọc
+    // dữ liệu từ MarketPlace.kiosks sẵn có. Xem plans/260925-2253-cho-troi-market-popup/phase-02.
+    /// <summary>C→S: sbyte filter (-1 tất cả, 0..5 loại ki ốt), sbyte sort (0 mới nhất, 1 giá tăng, 2 giá giảm), short page (0-based).</summary>
+    public const sbyte TYPE_MARKET_LIST = 47;
+    /// <summary>S→C: sbyte filter, sbyte sort, short page, short totalPages, sbyte n, n × Row.</summary>
+    public const sbyte TYPE_MARKET_LIST_STATE = 48;
+    /// <summary>C→S: sbyte kioskType, int listingId. Mua trọn 1 listing.</summary>
+    public const sbyte TYPE_MARKET_BUY = 49;
+    /// <summary>C→S: rỗng. Xin danh sách gian hàng của mình.</summary>
+    public const sbyte TYPE_MARKET_MINE = 50;
+    /// <summary>S→C: short n, n × Row (sellerName là của chính mình).</summary>
+    public const sbyte TYPE_MARKET_MINE_STATE = 51;
+    /// <summary>C→S: sbyte kioskType, int listingId. Gỡ listing của mình về túi.</summary>
+    public const sbyte TYPE_MARKET_CANCEL = 52;
+    /// <summary>C→S: rỗng. Xin danh sách đồ/pet trong túi có thể treo bán.</summary>
+    public const sbyte TYPE_MARKET_SELLABLE = 53;
+    /// <summary>S→C: short n, n × SellableRow.</summary>
+    public const sbyte TYPE_MARKET_SELLABLE_STATE = 54;
+    /// <summary>C→S: sbyte source, int id, int count, int price. Treo bán 1 đồ/pet.</summary>
+    public const sbyte TYPE_MARKET_SELL = 55;
+    /// <summary>S→C: sbyte action (1 buy, 2 cancel, 3 sell, 4 assign), bool ok, UTF message.</summary>
+    public const sbyte TYPE_MARKET_RESULT = 56;
+    /// <summary>C→S: sbyte kioskType, int listingId, UTF buyerName (rỗng = bỏ chỉ định).</summary>
+    public const sbyte TYPE_MARKET_ASSIGN = 57;
     public const sbyte REMOVE_SELL_ITEM = 87;
     public const sbyte PLAYER_CHALLENGE = 12;
     public const sbyte PLAYER_PK = 96;

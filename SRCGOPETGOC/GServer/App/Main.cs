@@ -5,6 +5,7 @@ using Gopet.Data.Collections;
 using Gopet.Data.Event;
 using Gopet.Data.GopetClan;
 using Gopet.Data.GopetItem;
+using Gopet.Data.Map;
 using Gopet.Manager;
 using Gopet.Runtime;
 using Gopet.Server;
@@ -39,6 +40,10 @@ namespace Gopet.App
             // Kiểm tra DB trước khi nạp template. Nếu cấu hình sai, hỏng ở đây
             // với thông báo rõ ràng thay vì chết giữa GopetManager.init().
             MYSQLManager.VerifyConnections();
+            // Web admin dựa vào player_online để biết ai đang được server này giữ — xoá sạch
+            // cờ cũ (của lần chạy trước) chỉ trên DB này trước khi nhận kết nối mới. Không
+            // reset lúc shutdown, xem PlayerOnlineRegistry.ResetAllForThisServer.
+            PlayerOnlineRegistry.ResetAllForThisServer();
             //        AutoMaintenance autoMaintenance = new AutoMaintenance();
             //        autoMaintenance.start(ServerSetting.instance.getHourMaintenance(), ServerSetting.instance.getMinMaintenance());
             GopetManager.init();
@@ -66,6 +71,8 @@ namespace Gopet.App
             RuntimeServer.instance.runtimes.add(new AutoSave());
             RuntimeServer.instance.runtimes.add(new DBBackup());
             RuntimeServer.instance.runtimes.add(Maintenance.gI());
+            RuntimeServer.instance.runtimes.add(new MarketExpiryTicker());
+            RuntimeServer.instance.runtimes.add(new ServerHeartbeat());
         }
 
 

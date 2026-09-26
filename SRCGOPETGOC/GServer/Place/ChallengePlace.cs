@@ -218,6 +218,7 @@ public class ChallengePlace : GopetPlace
     public void mobDie(Mob gopetMob)
     {
         this.mobs.remove(gopetMob);
+        SendMobRemovedToModernClients(gopetMob.getMobId());
     }
 
     ~ChallengePlace()

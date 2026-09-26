@@ -1,4 +1,4 @@
-
+﻿
 
 using Gopet.Battle;
 using Gopet.Data.GopetClan;
@@ -18,7 +18,20 @@ public class GopetPlace : Place
     public CopyOnWriteArrayList<Mob> mobs = new();
     public CopyOnWriteArrayList<PetBattle> petBattles = new();
     public ConcurrentHashMap<MobLocation, long> newMob = new();
-    public const long TIME_NEW_MOB = 25000;
+    /// <summary>
+    /// Quái bị hạ (hoặc hết máu mà không còn trận) thì hồi lại ở đúng vị trí cũ sau khoảng này.
+    /// 3s khớp lúc người chơi về lại map: băng kết quả trận sống ~2.85s rồi tự đóng.
+    /// Gốc là 25s. Map vượt ải (12) không có dòng gopet_map_moblvl nên không bị ảnh hưởng.
+    /// </summary>
+    public const long TIME_NEW_MOB = 3000;
+    /// <summary>
+    /// Số quái mỗi vị trí trong <c>gopet_mob_location</c>. Gốc là 1 — map ít vị trí (Đấu
+    /// trường 7) thì đánh vài con là map trống. Mỗi con một "ô" <see cref="MobLocation"/> riêng
+    /// (bản sao cùng toạ độ) vì <see cref="newMob"/> xếp lịch hồi sinh theo ô: dùng chung một ô
+    /// thì hai con chết gần nhau, con sau TryAdd trượt và mất hẳn. Client cho quái lảng vảng
+    /// quanh chỗ sinh nên các con cùng ô tự tản ra.
+    /// </summary>
+    public const int MOBS_PER_LOCATION = 2;
     public int[] numMobDie;
     public int[] numMobDieNeed
     {
@@ -37,8 +50,22 @@ public class GopetPlace : Place
 
         if (GopetManager.mobLocation.ContainsKey(m.mapID) && GopetManager.MOBLVL_MAP.ContainsKey(m.mapID))
         {
-            createNewMob(GopetManager.mobLocation.get(map.mapID));
+            createNewMob(ExpandSpawnSlots(GopetManager.mobLocation.get(map.mapID)));
         }
+    }
+
+    /// <summary>Mỗi vị trí gốc nhân thành <see cref="MOBS_PER_LOCATION"/> ô sinh quái.
+    /// Ô gốc giữ nguyên (sự kiện boss mượn <c>getMobLocation()</c> của quái có sẵn).</summary>
+    private static MobLocation[] ExpandSpawnSlots(MobLocation[] locations)
+    {
+        List<MobLocation> slots = new();
+        foreach (MobLocation location in locations)
+        {
+            slots.Add(location);
+            for (int i = 1; i < MOBS_PER_LOCATION; i++)
+                slots.Add(new MobLocation(location.getMapId(), location.getX(), location.getY()));
+        }
+        return slots.ToArray();
     }
 
 
@@ -111,6 +138,28 @@ public class GopetPlace : Place
         mobs.remove(gopetMob);
         long timeGen = Utilities.CurrentTimeMillis + TIME_NEW_MOB;
         newMob.TryAdd(gopetMob.getMobLocation(), timeGen);
+        SendMobRemovedToModernClients(gopetMob.getMobId());
+    }
+
+    /// <summary>Báo cả zone gỡ sprite quái đã bị xoá khỏi <see cref="mobs"/>. Quái hồi sinh
+    /// mang id MỚI, nên client không gỡ xác cũ thì bấm vào sẽ gửi ATTACK_MOB với id đã mất
+    /// và <see cref="startFightMob"/> nuốt im lặng. FAST_REMOVE_MOB chỉ mang battleId nên
+    /// người vào zone giữa trận (không thấy gói mở trận) không thể tự suy ra mobId.
+    ///
+    /// <para>Chỉ gửi cho client &gt;= <c>VERSION_150</c>: jar tự xoá quái lúc mở trận, và
+    /// không kiểm chứng được jar xử lý gói 96 ra sao nếu nó tới ngay trước PET_BATTLE_STATE
+    /// (mobDie chạy trong PetBattle.win trước khi gửi kết quả). Boss vẫn đi đường
+    /// <see cref="RemoveBattleByMobId"/> cho mọi client như cũ; Unity nhận trùng thì vô hại.</para></summary>
+    protected void SendMobRemovedToModernClients(int mobId)
+    {
+        Message message = GameController.messagePetService(GopetCMD.REMOVE_BATTLE_BY_MOB_ID);
+        message.putInt(mobId);
+        message.cleanup();
+        foreach (Player player in players)
+        {
+            if (player.ApplicationVersion == null || player.ApplicationVersion < GopetManager.VERSION_150) continue;
+            player.session.sendMessage(message);
+        }
     }
 
     public Mob getMob(int mobId)
@@ -260,10 +309,9 @@ public class GopetPlace : Place
                 ms.putInt(npcTemplate.getBounds()[3]);
                 ms.putInt(npcTemplate.getNpcId());
                 ms.putUTF(npcTemplate.getImgPath());
-                // Số frame của ảnh NPC. Ảnh NPC trên server này là 1-pose (không phải
-                // strip nhiều frame), nên phải gửi 1: client xẻ width/frameCount, gửi 2
-                // sẽ cắt đôi nhân vật và nhấp nháy giữa hai nửa.
-                ms.putInt(1);
+                // Số frame của ảnh NPC: ảnh gốc là 1-pose (gửi 2 sẽ cắt đôi nhân vật), chỉ
+                // ảnh strip vẽ riêng mới >1 — xem NpcTemplate.getFrameCount.
+                ms.putInt(npcTemplate.getFrameCount());
                 ms.putInt(npcTemplate.getX());
                 ms.putInt(npcTemplate.getY());
                 ms.putInt(6);

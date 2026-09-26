@@ -23,9 +23,7 @@ namespace Gopet.Runtime.World
             // Ngay dưới dòng nhiệm vụ (dưới HUD nhân vật), cùng mép trái với HUD.
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
-            var top = CharacterHud.Margin + CharacterHud.PanelHeight
-                      + TaskTrackerWidget.Gap + TaskTrackerWidget.Height + TaskTrackerWidget.Gap;
-            rect.anchoredPosition = new Vector2(CharacterHud.Margin, -top);
+            rect.anchoredPosition = new Vector2(CharacterHud.Margin, -TopFor(TaskTrackerWidget.Height));
             rect.sizeDelta = new Vector2(42f, 42f);
             var layout = go.AddComponent<LayoutElement>();
             layout.ignoreLayout = true;
@@ -53,6 +51,17 @@ namespace Gopet.Runtime.World
             timeRect.offsetMax = new Vector2(-4f, 0f);
             go.SetActive(false);
             return indicator;
+        }
+
+        private static float TopFor(float trackerHeight) =>
+            CharacterHud.Margin + CharacterHud.PanelHeight
+            + TaskTrackerWidget.Gap + trackerHeight + TaskTrackerWidget.Gap;
+
+        /// <summary>Dòng nhiệm vụ giãn theo số yêu cầu — dời chip xuống theo, không thì đè lên.</summary>
+        public void FollowTaskTracker(float trackerHeight)
+        {
+            var rect = (RectTransform)transform;
+            rect.anchoredPosition = new Vector2(CharacterHud.Margin, -TopFor(trackerHeight));
         }
 
         public void Apply(ExpBuffStatus status, RemoteAssetCache assets)

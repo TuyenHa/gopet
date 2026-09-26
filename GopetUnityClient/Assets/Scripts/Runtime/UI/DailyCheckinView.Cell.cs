@@ -37,7 +37,7 @@ namespace Gopet.Runtime.UI
             if (day.State == DailyCheckinState.Received) BuildCheckMark(cell.transform);
             else BuildItemIcon(cell.transform, day);
 
-            var badge = UiBuilder.MakeText(cell.transform, _font, "Badge", 7, false);
+            var badge = UiBuilder.MakeText(cell.transform, _font, "Badge", 6, false);
             badge.text = StateBadge(day.State);
             badge.alignment = TextAnchor.LowerCenter;
             badge.color = BadgeColor(day.State);

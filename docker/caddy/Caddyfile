@@ -1,0 +1,30 @@
+# Reverse proxy công khai duy nhất cho webadmin: HTTPS tự động + chặn mọi IP không nằm
+# trong allowlist. webadmin không publish cổng ra host — chỉ Caddy gọi vào qua mạng
+# compose (webadmin:3000).
+#
+# Biến môi trường (docker/.env, xem docker/.env.example):
+#   WEBADMIN_DOMAIN        vd. admin.gopet.example.com — DNS đã trỏ về máy chủ, cổng
+#                          80/443 mở ra ngoài. Caddy tự xin chứng chỉ Let's Encrypt (ACME
+#                          HTTP-01), không cần cấu hình thêm.
+#   WEBADMIN_ALLOWED_IPS   IP/CIDR cách nhau khoảng trắng, vd. "1.2.3.4 10.0.0.0/8"
+#
+# Test cục bộ (không có domain thật): đặt WEBADMIN_DOMAIN=localhost. Caddy tự nhận ra
+# "localhost" không phải tên miền công khai và dùng CA nội bộ (self-signed) thay vì xin
+# Let's Encrypt — không cần khai báo `tls internal` riêng.
+{$WEBADMIN_DOMAIN} {
+	@blocked not remote_ip {$WEBADMIN_ALLOWED_IPS}
+	respond @blocked 403
+
+	# M7: chặn clickjacking (X-Frame-Options + CSP frame-ancestors), ép HTTPS (HSTS), chặn
+	# MIME-sniffing, hạn chế rò rỉ URL qua Referer, và không lộ "Server: Caddy" ra ngoài.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		Content-Security-Policy "frame-ancestors 'none'"
+		-Server
+	}
+
+	reverse_proxy webadmin:3000
+}

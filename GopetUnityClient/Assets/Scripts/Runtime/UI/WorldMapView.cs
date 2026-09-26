@@ -89,12 +89,14 @@ namespace Gopet.Runtime.UI
             // Map lạ (server thêm map mới) xếp vào cụm "Khác" theo mapId tăng dần.
             var unknown = new List<int>();
             foreach (var option in options)
-                if (!WorldMapLayout.IsKnown(option.MapId)) unknown.Add(option.MapId);
+                if (!WorldMapLayout.IsHidden(option.MapId) && !WorldMapLayout.IsKnown(option.MapId))
+                    unknown.Add(option.MapId);
             unknown.Sort();
 
             var usedRegions = new HashSet<int>();
             foreach (var option in options)
             {
+                if (WorldMapLayout.IsHidden(option.MapId)) continue;
                 var placement = WorldMapLayout.Of(option.MapId, unknown);
                 if (usedRegions.Add(placement.RegionId)) MakeRegionLabel(placement.RegionId);
                 MakeNode(option, placement, option.MapId == currentMapId);

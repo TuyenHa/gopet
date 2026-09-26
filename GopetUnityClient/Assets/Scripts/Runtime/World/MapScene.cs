@@ -236,6 +236,9 @@ namespace Gopet.Runtime.World
 
         public void ApplyBossHp(BossHpUpdate update) => _actors?.ApplyBossHp(update);
 
+        /// <summary>Gỡ quái đã bị giết (server sẽ sinh con mới với id khác).</summary>
+        public void RemoveMob(int mobId) => _actors?.RemoveMob(mobId);
+
         private void OnChatReceived(PlaceChat evt)
         {
             // kiss/play/poke đi qua ON_PET_INTERACT, không phải chat thường.

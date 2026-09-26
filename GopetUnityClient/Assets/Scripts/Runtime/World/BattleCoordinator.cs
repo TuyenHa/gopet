@@ -27,16 +27,22 @@ namespace Gopet.Runtime.World
         private readonly Action<string> _toast;
         private readonly PlayerStatsHandler _playerStats;
         private readonly BattleSceneSettings _scenes;
+        private readonly SpectatorBattleLayer _spectators;
         private BattleView _view;
+        /// <summary>Trận của mình mở trong lúc bảng thắng trận trước còn chờ OK — dựng ngay
+        /// sau khi OK, KHÔNG bỏ: server đã mở trận thật, bỏ là thành trận ẩn không đánh được.</summary>
+        private BattleStart _pendingStart;
+        private BattleHandler _pendingHandler;
         private float _lastPacketAt;
         private float _timeoutSeconds;
 
         public BattleCoordinator(Transform parent, RemoteAssetCache assets, BattleHandler handler,
             Action<bool> setBattleMode, Action<string> toast = null, PlayerStatsHandler playerStats = null,
-            BattleSceneSettings scenes = null)
+            BattleSceneSettings scenes = null, SpectatorBattleLayer spectators = null)
         {
             _parent = parent; _assets = assets; _setBattleMode = setBattleMode;
             _toast = toast; _playerStats = playerStats; _scenes = scenes;
+            _spectators = spectators;
             // Thanh tiền trong trận trước đây chỉ đọc snapshot lúc mở trận; mua khung cảnh
             // giữa trận phải thấy vàng giảm ngay.
             if (_playerStats != null) _playerStats.StatsUpdated += stats => _view?.ApplyPlayerStats(stats);
@@ -52,6 +58,8 @@ namespace Gopet.Runtime.World
         /// giữ đến OK; map vẫn cập nhật bên dưới lớp chiến đấu.</summary>
         public void OnPlaceChanged()
         {
+            if (_spectators != null) _spectators.Clear();
+            DropPending(null);
             if (_view != null) Close();
         }
 
@@ -59,10 +67,25 @@ namespace Gopet.Runtime.World
         {
             // Server broadcast mọi trận trong zone. JAR vẽ trận người khác ngay trong world;
             // overlay toàn màn hình chỉ dành cho trận có người chơi hiện tại tham gia.
-            if (!start.IsParticipant) return;
-            // Không thay thế popup hoặc trả điều khiển map khi chưa xác nhận OK.
-            if (_view != null && _view.AwaitingVictoryConfirmation) return;
+            if (!start.IsParticipant)
+            {
+                if (_spectators != null) _spectators.StartBattle(start);
+                return;
+            }
+            if (_spectators != null) _spectators.Remove(start.BattleId);
+            // Không thay thế popup hoặc trả điều khiển map khi chưa xác nhận OK — hoãn tới OK.
+            if (_view != null && _view.AwaitingVictoryConfirmation)
+            {
+                _pendingStart = start;
+                _pendingHandler = handler;
+                return;
+            }
             Close();
+            Open(start, handler);
+        }
+
+        private void Open(BattleStart start, BattleHandler handler)
+        {
             _view = BattleView.Create(_parent, start, handler, _assets, _playerStats?.Snapshot, _scenes);
             _view.Closed += Close;
             _view.Ticked += CheckStalled;
@@ -72,6 +95,7 @@ namespace Gopet.Runtime.World
 
         private void OnTurn(BattleTurn turn)
         {
+            if (_spectators != null) _spectators.Apply(turn);
             if (_view == null || _view.BattleId != turn.BattleId) return;
             _view.Apply(turn);
             RefreshTimeout(turn.TurnDurationMs);
@@ -79,11 +103,15 @@ namespace Gopet.Runtime.World
 
         private void OnEnded(BattleResult result)
         {
+            if (_spectators != null) _spectators.End(result);
+            DropPending(result.BattleId);
             if (_view != null && _view.BattleId == result.BattleId) _view.ShowResult(result);
         }
 
         private void OnRemoved(int battleId)
         {
+            if (_spectators != null) _spectators.Remove(battleId);
+            DropPending(battleId);
             if (_view == null) return;
             // Khi THẮNG, server gửi PET_BATTLE_STATE rồi sendFastRemove() ngay sau đó
             // (PetBattle.cs:951-955) vì quái đã chết. Đóng ngay ở đây sẽ giết panel kết quả
@@ -109,6 +137,26 @@ namespace Gopet.Runtime.World
             }
             _setBattleMode?.Invoke(false);
             _timeoutSeconds = 0f;
+            OpenPendingStart();
+        }
+
+        /// <summary>Trận hoãn đã kết thúc (hoặc đổi map) trước khi người chơi bấm OK thì
+        /// không dựng nữa. <paramref name="battleId"/> null = bỏ bất kể trận nào.</summary>
+        private void DropPending(int? battleId)
+        {
+            if (_pendingStart == null) return;
+            if (battleId.HasValue && _pendingStart.BattleId != battleId.Value) return;
+            _pendingStart = null;
+            _pendingHandler = null;
+        }
+
+        private void OpenPendingStart()
+        {
+            var start = _pendingStart;
+            var handler = _pendingHandler;
+            _pendingStart = null;
+            _pendingHandler = null;
+            if (start != null && handler != null) Open(start, handler);
         }
 
         private void RefreshTimeout(int turnDurationMs)

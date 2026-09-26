@@ -76,14 +76,16 @@ namespace Gopet.Runtime.UI
             return rail;
         }
 
-        /// <summary>Chọn tab. Trùng tab đang chọn thì không làm gì và không bắn sự kiện.</summary>
-        public void Select(int index)
+        /// <summary>Chọn tab. Trùng tab đang chọn thì không làm gì và không bắn sự kiện.
+        /// <paramref name="notify"/> = false chỉ tô lại (vd trả highlight về tab cũ sau khi
+        /// tab "nút bấm" đã mở popup riêng).</summary>
+        public void Select(int index, bool notify = true)
         {
             if (index < 0 || index >= _backgrounds.Length || index == ActiveIndex) return;
 
             ActiveIndex = index;
             for (var i = 0; i < _backgrounds.Length; i++) Paint(i, i == index);
-            Selected?.Invoke(index);
+            if (notify) Selected?.Invoke(index);
         }
 
         private void BuildTabs(Font font, string[] labels, float railWidth, bool twoLines)

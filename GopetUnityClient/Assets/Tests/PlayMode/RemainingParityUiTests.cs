@@ -34,7 +34,8 @@ namespace Gopet.PlayModeTests
             var editable = PetProfileView.Create(_root.transform, profile, null, true);
             var readOnly = PetProfileView.Create(_root.transform, profile, null, false);
 
-            Assert.AreEqual(4, editable.GetComponentsInChildren<UnityEngine.UI.Button>().Length);
+            // Nền (chạm ngoài để đóng) + nút X của khung chung; pet của mình thêm 3 nút thao tác.
+            Assert.AreEqual(5, editable.GetComponentsInChildren<UnityEngine.UI.Button>().Length);
             Assert.AreEqual(2, readOnly.GetComponentsInChildren<UnityEngine.UI.Button>().Length);
         }
 

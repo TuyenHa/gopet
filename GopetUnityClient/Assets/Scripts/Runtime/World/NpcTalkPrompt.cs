@@ -31,7 +31,7 @@ namespace Gopet.Runtime.World
         /// Offset là toạ độ local (x, y) so với NPC (pivot ở chân).</summary>
         public static NpcTalkPrompt Attach(Transform npc, Vector2 offset, System.Action onClick)
         {
-            var root = new GameObject("TalkPrompt", typeof(BoxCollider2D));
+            var root = new GameObject("TalkPrompt");
             root.transform.SetParent(npc, false);
             root.transform.localPosition = new Vector3(offset.x, offset.y, 0f);
 
@@ -39,10 +39,6 @@ namespace Gopet.Runtime.World
             prompt._onClick = onClick;
             prompt.CreatePanel(root.transform);
             prompt.CreateText(root.transform);
-
-            var collider = root.GetComponent<BoxCollider2D>();
-            collider.size = new Vector2(PanelWidth, PanelHeight);
-
             return prompt;
         }
 
@@ -52,11 +48,16 @@ namespace Gopet.Runtime.World
 
         private void CreatePanel(Transform parent)
         {
-            var go = new GameObject("Panel", typeof(SpriteRenderer));
+            // Collider nằm CÙNG object với SpriteRenderer: Physics2DRaycaster lấy sortingOrder
+            // của renderer trên object bị trúng để xếp thứ tự. Để collider ở object cha (không
+            // renderer) thì nút ngang hàng avatar người chơi đứng đè bên dưới, và cú bấm rơi
+            // vào avatar. Click vẫn nổi lên NpcTalkPrompt ở object cha.
+            var go = new GameObject("Panel", typeof(SpriteRenderer), typeof(BoxCollider2D));
             go.transform.SetParent(parent, false);
             var renderer = go.GetComponent<SpriteRenderer>();
             renderer.sortingOrder = 20_050;
             renderer.sprite = PromptSprite();
+            go.GetComponent<BoxCollider2D>().size = new Vector2(PanelWidth, PanelHeight);
         }
 
         private void CreateText(Transform parent)

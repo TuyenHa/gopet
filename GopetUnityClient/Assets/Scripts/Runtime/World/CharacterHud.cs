@@ -21,7 +21,7 @@ namespace Gopet.Runtime.World
     public sealed class CharacterHud : MonoBehaviour
     {
         // Ngắn hơn bản cũ 20 px; portrait giữ nguyên, chỉ thu phần tên và thanh HP/MP.
-        private const float PanelWidth = 240f;
+        public const float PanelWidth = 240f;
         // Tên map đã chuyển lên đầu minimap nên panel chỉ còn cao vừa portrait + 2 thanh.
         /// <summary>Mép trên hàng tiền tệ (sao/vàng/đậu/lúa) — ngay dưới portrait + 2 thanh.</summary>
         public const float CurrencyTop = 70f;
@@ -54,7 +54,7 @@ namespace Gopet.Runtime.World
         public StatBar Mp { get; private set; }
         /// <summary>Deprecated — pet EXP chưa có realtime; property giữ để tương thích, không dùng.</summary>
         public StatBar Experience { get; private set; }
-        public string PlayerName => _name == null ? string.Empty : _name.text;
+        public string PlayerName => _baseName;
 
         public static CharacterHud Create(Transform parent, string playerName)
         {
@@ -80,16 +80,28 @@ namespace Gopet.Runtime.World
             return hud;
         }
 
+        private string _baseName = "NHÂN VẬT";
+        private int _level;
+
         public void SetName(string playerName)
         {
             var cleaned = Gopet.UiLogic.JarIconTokens.Strip(playerName ?? string.Empty);
-            _name.text = string.IsNullOrWhiteSpace(cleaned) ? "NHÂN VẬT" : cleaned;
+            _baseName = string.IsNullOrWhiteSpace(cleaned) ? "NHÂN VẬT" : cleaned;
+            RefreshName();
         }
 
         public void SetLevel(int level)
         {
-            if (_levelBadge == null) return;
-            _levelBadge.text = level.ToString();
+            _level = level;
+            if (_levelBadge != null) _levelBadge.text = level.ToString();
+            RefreshName();
+        }
+
+        /// <summary>"Tên pet - LV.5" — cấp ngay cạnh tên cho dễ nhìn; chưa biết cấp thì chỉ tên.</summary>
+        private void RefreshName()
+        {
+            if (_name == null) return;
+            _name.text = _level > 0 ? $"{_baseName} - LV.{_level}" : _baseName;
         }
 
         public void SetPortrait(Sprite sprite)

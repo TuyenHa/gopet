@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using Gopet.Net.Pet;
 using Gopet.Runtime.Assets;
 using UnityEngine;
@@ -7,12 +6,18 @@ using UnityEngine.UI;
 
 namespace Gopet.Runtime.UI
 {
-    /// <summary>Màn thông tin pet dùng chung cho pet bản thân và pet người chơi khác.</summary>
-    public sealed class PetProfileView : MonoBehaviour
+    /// <summary>
+    /// Màn thông tin pet dùng chung cho pet bản thân và pet người chơi khác — dựng trên
+    /// <see cref="GamePopupFrame"/> (tiêu đề xanh, nút X, nền sáng) như mọi popup khác.
+    ///
+    /// <para>Tên pet vẽ bằng <see cref="StarNameLabel"/>: server gửi "Rua Test (sao)(saoden)…",
+    /// tag sao thành icon sao vàng thay vì hiện chữ thô "(saoden)".</para>
+    /// </summary>
+    public sealed partial class PetProfileView : MonoBehaviour
     {
-        /// <summary>Chiều cao một dòng kỹ năng và số dòng tối đa panel chứa vừa.</summary>
-        private const float SkillRowHeight = 26f;
-        private const int MaxSkillRows = 5;
+        private const float Width = 470f;
+        private const float Height = 390f;
+        private const float Pad = 10f;
 
         public event Action CloseRequested;
         public event Action GymRequested;
@@ -22,127 +27,105 @@ namespace Gopet.Runtime.UI
         /// khi học vào ô trống, hoặc id kỹ năng đang có khi muốn THAY chính nó.</summary>
         public event Action<int> LearnSkillRequested;
 
+        private Font _font;
+
         public static PetProfileView Create(Transform parent, PetProfile profile,
             RemoteAssetCache assets, bool editable)
         {
+            // Nền tối phủ màn hình: chạm ra ngoài popup là đóng, như bản cũ.
             var root = new GameObject("Pet Profile", typeof(RectTransform), typeof(Image), typeof(Button));
             root.transform.SetParent(parent, false);
             UiBuilder.Stretch((RectTransform)root.transform);
             root.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
             var view = root.AddComponent<PetProfileView>();
             root.GetComponent<Button>().onClick.AddListener(() => view.CloseRequested?.Invoke());
-            view.Build(profile, assets, editable);
+            view._font = UiBuilder.DefaultFont();
+            view.Build(profile ?? new PetProfile(), editable);
             return view;
         }
 
-        private void Build(PetProfile value, RemoteAssetCache assets, bool editable)
+        private void Build(PetProfile value, bool editable)
         {
-            var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
-            panel.transform.SetParent(transform, false);
-            var rect = (RectTransform)panel.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(560f, 430f);
-            panel.GetComponent<Image>().color = new Color(0.08f, 0.12f, 0.18f, 0.98f);
-            RoundedUiSprite.Apply(panel.GetComponent<Image>());
+            var frame = GamePopupFrame.Create(transform, _font, "Thú cưng", Width, Height);
+            frame.Closed += () => CloseRequested?.Invoke();
 
-            var title = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Title", 20, false);
-            UiBuilder.PlaceRow(title.rectTransform, 12f, 34f, 16f);
-            title.alignment = TextAnchor.MiddleCenter;
-            UiBuilder.SetFontStyle(title, FontStyle.Bold);
-            title.text = value.Name ?? "Pet";
+            // Khung trắng chứa thông tin; chừa đáy cho hàng nút khi là pet của mình.
+            var bottom = editable ? PopupButtonRow.Height + 8f : 0f;
+            var info = new GameObject("Info", typeof(RectTransform));
+            info.transform.SetParent(frame.Content, false);
+            var infoRect = (RectTransform)info.transform;
+            UiBuilder.Stretch(infoRect);
+            infoRect.offsetMin = new Vector2(0f, bottom);
+            RoundedBorder.Apply(info, RoundedUiSprite.DefaultRadius, PopupPalette.ListBg, PopupPalette.Hairline);
 
-            var body = UiBuilder.MakeText(panel.transform, UiBuilder.DefaultFont(), "Details", 15, false);
-            UiBuilder.PlaceRow(body.rectTransform, 54f, 150f, 24f);
-            body.alignment = TextAnchor.UpperLeft;
-            body.text = Describe(value);
+            var name = StarNameLabel.Create(info.transform, _font, 16, 14f);
+            UiBuilder.PlaceRow(name.Rect, 8f, 22f, Pad);
+            name.Label.color = PopupPalette.TextDark;
+            UiBuilder.SetFontStyle(name.Label, FontStyle.Bold);
+            name.SetName(value.Name ?? "Pet", value.Level > 0 ? $" - LV.{value.Level}" : null);
 
-            BuildSkillRows(panel.transform, value, editable);
+            var stats = MakeText(info.transform, "Details", 12, PopupPalette.TextDark);
+            UiBuilder.PlaceRow(stats.rectTransform, 34f, StatsHeight, Pad);
+            stats.alignment = TextAnchor.UpperLeft;
+            stats.text = Describe(value);
 
-            if (editable)
-            {
-                var gym = MakeButton(panel.transform, "Cộng tiềm năng", new Vector2(-190f, 18f));
-                gym.onClick.AddListener(() => GymRequested?.Invoke());
-                var tattoo = MakeButton(panel.transform, "Hình xăm", new Vector2(-65f, 18f));
-                tattoo.onClick.AddListener(() => TattooRequested?.Invoke());
-                var learn = MakeButton(panel.transform, "Học kỹ năng", new Vector2(60f, 18f));
-                learn.onClick.AddListener(() =>
-                    LearnSkillRequested?.Invoke(PetProfilePackets.LearnNewSlot));
-            }
-            var close = MakeButton(panel.transform, "Đóng", new Vector2(95f, 18f));
-            close.onClick.AddListener(() => CloseRequested?.Invoke());
-            if (editable) close.GetComponent<RectTransform>().anchoredPosition = new Vector2(180f, 18f);
+            BuildSkillRows(info.transform, value, editable);
+            if (editable) BuildActions(frame.Content);
         }
 
-        /// <summary>Kỹ năng tách thành TỪNG DÒNG thay vì gộp vào khối text: mỗi dòng cần một
-        /// nút "Thay" riêng, mà nút thì không gắn vào giữa một đoạn văn bản được.</summary>
-        private void BuildSkillRows(Transform panel, PetProfile value, bool editable)
+        /// <summary>Ba nút thao tác pet ở chân — cùng cỡ, bo góc, màu nút chính của popup.</summary>
+        private void BuildActions(Transform content)
         {
-            var header = UiBuilder.MakeText(panel, UiBuilder.DefaultFont(), "SkillsHeader", 15, false);
-            UiBuilder.PlaceRow(header.rectTransform, 208f, 22f, 24f);
-            header.alignment = TextAnchor.MiddleLeft;
-            UiBuilder.SetFontStyle(header, FontStyle.Bold);
-            header.text = value.Skills.Length > 0 ? "Kỹ năng:" : "Kỹ năng: (chưa có)";
+            var row = new GameObject("Actions", typeof(RectTransform));
+            row.transform.SetParent(content, false);
+            var rect = (RectTransform)row.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = new Vector2(0f, PopupButtonRow.Height);
 
-            for (var i = 0; i < value.Skills.Length && i < MaxSkillRows; i++)
-            {
-                var skill = value.Skills[i];
-                var row = UiBuilder.MakeText(panel, UiBuilder.DefaultFont(), $"Skill{i}", 14, false);
-                UiBuilder.PlaceRow(row.rectTransform, 232f + i * SkillRowHeight, SkillRowHeight, 24f);
-                row.alignment = TextAnchor.MiddleLeft;
-                row.text = $"• {skill.Name} (MP {skill.MpCost}) — {skill.Description}";
-                if (!editable) continue;
-
-                // Chừa chỗ cho nút Thay, nếu không chữ dài sẽ chạy xuống dưới nút.
-                row.rectTransform.offsetMax = new Vector2(-110f, row.rectTransform.offsetMax.y);
-                var swap = MakeButton(panel, "Thay", Vector2.zero);
-                var rect = swap.GetComponent<RectTransform>();
-                rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(1f, 1f);
-                rect.sizeDelta = new Vector2(76f, SkillRowHeight - 2f);
-                rect.anchoredPosition = new Vector2(-24f, -(232f + i * SkillRowHeight));
-                // Gửi ID THẬT của kỹ năng, không phải chỉ số dòng: server tra
-                // skillId_learn theo id để biết thay vào ô nào.
-                var skillId = skill.Id;
-                swap.onClick.AddListener(() => LearnSkillRequested?.Invoke(skillId));
-            }
+            AddAction(rect, 0, "Cộng tiềm năng", () => GymRequested?.Invoke());
+            AddAction(rect, 1, "Hình xăm", () => TattooRequested?.Invoke());
+            AddAction(rect, 2, "Học kỹ năng", () => LearnSkillRequested?.Invoke(PetProfilePackets.LearnNewSlot));
         }
 
-        private static string Describe(PetProfile value)
+        private void AddAction(RectTransform row, int index, string label, Action onClick)
         {
-            var text = new StringBuilder();
-            text.Append("Cấp ").Append(value.Level)
-                .Append("   Hệ ").Append(value.Element)
-                .Append("   Lớp ").Append(value.PetClass).AppendLine();
-            text.Append("EXP: ").Append(value.Experience).Append(" / ")
-                .Append(value.ExperienceToNextLevel).AppendLine();
-            text.Append("STR ").Append(value.Str).Append("   AGI ").Append(value.Agi)
-                .Append("   INT ").Append(value.Int).AppendLine();
-            text.Append("ATK ").Append(value.Atk).Append("   DEF ").Append(value.Def).AppendLine();
-            text.Append("HP ").Append(value.Hp).Append('/').Append(value.MaxHp)
-                .Append("   MP ").Append(value.Mp).Append('/').Append(value.MaxMp).AppendLine();
-            text.Append("Điểm tiềm năng: ").Append(value.PotentialPoints).AppendLine();
-            if (value.Tattoos.Length > 0)
-            {
-                text.AppendLine().AppendLine("Hình xăm:");
-                foreach (var tattoo in value.Tattoos) text.Append("• ").AppendLine(tattoo.Name);
-            }
-            return text.ToString();
+            const float gap = 6f;
+            var button = MakeButton(row, label, 13, onClick);
+            var rect = (RectTransform)button.transform;
+            rect.anchorMin = new Vector2(index / 3f, 0f);
+            rect.anchorMax = new Vector2((index + 1) / 3f, 1f);
+            rect.offsetMin = new Vector2(index == 0 ? 0f : gap * 0.5f, 0f);
+            rect.offsetMax = new Vector2(index == 2 ? 0f : -gap * 0.5f, 0f);
         }
 
-        private static Button MakeButton(Transform parent, string label, Vector2 position)
+        private Button MakeButton(Transform parent, string label, int fontSize, Action onClick)
         {
             var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = new Vector2(170f, 42f);
-            go.GetComponent<Image>().color = UiBuilder.ButtonFace;
-            RoundedUiSprite.Apply(go.GetComponent<Image>());
-            var text = UiBuilder.MakeText(go.transform, UiBuilder.DefaultFont(), "Label", 14, true);
+            var image = go.GetComponent<Image>();
+            RoundedUiSprite.Apply(image, 6f);
+            image.color = PopupPalette.ButtonBlue;
+            var text = UiBuilder.MakeText(go.transform, _font, "Label", fontSize, true);
             text.text = label;
             text.alignment = TextAnchor.MiddleCenter;
-            return go.GetComponent<Button>();
+            text.color = Color.white;
+            UiBuilder.SetFontStyle(text, FontStyle.Bold);
+            var button = go.GetComponent<Button>();
+            button.onClick.AddListener(() => onClick?.Invoke());
+            return button;
+        }
+
+        private Text MakeText(Transform parent, string name, int size, Color color)
+        {
+            var text = UiBuilder.MakeText(parent, _font, name, size, false);
+            text.color = color;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.raycastTarget = false;
+            return text;
         }
     }
 }

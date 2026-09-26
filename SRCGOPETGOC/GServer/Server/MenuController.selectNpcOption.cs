@@ -54,6 +54,7 @@ public partial class MenuController
                             player.playerData.task.Add(taskData);
                             player.playerData.tasking.Add(taskData.taskTemplateId);
                             player.okDialog(player.Language.GetTaskOK);
+                            player.controller.getTaskCalculator().onUpdateTask(taskData);
                         }
                         else
                         {
@@ -479,6 +480,12 @@ public partial class MenuController
                 break;
             case OP_DUNG_HỢP:
                 sendMenu(MENU_OPTION_SHOW_FUSION_MENU, player);
+                break;
+            case OP_REPAIR_EQUIP:
+                sendRepairEquipMenu(player);
+                break;
+            case OP_DURABILITY_HELP:
+                player.okDialog(EquipRepairService.HelpText);
                 break;
             case OP_ĐIỂM_DANH:
                 player.controller.noelDaily();

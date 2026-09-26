@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Gopet.Net.Battle
 {
@@ -9,10 +10,19 @@ namespace Gopet.Net.Battle
         private readonly Action<Message> _send;
         private readonly int _localUserId;
 
+        /// <summary>battleId (userId người đánh) → mobId của trận PvE đang diễn trong zone.
+        /// Server không có gói "quái chết" riêng: thắng quái thì chỉ phát FAST_REMOVE_MOB mang
+        /// battleId (PetBattle.sendFastRemove), rồi 3s sau sinh quái MỚI với id mới ở cùng chỗ.
+        /// Không tự gỡ theo bảng này thì xác quái cũ ở lại map, bấm vào gửi ATTACK_MOB với id
+        /// server đã xoá ⇒ GopetPlace.startFightMob nuốt im lặng, không vào được trận.</summary>
+        private readonly Dictionary<int, int> _mobByBattle = new Dictionary<int, int>();
+
         public event Action<BattleStart> BattleStarted;
         public event Action<BattleTurn> TurnReceived;
         public event Action<BattleResult> BattleEnded;
         public event Action<int> BattleRemoved;
+        /// <summary>mobId của con quái vừa bị giết — xem <see cref="_mobByBattle"/>.</summary>
+        public event Action<int> MobKilled;
         public event Action<int> PetLevelUpdated;
         public event Action<BattleBuffState> BuffStateReceived;
         public event Action<BattleStatsState> StatsReceived;
@@ -98,6 +108,7 @@ namespace Gopet.Net.Battle
             // Gói lượt đầu tiên (của quái) sẽ lật IsLocalTurn sang true.
             start.LocalStarts = false;
             r.ExpectFullyConsumed("ATTACK_MOB");
+            _mobByBattle[ownerId] = mobId;
             BattleStarted?.Invoke(start);
         }
 
@@ -114,6 +125,10 @@ namespace Gopet.Net.Battle
             if (r.Remaining == 1) r.ReadBool();
             start.IsParticipant = ownerId == _localUserId || opponentId == _localUserId;
             r.ExpectFullyConsumed("PLAYER_BATTLE");
+            // FAST_REMOVE của trận PvP dùng cùng battleId = userId: xoá dấu trận PvE cũ (đã
+            // thua quái nên không có FAST_REMOVE) để khỏi gỡ nhầm con quái còn sống.
+            _mobByBattle.Remove(ownerId);
+            _mobByBattle.Remove(opponentId);
             BattleStarted?.Invoke(start);
         }
 
@@ -161,6 +176,8 @@ namespace Gopet.Net.Battle
             result.Messages = new string[count];
             for (var i = 0; i < count; i++) { result.Messages[i] = r.ReadUtf(); r.ReadUtf(); }
             r.ExpectFullyConsumed("PET_BATTLE_STATE");
+            // Quái thắng (hoặc bỏ trận) thì nó còn sống, không có FAST_REMOVE theo sau.
+            if (result.WinnerId != result.BattleId) _mobByBattle.Remove(result.BattleId);
             BattleEnded?.Invoke(result);
         }
 
@@ -178,6 +195,12 @@ namespace Gopet.Net.Battle
             var battleId = message.Reader.ReadInt();
             message.Reader.ExpectFullyConsumed("FAST_REMOVE_MOB");
             BattleRemoved?.Invoke(battleId);
+            // Server chỉ phát gói này khi quái hết máu (PetBattle.win / GopetPlace.update).
+            if (_mobByBattle.TryGetValue(battleId, out var mobId))
+            {
+                _mobByBattle.Remove(battleId);
+                MobKilled?.Invoke(mobId);
+            }
         }
 
         private static int Count(int value, int max, string label)

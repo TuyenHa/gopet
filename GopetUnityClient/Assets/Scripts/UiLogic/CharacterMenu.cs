@@ -32,6 +32,8 @@ namespace Gopet.UiLogic
         Settings,
         Logout,
         Exit,
+        /// <summary>Học kỹ năng mới cho pet đang dẫn (tab Pet) — PET_SERVICE/MAGIC_LEARN_SKILL -1.</summary>
+        PetLearnSkill,
     }
 
     /// <summary>Kiểu xử lý cho một action: gửi opcode lên server, hay xử lý client-side.</summary>

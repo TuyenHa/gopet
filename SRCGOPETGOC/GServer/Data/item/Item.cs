@@ -27,6 +27,15 @@ namespace Gopet.Data.GopetItem
 
         public long expire = -1;
 
+        /// <summary>
+        /// Độ bền trang bị pet (xem <see cref="EquipDurability"/>). Item cũ trong DB không có
+        /// trường này nên Newtonsoft giữ giá trị khởi tạo = đầy.
+        /// </summary>
+        public int durability = EquipDurability.Max;
+
+        /// <summary>Newtonsoft: chỉ ghi durability cho trang bị pet, không làm phình JSON mọi item.</summary>
+        public bool ShouldSerializedurability() => EquipDurability.Applies(this);
+
         public int def;
 
         public int atk;
@@ -509,7 +518,7 @@ namespace Gopet.Data.GopetItem
                     }
                 }
             }
-            return getName(player) + "  " + getTemp().getDescription(player) + " " + Utilities.Format("up: %s ", lvl) + string.Join(" ", infoStrings.Concat(strs)) + (gemInfo == null ? "" : " " + gemInfo.getElementIcon());
+            return getName(player) + "  " + getTemp().getDescription(player) + " " + Utilities.Format("up: %s ", lvl) + string.Join(" ", infoStrings.Concat(strs)) + (gemInfo == null ? "" : " " + gemInfo.getElementIcon()) + EquipDurability.Describe(this);
         }
 
         public void updateGemOption()

@@ -41,6 +41,7 @@ namespace Gopet.Runtime.UI
         public const float LabelBottomFrac = 0.25f;
 
         public event Action ShopClicked;
+        public event Action MarketClicked;
         public event Action ServiceClicked;
         public event Action EventClicked;
         public event Action MailClicked;
@@ -61,7 +62,7 @@ namespace Gopet.Runtime.UI
 
             var view = go.AddComponent<ShopServiceEventHud>();
 
-            // Xếp phải → trái: minimap (ô trống), Hộp thư, Sự kiện, Dịch vụ, Cửa hàng.
+            // Xếp phải → trái: minimap (ô trống), Hộp thư, Sự kiện, Dịch vụ, Cửa hàng, Chợ trời.
             // Bỏ Bang hội theo yêu cầu user.
             var right = ReservedRightFrac + MinimapSlotFrac + GapFrac;
             var mail = MakeButton(go.transform, font, HudSkin.Mail, "Hộp thư", right,
@@ -79,6 +80,10 @@ namespace Gopet.Runtime.UI
 
             MakeButton(go.transform, font, HudSkin.Shop, "Cửa hàng", right,
                 () => view.ShopClicked?.Invoke());
+            right += SizeFrac + GapFrac;
+
+            MakeButton(go.transform, font, HudSkin.Market, "Chợ trời", right,
+                () => view.MarketClicked?.Invoke());
 
             return view;
         }

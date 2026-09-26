@@ -84,16 +84,13 @@ namespace Gopet.Runtime.World.Battle
             rect.anchoredPosition = new Vector2(-Pad, 0f);
             rect.sizeDelta = new Vector2(ButtonWidth, 30f);
             var img = go.GetComponent<Image>();
-            // Kiểu nút chung (khung vàng, mặt xanh) như nút "Kích ẩn". Thiếu ảnh thì về nút bo góc màu phẳng.
-            if (!GameButtonSkin.Apply(img, rect.sizeDelta.y))
-            {
-                img.sprite = PanelSprites.Rounded(6);
-                img.type = Image.Type.Sliced;
-                img.color = face;
-            }
+            img.sprite = PanelSprites.Rounded(6);
+            img.type = Image.Type.Sliced;
+            img.color = face;
             var text = UiBuilder.MakeText(go.transform, _font, "Nhãn", 13, true);
             text.text = label;
-            GameButtonSkin.StyleLabel(text);
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
             var button = go.GetComponent<Button>();
             button.targetGraphic = img;
             button.interactable = interactable && !_busy;

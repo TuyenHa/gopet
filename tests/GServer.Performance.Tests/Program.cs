@@ -4,6 +4,9 @@ using Gopet.IO;
 
 Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 var tests = new (string, Action)[] {
+    ("arena retains slot and sends countdown", ArenaTests.SlotAndTimer),
+    ("arena registration pairing and two rounds", ArenaTests.RegistrationPairingAndTwoRounds),
+    ("arena rejects ineligible registration without charge", ArenaTests.RegistrationRejectsInvalidPetAndClosedWindow),
     ("block writes preserve signed payload and header", BlockWrites),
     ("truncated payload stops at EOF", TruncatedPayload),
     ("fragmented payload is read completely", FragmentedPayload),
@@ -31,6 +34,33 @@ var tests = new (string, Action)[] {
     ("battle background buy charges price, selects, blocks re-buy", BattleBackgroundTests.BuyAndSelect),
     ("battle background rejects bad ids, unowned, no gold", BattleBackgroundTests.Rejections),
     ("battle background concurrent buys charge once", BattleBackgroundTests.ConcurrentBuyChargesOnce),
+    ("equip durability wear, thresholds, repair", EquipDurabilityTests.WearAndThresholds),
+    ("equip durability persists and legacy items load full", EquipDurabilityTests.JsonRoundTrip),
+    ("equip repair uses one stone and rejects invalid", EquipDurabilityTests.RepairRules),
+    ("equip concurrent repairs use one stone", EquipDurabilityTests.ConcurrentRepairUsesOneStone),
+    ("market kiosk sell item locking prevents race conditions", MarketKioskTests.SellItemLockingPreventsRaceConditions),
+    ("market kiosk payout calculates seller share", MarketKioskTests.KioskPayoutCalculatesSellerShare),
+    ("market kiosk payout assign fees", MarketKioskTests.KioskPayoutAssignFees),
+    ("market kiosk sell item expiration time", MarketKioskTests.SellItemExpirationTime),
+    ("market kiosk sell item transition", MarketKioskTests.SellItemTransition),
+    ("market kiosk price validation", MarketKioskTests.KioskPriceValidation),
+    ("market kiosk list request structure", MarketKioskTests.ListRequestStructure),
+    ("market query filter by single kiosk type", MarketQueryTests.FilterBySingleKioskType),
+    ("market query filter all types", MarketQueryTests.FilterAllTypes),
+    ("market query sort newest", MarketQueryTests.SortNewest),
+    ("market query sort price ascending", MarketQueryTests.SortPriceAscending),
+    ("market query sort price descending", MarketQueryTests.SortPriceDescending),
+    ("market query sort stable", MarketQueryTests.SortStable),
+    ("market query pagination clamps", MarketQueryTests.PaginationClamps),
+    ("market query is mine visibility", MarketQueryTests.IsMineVisibility),
+    ("market query assigned item hidden from third party", MarketQueryTests.AssignedItemHiddenFromThirdParty),
+    ("market query unassigned item visible to all", MarketQueryTests.UnassignedItemVisibleToAll),
+    ("market query total pages calculation", MarketQueryTests.TotalPagesCalculation),
+    ("market sellable row normalizes non-stackable count to 1", MarketFixesTests.WriteSellableRowNormalizesNonStackableCount),
+    ("market sellable row keeps stackable count", MarketFixesTests.WriteSellableRowKeepsStackableCount),
+    ("market remaining price clamps at zero and matches outstanding charge", MarketFixesTests.RemainingPriceClampsAtZeroAndMatchesOutstanding),
+    ("market FlushMarketSaveIfDirty keeps dirty flag on failed save", MarketFixesTests.FlushMarketSaveIfDirtyKeepsFlagOnFailedSave),
+    ("menu ids are unique across MenuController partials", MenuIdsUnique),
 };
 int failed = 0;
 foreach (var (name, test) in tests) {
@@ -38,6 +68,20 @@ foreach (var (name, test) in tests) {
     catch (Exception e) { failed++; Console.WriteLine("FAIL " + name + ": " + e.GetBaseException().Message); }
 }
 return failed == 0 ? 0 : 1;
+
+// MENU_* nằm rải trong nhiều file partial của MenuController; trùng id thì client định
+// tuyến nhầm màn (MENU_SHOW_NEXT_TASK_GUIDE từng trùng MENU_REPAIR_EQUIP = 1092).
+static void MenuIdsUnique()
+{
+    var dupes = typeof(MenuController)
+        .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+        .Where(f => f.IsLiteral && f.FieldType == typeof(int) && f.Name.StartsWith("MENU_"))
+        .GroupBy(f => (int)f.GetRawConstantValue()!)
+        .Where(g => g.Count() > 1)
+        .Select(g => $"{g.Key}: {string.Join(", ", g.Select(f => f.Name))}")
+        .ToList();
+    Check(dupes.Count == 0, "duplicate menu ids: " + string.Join("; ", dupes));
+}
 
 static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
 static void BlockWrites() {

@@ -1,13 +1,41 @@
 ---
 phase: 3
 title: "Client: xem trận người chơi khác trong world"
-status: pending
+status: implemented-awaiting-unity-validation
 priority: P2
 effort: "1d"
 dependencies: [2]
 ---
 
 # Phase 3: Client — xem trận người chơi khác trong world
+
+## Execution update — 2026-09-25
+
+Code is implemented; Unity visual/PlayMode certification remains blocked because
+the configured Unity Editor and managed assemblies are absent on this machine.
+Do not interpret implementation status as live certification.
+
+- `MapScene.TryGetAvatarTransform(int)` resolves owners; `PetLayer.PetOf(int)`
+  resolves existing pet sprites. No duplicate battle pet sprites are created.
+- `SpectatorBattles` owns bounded state and packet-driven HP/MP changes.
+- `SpectatorBattleLayer` waits up to two seconds for actors, caps at five pairs,
+  expires silent battles and clears on map change, removal or actor departure.
+- `SpectatorBattleView` adds world-space vitals, damage and compact effects;
+  there are no observer action buttons or movement locks.
+- `BattleCoordinator` routes observer traffic separately from the own overlay.
+- Seven new Net/state tests pass, including live and mid-battle snapshot packet
+  formats. Full Net suite: 950 passed, zero failed/skipped.
+- Five PlayMode tests are added, but have NOT run on Unity yet.
+- Server fixture verifies four registrations, two first-round pairs, a final,
+  result packets to both participants, three total points, and event completion.
+  Map appearance/transfer traffic is replaced by the fixture and results are
+  triggered by controlled HP changes; this is not a live multiplayer UI run.
+
+Evidence and environment limits: [execution report](../reports/implementation-260925-arena-spectator.md).
+
+The sections below retain the original design context. The implementation reuses
+existing world pet sprites instead of duplicating `BattlePetCard`, with compact
+world-space Canvas vitals and effects.
 
 ## Overview
 
@@ -100,11 +128,11 @@ thấy actor (chưa spawn) → hoãn tới frame sau, quá 2s thì bỏ qua tr�
 
 ## Todo List
 
-- [ ] Xác định API tra actor theo userId trong `MapScene`
-- [ ] Refactor `BattleCoordinator` thành own + spectators
-- [ ] `SpectatorBattleView.cs` (<200 dòng)
-- [ ] Hàng chờ định vị + timeout 2s
-- [ ] Cap 5 view đồng thời
+- [x] Xác định API tra actor theo userId trong `MapScene`
+- [x] Refactor `BattleCoordinator` thành own + spectators
+- [x] `SpectatorBattleView.cs` (<200 dòng)
+- [x] Hàng chờ định vị + timeout 2s
+- [x] Cap 5 view đồng thời
 - [ ] PlayMode test chống rò rỉ GameObject
 - [ ] `verify.ps1` pass
 

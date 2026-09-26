@@ -1,3 +1,6 @@
 .env
 # Cấu hình GServer cho container có mật khẩu SMTP — chỉ tồn tại trên máy chủ
 gserver/Gopet.dll.config
+# Tag trước lần deploy gần nhất — deploy-service.sh ghi để rollback.
+.gserver-prev-tag
+.webadmin-prev-tag

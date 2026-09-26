@@ -75,7 +75,7 @@ thái buff/cooldown) và làm lưới an toàn ở client (đóng overlay theo v
 |-------|------|--------|
 | 1 | [Server: gói kết thúc trận PvP & đấu trường](./phase-01-server-battle-end-packet.md) | Completed |
 | 2 | [Client: đóng overlay an toàn theo place](./phase-02-client-battle-overlay-teardown.md) | Completed |
-| 3 | [Client: xem trận người chơi khác trong world](./phase-03-client-spectator-battles.md) | Pending |
+| 3 | [Client: xem trận người chơi khác trong world](./phase-03-client-spectator-battles.md) | Implemented; Unity visual/PlayMode validation blocked (2026-09-25) |
 | 4 | [Server: đẩy buff/debuff & cooldown skill](./phase-04-server-buff-cooldown-packet.md) | Completed |
 | 5 | [Client: UI buff/debuff/stun & cooldown](./phase-05-client-buff-cooldown-ui.md) | Completed |
 | 6 | [Vượt ải: kiểm chứng và đóng gap](./phase-06-challenge-place-vuot-ai.md) | Pending |

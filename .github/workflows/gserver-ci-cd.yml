@@ -1,31 +1,70 @@
-# CI/CD cho máy chủ game (GServer): merge vào master → chạy test → deploy lên máy chủ Linux.
-# Cài đặt secret và máy chủ: docs/deployment-linux-backend.md, mục 4.6.
-name: GServer CI/CD
+# CI/CD chung cho GServer + webadmin: merge vào master → test phần đổi → build/push image
+# lên GHCR → SSH deploy lên máy chủ Linux, chỉ đụng service đã đổi.
+# Cài đặt secret và máy chủ: docs/deployment-linux-backend.md, mục 4.6 (gserver) và mục
+# "webadmin" (GHCR + Caddy).
+name: GServer + webadmin CI/CD
 
 on:
   push:
     branches: [master]
-    # Chỉ chạy khi phần server đổi — sửa client Unity không phải deploy lại.
-    paths:
-      - SRCGOPETGOC/GServer/**
-      - tests/GServer.Performance.Tests/**
-      - GopetUnityClient/Assets/Scripts/Net/** # test dùng chung bộ giải mã gói tin
-      - docker/**
-      - SRCGOPETGOC/MariaDB_SQL/migration-*.sql
-      - .github/workflows/gserver-ci-cd.yml
-  workflow_dispatch: # deploy tay từ tab Actions
+  workflow_dispatch: # deploy tay từ tab Actions (deploy cả 2 service)
 
-# Không cho hai lần deploy chồng nhau; lần sau xếp hàng chứ không huỷ lần đang chạy
-# (huỷ giữa chừng có thể để container ở trạng thái dở dang).
+# MỘT concurrency group cho cả gserver và webadmin: hai lần deploy không bao giờ chồng
+# nhau (migrate-db.sh còn có flock riêng, phòng khi ai đó chạy tay cùng lúc).
 concurrency:
-  group: gserver-deploy
+  group: gopet-deploy
   cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  # Quyết định lần push này có đổi gserver và/hoặc webadmin không, để job test/build/deploy
+  # tương ứng chạy hoặc bỏ qua. workflow_dispatch (chạy tay) luôn coi là đổi CẢ HAI.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # workflow_dispatch không có before/after để so path — coi như đổi CẢ HAI (bước
+      # dispatch_all). Push thì dùng kết quả paths-filter. Đúng một trong hai step chạy
+      # nên `||` luôn lấy được giá trị của step đã chạy (step bị bỏ qua có output rỗng).
+      gserver: ${{ steps.filter.outputs.gserver || steps.dispatch_all.outputs.gserver }}
+      webadmin: ${{ steps.filter.outputs.webadmin || steps.dispatch_all.outputs.webadmin }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            gserver:
+              - 'SRCGOPETGOC/GServer/**'
+              - 'tests/GServer.Performance.Tests/**'
+              - 'GopetUnityClient/Assets/Scripts/Net/**'
+              - 'docker/gserver/**'
+              - 'docker/deploy-*.sh'
+              - 'docker/migrate-db.sh'
+              - 'docker/docker-compose.yml'
+              - 'SRCGOPETGOC/MariaDB_SQL/migration-*.sql'
+              - '.github/workflows/gserver-ci-cd.yml'
+            webadmin:
+              - 'webadmin/**'
+              - 'docker/docker-compose.yml'
+              - 'docker/caddy/**'
+              - 'docker/deploy-*.sh'
+              - 'docker/migrate-db.sh'
+              - 'docker/webadmin-grants.sql'
+              - 'SRCGOPETGOC/MariaDB_SQL/migration-*.sql'
+              - '.github/workflows/gserver-ci-cd.yml'
+      - name: workflow_dispatch = deploy cả hai
+        id: dispatch_all
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "gserver=true" >> "$GITHUB_OUTPUT"
+          echo "webadmin=true" >> "$GITHUB_OUTPUT"
+
+  test-gserver:
+    needs: changes
+    if: needs.changes.outputs.gserver == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,8 +75,88 @@ jobs:
         # Bộ test là console app, trả exit code 1 nếu có test FAIL.
         run: dotnet run -c Release --project tests/GServer.Performance.Tests
 
+  test-webadmin:
+    needs: changes
+    if: needs.changes.outputs.webadmin == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webadmin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: webadmin/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run build
+
+  # Build + push image lên GHCR cho service đã đổi (máy chủ chỉ pull, không build).
+  # Tag = 12 ký tự đầu git sha (+ latest); job deploy tự tính lại đúng tag đó.
+  build-push:
+    needs: [changes, test-gserver, test-webadmin]
+    # test của service kia có thể bị SKIP — chỉ dừng khi có job THẬT SỰ thất bại.
+    if: |
+      !cancelled() &&
+      needs.test-gserver.result != 'failure' &&
+      needs.test-webadmin.result != 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - service: gserver
+            context: SRCGOPETGOC/GServer
+          - service: webadmin
+            context: webadmin
+    steps:
+      - name: Service này có đổi không
+        id: want
+        run: echo "build=${{ needs.changes.outputs[matrix.service] }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        if: steps.want.outputs.build == 'true'
+      - name: Owner viết thường (ghcr.io bắt buộc lowercase)
+        if: steps.want.outputs.build == 'true'
+        id: vars
+        run: |
+          echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+        if: steps.want.outputs.build == 'true'
+      - uses: docker/login-action@v3
+        if: steps.want.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        if: steps.want.outputs.build == 'true'
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          # Cache layer (restore NuGet / npm ci) giữa các lần chạy, tách theo service.
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/gopet-${{ matrix.service }}:${{ steps.vars.outputs.sha }}
+            ghcr.io/${{ steps.vars.outputs.owner }}/gopet-${{ matrix.service }}:latest
+
   deploy:
-    needs: test
+    needs: [changes, test-gserver, test-webadmin, build-push]
+    # Job test của service không đổi bị SKIP — deploy vẫn chạy, chỉ dừng khi có job THẬT SỰ
+    # thất bại. `!cancelled()` (không phải `always()`) để workflow bị huỷ thì không deploy.
+    if: |
+      !cancelled() &&
+      (needs.changes.outputs.gserver == 'true' || needs.changes.outputs.webadmin == 'true') &&
+      needs.test-gserver.result != 'failure' &&
+      needs.test-webadmin.result != 'failure' &&
+      needs.build-push.result != 'failure'
     runs-on: ubuntu-latest
     # Environment "production" cho phép bật duyệt tay / giới hạn nhánh trong Settings.
     environment: production
@@ -60,16 +179,27 @@ jobs:
           SSH_USER: ${{ secrets.DEPLOY_USER }}
           PORT: ${{ secrets.DEPLOY_PORT || '22' }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/gopet' }}
+          DO_GSERVER: ${{ needs.changes.outputs.gserver }}
+          DO_WEBADMIN: ${{ needs.changes.outputs.webadmin }}
         # Cập nhật git TRƯỚC rồi mới gọi script, để luôn chạy bản script mới nhất.
         # --ff-only: nếu trên máy chủ có commit/sửa đổi xung đột thì dừng, không ghi đè.
+        # deploy-service.sh chỉ pull + thay container của service được truyền vào — deploy
+        # webadmin không restart gserver và ngược lại.
         run: |
-          ssh -i ~/.ssh/id_deploy -p "$PORT" -o BatchMode=yes "$SSH_USER@$HOST" bash -s -- "$DEPLOY_PATH" <<'EOF'
+          ssh -i ~/.ssh/id_deploy -p "$PORT" -o BatchMode=yes "$SSH_USER@$HOST" bash -s -- \
+            "$DEPLOY_PATH" "$DO_GSERVER" "$DO_WEBADMIN" "${GITHUB_SHA::12}" <<'EOF'
           set -euo pipefail
           cd "$1"
+          DO_GSERVER="$2"; DO_WEBADMIN="$3"; TAG="$4"
           git fetch --quiet origin master
           git merge --ff-only FETCH_HEAD
           echo "[deploy] commit: $(git log -1 --format='%h %s')"
-          bash docker/deploy-gserver.sh
+          if [[ "$DO_GSERVER" == "true" ]]; then
+            bash docker/deploy-service.sh gserver "$TAG"
+          fi
+          if [[ "$DO_WEBADMIN" == "true" ]]; then
+            bash docker/deploy-service.sh webadmin "$TAG"
+          fi
           EOF
 
       - name: Dọn khoá SSH

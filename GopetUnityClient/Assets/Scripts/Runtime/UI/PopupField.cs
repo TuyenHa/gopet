@@ -90,5 +90,20 @@ namespace Gopet.Runtime.UI
             input.characterLimit = characterLimit;
             return input;
         }
+
+        /// <summary>Chữ gợi ý mờ hiện khi ô trống — cùng căn lề với chữ nhập.</summary>
+        public static void SetPlaceholder(InputField input, Font font, string hint)
+        {
+            // Cỡ 10 (nhỏ hơn chữ nhập 13) để câu gợi ý dài vẫn hiện đủ trong ô hẹp. Không dùng
+            // Best Fit: với tràn ngang Overflow nó không co theo bề ngang.
+            var placeholder = UiBuilder.MakeText(input.transform, font, "Placeholder", 10, true);
+            placeholder.text = hint;
+            placeholder.color = PopupPalette.TextMuted;
+            placeholder.fontStyle = FontStyle.Italic;
+            placeholder.raycastTarget = false;
+            placeholder.rectTransform.offsetMin = new Vector2(8f, 0f);
+            placeholder.rectTransform.offsetMax = new Vector2(-8f, 0f);
+            input.placeholder = placeholder;
+        }
     }
 }

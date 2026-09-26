@@ -330,6 +330,8 @@ public class Pet : GameObject, IBinaryObject<Pet>
                 continue;
             }
             ItemEquipType[it.Template.type] = it.itemTemplateId;
+            // Món hỏng vẫn tính vào bonus set (dòng trên) nhưng mất chỉ số riêng tới khi sửa.
+            if (EquipDurability.IsBroken(it)) continue;
             this.atk += it.getAtk();
             this.def += it.getDef();
             this.maxHp += it.getHp();

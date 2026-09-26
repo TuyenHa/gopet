@@ -28,4 +28,14 @@ public static class MapUnlockRules
     /// </summary>
     public static bool TryGetRequiredTask(int mapId, out int taskId) =>
         Required.TryGetValue(mapId, out taskId);
+
+    /// <summary>
+    /// Map TẠM ĐÓNG với mọi người chơi thường: không có trong TELE_MENU, không warp / đổi
+    /// kênh vào được (admin vẫn vào qua menu admin). 22 = Chợ trời — đóng 2026-09-26; map
+    /// vẫn được nạp vì popup Chợ trời toàn cục dùng ki-ốt của nó. Bỏ id khỏi đây là mở lại
+    /// (nhớ bỏ luôn ở client: WorldMapLayout.HiddenMaps, MapRenderer ẩn cổng).
+    /// </summary>
+    private static readonly HashSet<int> Closed = new() { 22 };
+
+    public static bool IsClosed(int mapId) => Closed.Contains(mapId);
 }

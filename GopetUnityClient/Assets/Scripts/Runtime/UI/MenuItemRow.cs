@@ -46,6 +46,7 @@ namespace Gopet.Runtime.UI
             _title.text = item.Title;
             _description.text = item.Description;
             SetCompactCard(compactCard);
+            ApplyTitleStars();
             ApplyCompactStats(item.Description);
 
             // Dòng không cho chọn: mờ đi VÀ tắt nút. Chỉ làm mờ thôi thì vẫn bấm
@@ -81,6 +82,7 @@ namespace Gopet.Runtime.UI
                 }
             }
             if (_title != null) _title.fontSize = value ? 17 : 20;
+            LayoutTitleStars();
             if (_description != null) _description.gameObject.SetActive(!value);
             if (!value)
             {

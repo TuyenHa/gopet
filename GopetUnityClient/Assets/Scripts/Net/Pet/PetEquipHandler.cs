@@ -85,7 +85,7 @@ namespace Gopet.Net.Pet
 
         private void OnItemRefreshed(Message message)
         {
-            var item = ReadItem(message.Reader);
+            var item = ReadItem(message.Reader, isResend: true);
             message.Reader.ExpectFullyConsumed("ON_UNQUIP_GEM");
             EquipItemRefreshed?.Invoke(item);
         }
@@ -103,7 +103,12 @@ namespace Gopet.Net.Pet
             EnchantMaterialSelected?.Invoke(value);
         }
 
-        private static PetEquipItem ReadItem(JavaBinaryReader r)
+        /// <param name="isResend">
+        /// Gói làm mới một món (<c>resendPetEquipInfo</c> → <c>writeItemEquip(isReSend: true)</c>):
+        /// server LUÔN ghi long + int sau cờ ngọc, không có ngọc thì ghi -1, -1. Gói danh
+        /// sách (EQUIP_INFO) chỉ ghi hai trường đó khi có ngọc.
+        /// </param>
+        private static PetEquipItem ReadItem(JavaBinaryReader r, bool isResend = false)
         {
             var item = new PetEquipItem
             {
@@ -123,6 +128,11 @@ namespace Gopet.Net.Pet
             {
                 item.GemTimeUnequip = r.ReadLong();
                 item.GemSecondsRemaining = r.ReadInt();
+            }
+            else if (isResend)
+            {
+                r.ReadLong(); // -1
+                r.ReadInt();  // -1
             }
             return item;
         }

@@ -6,7 +6,7 @@ using Gopet.Util;
 public class AutoSave : IRuntime
 {
     public static DateTime lastTimeSaveClan = DateTime.Now.AddMinutes(1);
-    public static DateTime lastTimeSaveMarket = DateTime.Now.AddMinutes(2);
+    public static DateTime lastTimeSaveMarket = DateTime.Now.AddSeconds(10);
     public static DateTime lastTimeSavePlayer = DateTime.Now.AddMinutes(10);
 
 
@@ -22,9 +22,8 @@ public class AutoSave : IRuntime
                     {
                         if (player.timeSaveDelta < Utilities.CurrentTimeMillis)
                         {
-                            if (player.playerData != null)
+                            if (player.playerData != null && player.playerData.saveIfActive(conn))
                             {
-                                PlayerData.saveStatic(player.playerData, conn);
                                 player.Popup("Dữ liệu của bạn đã được máy chủ lưu dự phòng thành công");
                                 HistoryManager.addHistory(new History(player).setLog("Backup dữ liệu thành công").setObj(player.playerData));
                             }
@@ -57,8 +56,10 @@ public class AutoSave : IRuntime
 
         if (lastTimeSaveMarket < DateTime.Now)
         {
-            GopetManager.saveMarket();
-            lastTimeSaveMarket = DateTime.Now.AddMinutes(30);
+            // Debounce 10s: chỉ ghi DB nếu Kiosk có mutation (RequestMarketSave) kể từ lần lưu
+            // trước, thay vì chờ cố định 30 phút như cũ (mất listing nếu crash giữa chừng).
+            GopetManager.FlushMarketSaveIfDirty();
+            lastTimeSaveMarket = DateTime.Now.AddSeconds(10);
         }
     }
 }

@@ -15,6 +15,8 @@ namespace Gopet.Runtime.UI
         public const string Root = "Ui/Hud/";
 
         public const string Shop = "shop";
+        /// <summary>Chợ trời — sinh bằng tools/image-gen, cùng khuôn 128×128 nền trong.</summary>
+        public const string Market = "market";
         public const string Guild = "guild";
         public const string Service = "service";
         public const string Event = "event";

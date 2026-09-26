@@ -1,4 +1,6 @@
+using System;
 using Gopet.Net.Pet;
+using UnityEngine;
 
 namespace Gopet.Runtime.UI
 {
@@ -6,6 +8,14 @@ namespace Gopet.Runtime.UI
     {
         private GemHandler _gemHandler;
         private GemInventoryView _gemView;
+        /// <summary>_gemView nằm nhúng trong popup khác (không Push) → huỷ thẳng, không Close.</summary>
+        private bool _gemViewEmbedded;
+
+        /// <summary>
+        /// Chỗ nhúng Kho ngọc nếu có (tab Pet của Hành lý đang mở trang Kho ngọc — xem
+        /// <c>GameSession.GemInventoryHost</c>); null = mở popup riêng như cũ.
+        /// </summary>
+        public Func<Transform> GemInventoryHost { get; set; }
         private int _activeGemId;
         private int _gemMaterial1;
 
@@ -21,13 +31,39 @@ namespace Gopet.Runtime.UI
 
         private void ShowGemInventory(GemInventory inventory)
         {
-            if (_gemView != null) Close(_gemView);
+            var host = GemInventoryHost?.Invoke();
+            if (host != null && _gemViewEmbedded && _gemView != null && _gemView.transform.parent == host)
+            {
+                _gemView.ApplyInventory(inventory);
+                return;
+            }
+            DisposeGemView();
+            if (host != null)
+            {
+                _gemView = GemInventoryView.CreateEmbedded(host, _font, _assets);
+                _gemViewEmbedded = true;
+                _gemView.ApplyInventory(inventory);
+                _gemView.GemSelected += ShowGemActions;
+                return;
+            }
+
             var view = GemInventoryView.Create(transform, _font, _assets);
             _gemView = view;
             view.ApplyInventory(inventory);
             view.CloseRequested += () => CloseGemInventory(view);
             view.GemSelected += ShowGemActions;
             Push(view, view.gameObject);
+        }
+
+        private void DisposeGemView()
+        {
+            if (_gemView != null)
+            {
+                if (_gemViewEmbedded) Destroy(_gemView.gameObject);
+                else Close(_gemView);
+            }
+            _gemView = null;
+            _gemViewEmbedded = false;
         }
 
         private void CloseGemInventory(GemInventoryView view)
@@ -92,8 +128,16 @@ namespace Gopet.Runtime.UI
             _gemHandler.ConfirmTier(_activeGemId, material.ItemOrTemplateId);
         }
 
-        private void OnGemUpdated(GemItemInfo item) => _gemView?.UpdateGem(item);
-        private void OnGemRemoved(int itemId) => _gemView?.RemoveGem(itemId);
+        // So null kiểu Unity: bản nhúng bị huỷ cùng tab Pet mà field vẫn giữ tham chiếu.
+        private void OnGemUpdated(GemItemInfo item)
+        {
+            if (_gemView != null) _gemView.UpdateGem(item);
+        }
+
+        private void OnGemRemoved(int itemId)
+        {
+            if (_gemView != null) _gemView.RemoveGem(itemId);
+        }
 
         private void UnbindGems()
         {

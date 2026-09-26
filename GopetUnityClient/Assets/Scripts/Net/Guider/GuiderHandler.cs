@@ -158,6 +158,8 @@ namespace Gopet.Net.Guider
         /// <summary>Mở tab điểm danh — server đáp bằng <see cref="DailyCheckinShown"/>.</summary>
         public void RequestDailyCheckin() => _send(GuiderPackets.RequestDailyCheckin());
 
+        public void RequestNextTaskGuide() => _send(GuiderPackets.RequestNextTaskGuide());
+
         /// <summary>Bấm nút điểm danh — server phát quà rồi gửi lại trạng thái mới.</summary>
         public void DoDailyCheckin() => _send(GuiderPackets.DoDailyCheckin());
 

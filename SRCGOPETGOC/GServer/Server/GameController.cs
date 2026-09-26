@@ -1831,28 +1831,36 @@ public class GameController
     {
 
         Pet myPet = player.getPet();
+        if (myPet == null) return;
 
-        if (GopetManager.PetExp.ContainsKey(myPet.lvl))
+        // Lên ĐỦ số cấp mà EXP cho phép trong một lần — trước đây mỗi lần gọi chỉ lên 1 cấp,
+        // trận thưởng nhiều EXP phải chờ trận sau mới lên tiếp. Dừng ở cấp tối đa (không còn
+        // dòng PetExp). Gói UPDATE_PET_LVL chỉ gửi MỘT lần với cấp cuối: client coi mỗi gói là
+        // một lần lên cấp (âm thanh/hiệu ứng), gửi dồn nhiều gói là hiệu ứng chồng nhau.
+        bool leveledUp = false;
+        while (GopetManager.PetExp.ContainsKey(myPet.lvl))
         {
             int expUp = GopetManager.PetExp.get(myPet.lvl);
-            if (myPet.exp >= expUp)
-            {
-                myPet.exp -= expUp;
-                myPet.lvlUP();
-                Message message = new Message(GopetCMD.PET_SERVICE);
-                message.putsbyte(GopetCMD.UPDATE_PET_LVL);
-                //old version
-                message.putInt(0);
-                message.putInt(0);
-                //old version
-
-                message.putInt(myPet.lvl);
-                message.cleanup();
-                player.session.sendMessage(message);
-
-                this.taskCalculator.onPetUpLevel(myPet);
-            }
+            if (expUp <= 0 || myPet.exp < expUp) break;
+            myPet.exp -= expUp;
+            myPet.lvlUP();
+            leveledUp = true;
         }
+
+        if (!leveledUp) return;
+
+        Message message = new Message(GopetCMD.PET_SERVICE);
+        message.putsbyte(GopetCMD.UPDATE_PET_LVL);
+        //old version
+        message.putInt(0);
+        message.putInt(0);
+        //old version
+
+        message.putInt(myPet.lvl);
+        message.cleanup();
+        player.session.sendMessage(message);
+
+        this.taskCalculator.onPetUpLevel(myPet);
     }
 
     private void gym()

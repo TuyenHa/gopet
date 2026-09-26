@@ -230,9 +230,13 @@ public partial class MenuController
                         {
                             TaskTemplate taskTemplate = taskTemplates.get(index);
                             player.playerData.tasking.Add(taskTemplate.getTaskId());
-                            player.playerData.task.Add(new TaskData(taskTemplate));
+                            TaskData newTask = new TaskData(taskTemplate);
+                            player.playerData.task.Add(newTask);
                             player.controller.getTaskCalculator().update();
                             player.okDialog(player.Language.CongratulateGetNewTask);
+                            // Tính ngay những gì đã đạt sẵn (cấp pet, kỹ năng đã học…) — trước đây
+                            // phải chờ lần lên cấp kế tiếp mới cộng. Đủ hết thì tự hoàn thành.
+                            player.controller.getTaskCalculator().onUpdateTask(newTask);
                         }
                         else
                         {

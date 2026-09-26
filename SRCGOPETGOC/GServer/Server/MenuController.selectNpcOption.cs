@@ -54,6 +54,7 @@ public partial class MenuController
                             player.playerData.task.Add(taskData);
                             player.playerData.tasking.Add(taskData.taskTemplateId);
                             player.okDialog(player.Language.GetTaskOK);
+                            player.controller.getTaskCalculator().onUpdateTask(taskData);
                         }
                         else
                         {

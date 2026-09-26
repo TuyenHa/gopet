@@ -24,6 +24,14 @@ public class GopetPlace : Place
     /// Gốc là 25s. Map vượt ải (12) không có dòng gopet_map_moblvl nên không bị ảnh hưởng.
     /// </summary>
     public const long TIME_NEW_MOB = 3000;
+    /// <summary>
+    /// Số quái mỗi vị trí trong <c>gopet_mob_location</c>. Gốc là 1 — map ít vị trí (Đấu
+    /// trường 7) thì đánh vài con là map trống. Mỗi con một "ô" <see cref="MobLocation"/> riêng
+    /// (bản sao cùng toạ độ) vì <see cref="newMob"/> xếp lịch hồi sinh theo ô: dùng chung một ô
+    /// thì hai con chết gần nhau, con sau TryAdd trượt và mất hẳn. Client cho quái lảng vảng
+    /// quanh chỗ sinh nên các con cùng ô tự tản ra.
+    /// </summary>
+    public const int MOBS_PER_LOCATION = 2;
     public int[] numMobDie;
     public int[] numMobDieNeed
     {
@@ -42,8 +50,22 @@ public class GopetPlace : Place
 
         if (GopetManager.mobLocation.ContainsKey(m.mapID) && GopetManager.MOBLVL_MAP.ContainsKey(m.mapID))
         {
-            createNewMob(GopetManager.mobLocation.get(map.mapID));
+            createNewMob(ExpandSpawnSlots(GopetManager.mobLocation.get(map.mapID)));
         }
+    }
+
+    /// <summary>Mỗi vị trí gốc nhân thành <see cref="MOBS_PER_LOCATION"/> ô sinh quái.
+    /// Ô gốc giữ nguyên (sự kiện boss mượn <c>getMobLocation()</c> của quái có sẵn).</summary>
+    private static MobLocation[] ExpandSpawnSlots(MobLocation[] locations)
+    {
+        List<MobLocation> slots = new();
+        foreach (MobLocation location in locations)
+        {
+            slots.Add(location);
+            for (int i = 1; i < MOBS_PER_LOCATION; i++)
+                slots.Add(new MobLocation(location.getMapId(), location.getX(), location.getY()));
+        }
+        return slots.ToArray();
     }
 
 

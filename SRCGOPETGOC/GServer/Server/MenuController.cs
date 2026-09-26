@@ -86,6 +86,9 @@ public partial class MenuController
     public const int MENU_INTIVE_CHALLENGE = 1032;
     public const int MENU_SHOW_LIST_TASK = 1033;
     public const int MENU_SHOW_MY_LIST_TASK = 1034;
+    /// <summary>Tab "Nhiệm vụ tiếp theo" (client &gt;= 1.5.0): gặp NPC nào, ở map nào để nhận
+    /// nhiệm vụ chính kế tiếp. Chỉ đọc — dòng không chọn được. Xem <see cref="TaskGuide"/>.</summary>
+    public const int MENU_SHOW_NEXT_TASK_GUIDE = 1093;
     public const int MENU_OPTION_TASK = 1035;
     public const int MENU_UNEQUIP_PET = 1036;
     public const int MENU_UNEQUIP_SKIN = 1038;

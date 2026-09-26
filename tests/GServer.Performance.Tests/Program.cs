@@ -60,6 +60,7 @@ var tests = new (string, Action)[] {
     ("market sellable row keeps stackable count", MarketFixesTests.WriteSellableRowKeepsStackableCount),
     ("market remaining price clamps at zero and matches outstanding charge", MarketFixesTests.RemainingPriceClampsAtZeroAndMatchesOutstanding),
     ("market FlushMarketSaveIfDirty keeps dirty flag on failed save", MarketFixesTests.FlushMarketSaveIfDirtyKeepsFlagOnFailedSave),
+    ("menu ids are unique across MenuController partials", MenuIdsUnique),
 };
 int failed = 0;
 foreach (var (name, test) in tests) {
@@ -67,6 +68,20 @@ foreach (var (name, test) in tests) {
     catch (Exception e) { failed++; Console.WriteLine("FAIL " + name + ": " + e.GetBaseException().Message); }
 }
 return failed == 0 ? 0 : 1;
+
+// MENU_* nằm rải trong nhiều file partial của MenuController; trùng id thì client định
+// tuyến nhầm màn (MENU_SHOW_NEXT_TASK_GUIDE từng trùng MENU_REPAIR_EQUIP = 1092).
+static void MenuIdsUnique()
+{
+    var dupes = typeof(MenuController)
+        .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+        .Where(f => f.IsLiteral && f.FieldType == typeof(int) && f.Name.StartsWith("MENU_"))
+        .GroupBy(f => (int)f.GetRawConstantValue()!)
+        .Where(g => g.Count() > 1)
+        .Select(g => $"{g.Key}: {string.Join(", ", g.Select(f => f.Name))}")
+        .ToList();
+    Check(dupes.Count == 0, "duplicate menu ids: " + string.Join("; ", dupes));
+}
 
 static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
 static void BlockWrites() {

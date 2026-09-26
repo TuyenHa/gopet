@@ -1258,7 +1258,11 @@ public class GameController
                 fastUnequipGem(message.readInt());
                 break;
             case GopetCMD.SHOW_LIST_TASK:
-                showListTask();
+                // Jar gửi gói trống. Client mới thêm 1 byte tab: 1 = "Nhiệm vụ tiếp theo".
+                if (message.reader().available() > 0 && message.readsbyte() == 1)
+                    MenuController.sendMenu(MenuController.MENU_SHOW_NEXT_TASK_GUIDE, player);
+                else
+                    showListTask();
                 break;
             case GopetCMD.INVITE_MATCH:
                 inviteMatch(message.readInt());
@@ -1592,6 +1596,8 @@ public class GameController
         // Sắp theo mapId để thứ tự menu ổn định — HashMap không hứa thứ tự duyệt, và
         // menu nhảy loạn giữa hai lần mở là lỗi người dùng thấy ngay.
         List<int> availableMapIds = new(MapManager.maps.Keys);
+        // Map tạm đóng (MapUnlockRules.IsClosed) ẩn hẳn khỏi menu, không chỉ vẽ ổ khoá.
+        availableMapIds.RemoveAll(MapUnlockRules.IsClosed);
         availableMapIds.Sort();
 
         Message ms = new Message(GopetCMD.MGO_COMMAND);
@@ -5182,6 +5188,10 @@ public class GameController
     /// </summary>
     public string MapLockReason(int mapId)
     {
+        if (MapUnlockRules.IsClosed(mapId))
+        {
+            return "Khu vực này đang tạm đóng.";
+        }
         if (IsSkyLocked(mapId))
         {
             return player.Language.LawToUnlockSkyPlace;

@@ -120,6 +120,30 @@ public class TaskCalculator
 
     public static String getTaskText(int[] task, int[][] taskInfo, long timeTask, Player player)
     {
+        return "\n  ---- " + player.Language.Request + " ----\n" + String.Join("\n", getTaskLines(task, taskInfo, player));
+    }
+
+    /// <summary>Tên các map có sinh quái <paramref name="petTemplateId"/> (theo
+    /// <c>gopet_map_moblvl</c>). Nhiệm vụ diệt quái chỉ lưu template quái, không lưu map, nên
+    /// phải suy ngược để người chơi biết đi đâu đánh. Rỗng nếu không map nào sinh quái đó.</summary>
+    public static string getMobMapNames(int petTemplateId, Player player)
+    {
+        List<string> names = new();
+        foreach (var entry in GopetManager.MOBLVL_MAP)
+        {
+            if (entry.Value == null || !entry.Value.Any(m => m.getPetId() == petTemplateId)) continue;
+            string name = player.Language.MapLanguage.TryGetValue(entry.Key, out var localized)
+                ? localized
+                : GopetManager.mapTemplate.get(entry.Key)?.name;
+            if (!string.IsNullOrEmpty(name) && !names.Contains(name)) names.Add(name);
+        }
+        return String.Join(", ", names);
+    }
+
+    /// <summary>Mỗi yêu cầu một dòng kèm tiến độ "đã làm / cần". Dùng cho hộp thoại chi tiết
+    /// và cho dòng mô tả trong danh sách nhiệm vụ của client mới.</summary>
+    public static List<String> getTaskLines(int[] task, int[][] taskInfo, Player player)
+    {
         if (task == null)
         {
             task = new int[taskInfo.Length];
@@ -132,7 +156,11 @@ public class TaskCalculator
             switch (taskI[0])
             {
                 case REQUEST_KILL_MOB:
-                    taskText.Add(Utilities.Format(player.Language.TASK_REQUEST_KILL_MOB, GopetManager.PETTEMPLATE_HASH_MAP.get(taskI[2]).getName(player), task[i], taskI[1]));
+                    {
+                        string line = Utilities.Format(player.Language.TASK_REQUEST_KILL_MOB, GopetManager.PETTEMPLATE_HASH_MAP.get(taskI[2]).getName(player), task[i], taskI[1]);
+                        string maps = getMobMapNames(taskI[2], player);
+                        taskText.Add(string.IsNullOrEmpty(maps) ? line : Utilities.Format(player.Language.TASK_MOB_AT_MAP, line, maps));
+                    }
                     break;
                 case REQUEST_PET_LVL:
                     taskText.Add(Utilities.Format(player.Language.TASK_REQUEST_PET_LVL, task[i], taskI[1]));
@@ -200,7 +228,7 @@ public class TaskCalculator
                     break;
             }
         }
-        return "\n  ---- " + player.Language.Request + " ----\n" + String.Join("\n", taskText);
+        return taskText;
     }
 
     public void onTaskUpdate(TaskData taskData, int taskRequestType, params object[] dObjects)

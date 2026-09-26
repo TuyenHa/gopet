@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -79,9 +80,18 @@ public partial class MenuController
 
                                 using (MySqlConnection MySqlConnection = MYSQLManager.create())
                                 {
+                                    // H5 (code review): gift_code.code tra theo collation
+                                    // utf8_unicode_ci (không phân biệt hoa/thường) nhưng tên khoá
+                                    // GET_LOCK lại phân biệt hoa/thường — khoá theo nguyên văn
+                                    // "code" trước đây khiến 2 người gõ khác hoa/thường (hoặc web
+                                    // reset/update khoá theo case khác) không loại trừ lẫn nhau.
+                                    // Chuẩn hoá về chữ thường trên mọi nơi khoá gift code (web
+                                    // cũng làm y hệt). Khai báo NGOÀI try để finally (release
+                                    // lock) vẫn thấy được biến.
+                                    string giftCodeLockName = "gift_code_lock_" + code.ToLowerInvariant();
                                     try
                                     {
-                                        var keyL = MySqlConnection.QuerySingleOrDefault("SELECT GET_LOCK(@code, 10) as hasLock;", new { code = "gift_code_lock_" + code });
+                                        var keyL = MySqlConnection.QuerySingleOrDefault("SELECT GET_LOCK(@code, 10) as hasLock;", new { code = giftCodeLockName });
                                         if (keyL != null)
                                         {
                                             bool hasLock = keyL.hasLock == 1;
@@ -169,7 +179,7 @@ public partial class MenuController
                                     }
                                     finally
                                     {
-                                        MySqlConnection.Execute("DO RELEASE_LOCK(@code);", new { code = "gift_code_lock_" + code });
+                                        MySqlConnection.Execute("DO RELEASE_LOCK(@code);", new { code = giftCodeLockName });
                                     }
                                 }
                             }
@@ -721,9 +731,36 @@ public partial class MenuController
                             if (totp.VerifyTotp(text, out long timeStepMatched, new VerificationWindow(5, 5)))
                             {
                                 player.IsLogin2FAOK = true;
+                                // login() đã nhả login_lock_<username> khi show2FADialog() return sớm
+                                // (finally ở Player.login) — nhập OTP xong phải khoá lại trước khi gọi
+                                // ProcessingUser (nó MarkOnline + SELECT * FROM player), giống hệt luồng
+                                // login thường, không thì chạy không khoá.
+                                string lockName = "login_lock_" + player.user.username;
                                 using (var conn = MYSQLManager.createWebMySqlConnection())
                                 {
-                                    player.ProcessingUser(conn);
+                                    try
+                                    {
+                                        var lockResult = conn.QueryFirstOrDefault("SELECT GET_LOCK(@lockName, 20) as hasLock;", new { lockName });
+                                        bool hasLoginLock = lockResult != null && lockResult.hasLock == 1;
+                                        if (hasLoginLock)
+                                        {
+                                            player.ProcessingUser(conn);
+                                        }
+                                        else
+                                        {
+                                            player.redDialog("Máy chủ bận, thử lại");
+                                            Thread.Sleep(1000);
+                                            player.session.Close();
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                    finally
+                                    {
+                                        conn.Execute("DO RELEASE_LOCK(@lockName);", new { lockName });
+                                    }
                                 }
                             }
                             else

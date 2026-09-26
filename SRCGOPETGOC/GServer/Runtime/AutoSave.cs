@@ -22,9 +22,8 @@ public class AutoSave : IRuntime
                     {
                         if (player.timeSaveDelta < Utilities.CurrentTimeMillis)
                         {
-                            if (player.playerData != null)
+                            if (player.playerData != null && player.playerData.saveIfActive(conn))
                             {
-                                PlayerData.saveStatic(player.playerData, conn);
                                 player.Popup("Dữ liệu của bạn đã được máy chủ lưu dự phòng thành công");
                                 HistoryManager.addHistory(new History(player).setLog("Backup dữ liệu thành công").setObj(player.playerData));
                             }

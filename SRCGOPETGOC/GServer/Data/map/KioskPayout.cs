@@ -31,6 +31,15 @@ namespace Gopet.Data.Map
         /// Trả <see cref="SellerShare"/> của <paramref name="grossValue"/> cho người bán
         /// <paramref name="sellerId"/>: cộng thẳng nếu đang online, UPDATE DB nếu offline.
         /// Dùng chung cho TryBuyWhole/TryCancel/expire (buy trả 95% price, cancel/expire trả 95% sumVal).
+        ///
+        /// H2 (code review): <c>PlayerManager.get</c> có thể trả về 1 <see cref="Player"/> vừa
+        /// mất kết nối (thread khác đang chạy <c>Player.onDisconnected</c> đồng thời, chưa kịp
+        /// <c>PlayerManager.remove</c>). Nếu cứ cộng RAM + save() như cũ, save() là no-op sau khi
+        /// <c>disposed</c> được set — 95% tiền của người bán biến mất trong khi người mua đã bị
+        /// trừ tiền. Khoá trên <c>PlayerData</c> (cùng object mà <c>Player.onDisconnected</c> và
+        /// <see cref="PlayerData.save"/> đang khoá) rồi kiểm <c>disposed</c> NGAY TRONG vùng khoá:
+        /// còn sống → cộng RAM + save(); đã dispose (hoặc dispose xảy ra đúng lúc đang chờ khoá)
+        /// → trả qua đường SQL offline, không bao giờ rơi vào khe hở giữa 2 đường.
         /// </summary>
         public static void PaySeller(int sellerId, long grossValue)
         {
@@ -38,13 +47,26 @@ namespace Gopet.Data.Map
             if (share <= 0) return;
 
             Player sellPlayer = PlayerManager.get(sellerId);
-            if (sellPlayer != null)
+            PlayerData sellerData = sellPlayer?.playerData;
+            if (sellerData != null)
             {
-                sellPlayer.addCoin(share);
-                sellPlayer.playerData.save();
-                return;
+                lock (sellerData)
+                {
+                    if (!sellerData.disposed)
+                    {
+                        sellPlayer.addCoin(share);
+                        sellerData.save();
+                        return;
+                    }
+                }
+                // disposed=true bên trong vùng khoá trên: rơi xuống trả qua SQL offline bên dưới.
             }
 
+            PayOffline(sellerId, share);
+        }
+
+        private static void PayOffline(int sellerId, long share)
+        {
             using var conn = MYSQLManager.create();
             conn.Execute("Update `player` set coin = coin + @share where user_id = @user_id",
                 new { share, user_id = sellerId });
